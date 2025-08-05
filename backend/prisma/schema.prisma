@@ -1,0 +1,280 @@
+generator client {
+   provider = "prisma-client-js"
+}
+
+datasource db {
+   provider = "postgresql"
+   url      = env("DATABASE_URL")
+}
+
+enum MealTime {
+   BREAKFAST
+   LUNCH
+   DINNER
+   SNACK
+}
+
+// === FOOD TYPE ===
+model FoodType {
+   id         Int      @id @default(autoincrement())
+   key        String   @unique
+   is_active  Boolean  @default(true)
+   created_at DateTime @default(now())
+   updated_at DateTime @updatedAt
+
+   Translations FoodTypeTranslation[]
+   Categories   Category[]
+
+   @@map("food_types")
+}
+
+model FoodTypeTranslation {
+   id           Int     @id @default(autoincrement())
+   food_type_id Int
+   language     String // "th", "en", "jp", "zh"
+   name         String
+   description  String?
+
+   FoodType FoodType @relation(fields: [food_type_id], references: [id])
+
+   @@unique([food_type_id, language])
+   @@index([language])
+   @@map("food_type_translations")
+}
+
+// === CATEGORY ===
+model Category {
+   id           Int      @id @default(autoincrement())
+   food_type_id Int
+   key          String   @unique
+   is_active    Boolean  @default(true)
+   created_at   DateTime @default(now())
+   updated_at   DateTime @updatedAt
+
+   FoodType      FoodType              @relation(fields: [food_type_id], references: [id])
+   Translations  CategoryTranslation[]
+   Subcategories Subcategory[]
+
+   @@index([food_type_id])
+   @@map("categories")
+}
+
+model CategoryTranslation {
+   id          Int     @id @default(autoincrement())
+   category_id Int
+   language    String
+   name        String
+   description String?
+
+   Category Category @relation(fields: [category_id], references: [id])
+
+   @@unique([category_id, language])
+   @@index([language])
+   @@map("category_translations")
+}
+
+// === SUBCATEGORY ===
+model Subcategory {
+   id          Int      @id @default(autoincrement())
+   category_id Int
+   key         String   @unique
+   is_active   Boolean  @default(true)
+   created_at  DateTime @default(now())
+   updated_at  DateTime @updatedAt
+
+   Category     Category                 @relation(fields: [category_id], references: [id])
+   Translations SubcategoryTranslation[]
+   Menus        Menu[]
+
+   @@index([category_id])
+   @@map("subcategories")
+}
+
+model SubcategoryTranslation {
+   id             Int     @id @default(autoincrement())
+   subcategory_id Int
+   language       String
+   name           String
+   description    String?
+
+   Subcategory Subcategory @relation(fields: [subcategory_id], references: [id])
+
+   @@unique([subcategory_id, language])
+   @@index([language])
+   @@map("subcategory_translations")
+}
+
+// === PROTEIN TYPE ===
+model ProteinType {
+   id         Int      @id @default(autoincrement())
+   key        String   @unique
+   is_active  Boolean  @default(true)
+   created_at DateTime @default(now())
+   updated_at DateTime @updatedAt
+
+   Translations ProteinTypeTranslation[]
+   Menus        Menu[]
+
+   @@map("protein_types")
+}
+
+model ProteinTypeTranslation {
+   id              Int    @id @default(autoincrement())
+   protein_type_id Int
+   language        String
+   name            String
+
+   ProteinType ProteinType @relation(fields: [protein_type_id], references: [id])
+
+   @@unique([protein_type_id, language])
+   @@index([language])
+   @@map("protein_type_translations")
+}
+
+// === MENU ===
+model Menu {
+   id              Int      @id @default(autoincrement())
+   subcategory_id  Int
+   protein_type_id Int?
+   key             String   @unique
+   image_url       String?
+   contains        Json
+   meal_time       MealTime
+   is_active       Boolean  @default(true)
+   created_at      DateTime @default(now())
+   updated_at      DateTime @updatedAt
+
+   Subcategory  Subcategory       @relation(fields: [subcategory_id], references: [id])
+   ProteinType  ProteinType?      @relation(fields: [protein_type_id], references: [id])
+   Translations MenuTranslation[]
+   UserDislikes UserDislike[]
+   Favorites    FavoriteMenu[]
+   Ratings      MenuRating[]
+
+   @@index([subcategory_id])
+   @@index([protein_type_id])
+   @@index([meal_time])
+   @@map("menus")
+}
+
+model MenuTranslation {
+   id          Int     @id @default(autoincrement())
+   menu_id     Int
+   language    String
+   name        String
+   description String?
+
+   Menu Menu @relation(fields: [menu_id], references: [id])
+
+   @@unique([menu_id, language])
+   @@index([language])
+   @@map("menu_translations")
+}
+
+// === DIETARY RESTRICTION ===
+model DietaryRestriction {
+   id         Int      @id @default(autoincrement())
+   key        String   @unique
+   is_active  Boolean  @default(true)
+   created_at DateTime @default(now())
+   updated_at DateTime @updatedAt
+
+   Translations            DietaryRestrictionTranslation[]
+   UserDietaryRestrictions UserDietaryRestriction[]
+
+   @@map("dietary_restrictions")
+}
+
+model DietaryRestrictionTranslation {
+   id                     Int     @id @default(autoincrement())
+   dietary_restriction_id Int
+   language               String
+   name                   String
+   description            String?
+
+   DietaryRestriction DietaryRestriction @relation(fields: [dietary_restriction_id], references: [id])
+
+   @@unique([dietary_restriction_id, language])
+   @@index([language])
+   @@map("dietary_restriction_translations")
+}
+
+// === USER RELATED (ไม่เปลี่ยน) ===
+model UserDietaryRestriction {
+   id                     Int    @id @default(autoincrement())
+   user_profile_id        String @db.Uuid
+   dietary_restriction_id Int
+
+   UserProfile        UserProfile        @relation(fields: [user_profile_id], references: [id])
+   DietaryRestriction DietaryRestriction @relation(fields: [dietary_restriction_id], references: [id])
+
+   @@unique([user_profile_id, dietary_restriction_id])
+   @@index([user_profile_id])
+   @@index([dietary_restriction_id])
+   @@map("user_dietary_restrictions")
+}
+
+model UserProfile {
+   id         String   @id @db.Uuid
+   name       String?
+   phone      String?
+   is_active  Boolean  @default(true)
+   created_at DateTime @default(now())
+   updated_at DateTime @updatedAt
+
+   UserDislikes            UserDislike[]
+   UserDietaryRestrictions UserDietaryRestriction[]
+   Favorites               FavoriteMenu[]
+   Ratings                 MenuRating[]
+
+   @@map("user_profiles")
+}
+
+model UserDislike {
+   id              Int      @id @default(autoincrement())
+   user_profile_id String   @db.Uuid
+   menu_id         Int
+   reason          String?
+   created_at      DateTime @default(now())
+
+   UserProfile UserProfile @relation(fields: [user_profile_id], references: [id])
+   Menu        Menu        @relation(fields: [menu_id], references: [id])
+
+   @@unique([user_profile_id, menu_id])
+   @@index([user_profile_id])
+   @@index([menu_id])
+   @@map("user_dislikes")
+}
+
+model FavoriteMenu {
+   id              Int      @id @default(autoincrement())
+   user_profile_id String   @db.Uuid
+   menu_id         Int
+   created_at      DateTime @default(now())
+
+   UserProfile UserProfile @relation(fields: [user_profile_id], references: [id])
+   Menu        Menu        @relation(fields: [menu_id], references: [id])
+
+   @@unique([user_profile_id, menu_id])
+   @@index([user_profile_id])
+   @@index([menu_id])
+   @@map("favorite_menus")
+}
+
+model MenuRating {
+   id              Int      @id @default(autoincrement())
+   user_profile_id String   @db.Uuid
+   menu_id         Int
+   rating          Int
+   review          String?
+   created_at      DateTime @default(now())
+   updated_at      DateTime @updatedAt
+
+   UserProfile UserProfile @relation(fields: [user_profile_id], references: [id])
+   Menu        Menu        @relation(fields: [menu_id], references: [id])
+
+   @@unique([user_profile_id, menu_id])
+   @@index([user_profile_id])
+   @@index([menu_id])
+   @@map("menu_ratings")
+}
