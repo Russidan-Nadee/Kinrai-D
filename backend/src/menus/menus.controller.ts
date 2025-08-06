@@ -17,6 +17,7 @@ import { UpdateMenuDto } from './dto/update-menu.dto';
 import { FilterMenuDto } from './dto/filter-menu.dto';
 import { SearchMenuDto } from './dto/search-menu.dto';
 import { MenuRecommendationQueryDto } from './dto/menu-recommendation.dto';
+import { AdminOnly, CurrentUser, OptionalAuth, UserId } from '../auth/decorators/auth.decorators';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('menus')
@@ -25,11 +26,12 @@ export class MenusController {
   constructor(private readonly menusService: MenusService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new menu item' })
+  @AdminOnly()
+  @ApiOperation({ summary: 'Create a new menu item (Admin only)' })
   @ApiResponse({ status: 201, description: 'Menu item created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 409, description: 'Conflict - Menu key already exists.' })
-  create(@Body() createMenuDto: CreateMenuDto) {
+  create(@Body() createMenuDto: CreateMenuDto, @CurrentUser() user: any) {
     return this.menusService.create(createMenuDto);
   }
 
@@ -88,7 +90,8 @@ export class MenusController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update menu item' })
+  @AdminOnly()
+  @ApiOperation({ summary: 'Update menu item (Admin only)' })
   @ApiResponse({ status: 200, description: 'Menu item updated successfully.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 404, description: 'Menu item not found.' })
@@ -96,24 +99,34 @@ export class MenusController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateMenuDto: UpdateMenuDto,
+    @CurrentUser() user: any
   ) {
     return this.menusService.update(id, updateMenuDto);
   }
 
   @Delete(':id')
+  @AdminOnly()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Soft delete menu item (deactivate)' })
+  @ApiOperation({ summary: 'Soft delete menu item (Admin only)' })
   @ApiResponse({ status: 204, description: 'Menu item deactivated successfully.' })
   @ApiResponse({ status: 404, description: 'Menu item not found.' })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
     return this.menusService.remove(id);
   }
 
   @Post('recommendations')
-  @ApiOperation({ summary: 'Get menu recommendations based on user preferences' })
+  @OptionalAuth()
+  @ApiOperation({ summary: 'Get menu recommendations (better with user context)' })
   @ApiResponse({ status: 200, description: 'Menu recommendations retrieved successfully.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
-  getRecommendations(@Body() queryDto: MenuRecommendationQueryDto) {
+  getRecommendations(
+    @Body() queryDto: MenuRecommendationQueryDto,
+    @UserId() userId?: string
+  ) {
+    // Include user ID for personalized recommendations if authenticated
+    if (userId) {
+      queryDto.user_id = parseInt(userId);
+    }
     return this.menusService.getRecommendations(queryDto);
   }
 
