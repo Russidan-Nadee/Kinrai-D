@@ -1,16 +1,32 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, UseInterceptors } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { LanguageService } from '../common/services/language.service';
+import { CacheService } from '../common/services/cache.service';
+import { LoggingService } from '../common/services/logging.service';
+import { DEFAULT_LANGUAGE } from '../common/constants/languages';
+import { Cacheable, CacheEvict, CacheEvictByTags } from '../common/decorators/cache.decorator';
+import { CacheInterceptor } from '../common/interceptors/cache.interceptor';
+import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { FilterMenuDto } from './dto/filter-menu.dto';
 import { SearchMenuDto, SearchMenuResultDto } from './dto/search-menu.dto';
 import { MenuRecommendationQueryDto, MenuRecommendationResultDto, MenuRecommendationDto } from './dto/menu-recommendation.dto';
 import { MenuWithTranslations } from './entities/menu.entity';
+import { RecommendationService } from './services/recommendation.service';
 
 @Injectable()
+@UseInterceptors(CacheInterceptor, LoggingInterceptor)
 export class MenusService {
-   constructor(private prisma: PrismaService) { }
+   constructor(
+      private prisma: PrismaService,
+      private languageService: LanguageService,
+      private cacheService: CacheService,
+      private loggingService: LoggingService,
+      private recommendationService: RecommendationService
+   ) { }
 
+   @CacheEvictByTags(['menus', 'menu_list'])
    async create(createMenuDto: CreateMenuDto) {
       try {
          // ตรวจสอบว่า subcategory มีอยู่จริง
@@ -77,6 +93,11 @@ export class MenusService {
       }
    }
 
+   @Cacheable({ 
+      key: 'menus:findAll', 
+      ttl: 900, // 15 minutes
+      tags: ['menus', 'menu_list']
+   })
    async findAll(filterDto: FilterMenuDto) {
       const {
          subcategory_id,
@@ -84,7 +105,7 @@ export class MenusService {
          food_type_id,
          protein_type_id,
          meal_time,
-         language = 'th',
+         language = DEFAULT_LANGUAGE,
          search,
          dietary_restrictions,
          page = 1,
@@ -92,6 +113,9 @@ export class MenusService {
          sort_by = 'created_at',
          sort_order = 'desc'
       } = filterDto;
+
+      // Validate and get language preferences
+      const preferredLanguage = this.languageService.validateLanguage(language);
 
       // สร้าง where conditions
       const where: any = {
@@ -128,7 +152,7 @@ export class MenusService {
                   { name: { contains: search, mode: 'insensitive' } },
                   { description: { contains: search, mode: 'insensitive' } }
                ],
-               language: language
+               ...this.languageService.createTranslationWhereClause(preferredLanguage)
             }
          };
       }
@@ -153,22 +177,22 @@ export class MenusService {
             where,
             include: {
                Translations: {
-                  where: { language: language }
+                  where: this.languageService.createTranslationWhereClause(preferredLanguage)
                },
                Subcategory: {
                   include: {
                      Translations: {
-                        where: { language: language }
+                        where: this.languageService.createTranslationWhereClause(preferredLanguage)
                      },
                      Category: {
                         include: {
                            Translations: {
-                              where: { language: language }
+                              where: this.languageService.createTranslationWhereClause(preferredLanguage)
                            },
                            FoodType: {
                               include: {
                                  Translations: {
-                                    where: { language: language }
+                                    where: this.languageService.createTranslationWhereClause(preferredLanguage)
                                  }
                               }
                            }
@@ -204,7 +228,12 @@ export class MenusService {
       };
    }
 
-   async findOne(id: number, language: string = 'th') {
+   @Cacheable({ 
+      key: 'menus:findOne', 
+      ttl: 1800, // 30 minutes
+      tags: ['menus', 'menu_detail']
+   })
+   async findOne(id: number, language: string = DEFAULT_LANGUAGE) {
       const menu = await this.prisma.menu.findUnique({
          where: { id },
          include: {
@@ -467,7 +496,12 @@ export class MenusService {
       return menu;
    }
 
-   async getPopularMenus(language: string = 'th', limit: number = 10) {
+   @Cacheable({ 
+      key: 'menus:popular', 
+      ttl: 1800, // 30 minutes
+      tags: ['menus', 'popular_menus']
+   })
+   async getPopularMenus(language: string = DEFAULT_LANGUAGE, limit: number = 10) {
       return this.prisma.menu.findMany({
          where: { is_active: true },
          include: {
@@ -494,266 +528,45 @@ export class MenusService {
       });
    }
 
+   @Cacheable({ 
+      key: 'menus:recommendations', 
+      ttl: 600, // 10 minutes - shorter cache for personalized recommendations
+      tags: ['recommendations']
+   })
    async getRecommendations(queryDto: MenuRecommendationQueryDto): Promise<MenuRecommendationResultDto> {
-      const {
-         user_id,
-         meal_time,
-         preferred_food_types,
-         preferred_protein_types,
-         dietary_restrictions,
-         excluded_menu_ids,
-         disliked_ingredients,
-         language = 'th',
-         limit = 10,
-         min_rating,
-         recommendation_type = 'personalized'
-      } = queryDto;
-
-      // สร้าง base where conditions
-      const where: any = {
-         is_active: true,
-      };
-
-      if (meal_time) {
-         where.meal_time = meal_time;
-      }
-
-      if (excluded_menu_ids?.length) {
-         where.id = { notIn: excluded_menu_ids };
-      }
-
-      if (preferred_protein_types?.length) {
-         where.protein_type_id = { in: preferred_protein_types };
-      }
-
-      if (preferred_food_types?.length) {
-         where.Subcategory = {
-            Category: {
-               food_type_id: { in: preferred_food_types }
-            }
-         };
-      }
-
-      // กรอง dietary restrictions ถ้ามี
-      if (dietary_restrictions?.length) {
-         // สมมติว่า dietary restrictions เก็บใน contains field
-         where.NOT = {
-            OR: dietary_restrictions.map(restriction => ({
-               contains: {
-                  path: ['restrictions'],
-                  array_contains: restriction
-               }
-            }))
-         };
-      }
-
-      // กรอง disliked ingredients
-      if (disliked_ingredients?.length) {
-         where.NOT = {
-            ...where.NOT,
-            OR: [
-               ...(where.NOT?.OR || []),
-               ...disliked_ingredients.map(ingredient => ({
-                  contains: {
-                     path: ['ingredients'],
-                     array_contains: ingredient
-                  }
-               }))
-            ]
-         };
-      }
-
-      let orderBy: any = {};
+      const tracker = this.loggingService.createPerformanceTracker('menu_recommendations');
       
-      // กำหนด ordering strategy ตาม recommendation type
-      switch (recommendation_type) {
-         case 'popular':
-            orderBy = [
-               { Favorites: { _count: 'desc' } },
-               { Ratings: { _count: 'desc' } }
-            ];
-            break;
-         case 'random':
-            // สำหรับ random, เราจะเอาทั้งหมดแล้ว shuffle ใน code
-            orderBy = { created_at: 'desc' };
-            break;
-         default: // personalized หรือ similar
-            orderBy = [
-               { Ratings: { _count: 'desc' } },
-               { created_at: 'desc' }
-            ];
-      }
-
-      const menus = await this.prisma.menu.findMany({
-         where,
-         include: {
-            Translations: {
-               where: { language }
-            },
-            Subcategory: {
-               include: {
-                  Translations: {
-                     where: { language }
-                  },
-                  Category: {
-                     include: {
-                        Translations: {
-                           where: { language }
-                        },
-                        FoodType: {
-                           include: {
-                              Translations: {
-                                 where: { language }
-                              }
-                           }
-                        }
-                     }
-                  }
+      try {
+         // Use the enhanced recommendation service for better results
+         const result = await this.recommendationService.getAdvancedRecommendations(queryDto);
+         
+         // Log recommendation operation
+         this.loggingService.logRecommendationOperation(
+            queryDto.recommendation_type || 'personalized',
+            queryDto.user_id?.toString(),
+            result.recommendations.length,
+            0,
+            {
+               filters: {
+                  meal_time: queryDto.meal_time,
+                  preferred_food_types: queryDto.preferred_food_types,
+                  preferred_protein_types: queryDto.preferred_protein_types,
+                  dietary_restrictions: queryDto.dietary_restrictions
                }
-            },
-            ProteinType: {
-               include: {
-                  Translations: {
-                     where: { language }
-                  }
-               }
-            },
-            Ratings: true
-         },
-         orderBy,
-         take: limit * 2 // เอามาเยอะหน่อยเพื่อ filter และ calculate score
-      });
-
-      // คำนวณ average rating สำหรับแต่ละเมนู
-      const menusWithRatings = await Promise.all(
-         menus.map(async (menu) => {
-            const avgRating = await this.prisma.menuRating.aggregate({
-               where: { menu_id: menu.id },
-               _avg: { rating: true },
-               _count: { rating: true }
-            });
-
-            const averageRating = avgRating._avg.rating || 0;
-            const totalRatings = avgRating._count.rating || 0;
-
-            // Skip if below minimum rating
-            if (min_rating && averageRating < min_rating) {
-               return null;
             }
-
-            return {
-               menu,
-               averageRating,
-               totalRatings
-            };
-         })
-      );
-
-      const filteredMenus = menusWithRatings.filter(item => item !== null);
-
-      // Random shuffle ถ้าเป็น random type
-      if (recommendation_type === 'random') {
-         for (let i = filteredMenus.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [filteredMenus[i], filteredMenus[j]] = [filteredMenus[j], filteredMenus[i]];
-         }
+         );
+         
+         tracker.finish(true, { results: result.recommendations.length });
+         return result;
+      } catch (error) {
+         tracker.finish(false, { error: error.message });
+         throw error;
       }
-
-      // จำกัดจำนวนตาม limit ที่ต้องการ
-      const finalMenus = filteredMenus.slice(0, limit);
-
-      // แปลงเป็น DTO format
-      const recommendations: MenuRecommendationDto[] = finalMenus.map((item) => {
-         const menu = item.menu;
-         const translation = menu.Translations[0];
-         const subcategoryTranslation = menu.Subcategory.Translations[0];
-         const categoryTranslation = menu.Subcategory.Category.Translations[0];
-         const foodTypeTranslation = menu.Subcategory.Category.FoodType.Translations[0];
-         const proteinTypeTranslation = menu.ProteinType?.Translations[0];
-
-         // คำนวณ recommendation score
-         let recommendationScore = 50; // base score
-         const reasons: string[] = [];
-
-         // เพิ่มคะแนนตาม criteria
-         if (item.averageRating > 4) {
-            recommendationScore += 20;
-            reasons.push('High rated by users');
-         }
-         if (item.totalRatings > 50) {
-            recommendationScore += 15;
-            reasons.push('Popular choice');
-         }
-         if (preferred_food_types?.includes(menu.Subcategory.Category.food_type_id)) {
-            recommendationScore += 25;
-            reasons.push('Matches your food preferences');
-         }
-         if (menu.protein_type_id && preferred_protein_types?.includes(menu.protein_type_id)) {
-            recommendationScore += 20;
-            reasons.push('Contains your preferred protein');
-         }
-
-         recommendationScore = Math.min(recommendationScore, 100);
-
-         return {
-            id: menu.id,
-            key: menu.key,
-            name: translation?.name || menu.key,
-            description: translation?.description,
-            image_url: menu.image_url,
-            subcategory: {
-               id: menu.Subcategory.id,
-               name: subcategoryTranslation?.name || '',
-               category: {
-                  id: menu.Subcategory.Category.id,
-                  name: categoryTranslation?.name || '',
-                  food_type: {
-                     id: menu.Subcategory.Category.FoodType.id,
-                     name: foodTypeTranslation?.name || ''
-                  }
-               }
-            },
-            protein_type: menu.ProteinType && proteinTypeTranslation ? {
-               id: menu.ProteinType.id,
-               name: proteinTypeTranslation.name
-            } : undefined,
-            average_rating: item.averageRating,
-            total_ratings: item.totalRatings,
-            recommendation_score: recommendationScore,
-            recommendation_reasons: reasons,
-            meal_time: menu.meal_time,
-            contains: menu.contains
-         };
-      });
-
-      // Get user context if user_id provided
-      let userContext: any = undefined;
-      if (user_id) {
-         // TODO: Fix user_id to UUID conversion when implementing actual user system
-         // For now, skip user context to avoid type errors
-         userContext = {
-            user_id,
-            dietary_restrictions: [],
-            food_preferences: {},
-            recent_orders: []
-         };
-      }
-
-      return {
-         recommendations,
-         metadata: {
-            total_found: filteredMenus.length,
-            recommendation_type,
-            user_preferences_used: !!user_id,
-            generated_at: new Date(),
-            language
-         },
-         user_context: userContext
-      };
    }
 
    async searchMenus(searchDto: SearchMenuDto): Promise<SearchMenuResultDto> {
       const startTime = Date.now();
+      const tracker = this.loggingService.createPerformanceTracker('menu_search');
       const {
          search,
          language = 'th',
@@ -901,7 +714,12 @@ export class MenusService {
       if (protein_type_ids?.length) filtersApplied.push('protein_types');
       if (min_rating) filtersApplied.push('min_rating');
 
-      return {
+      // Log search operation
+      if (search) {
+         this.loggingService.logSearchOperation(search, totalCount, searchTimeMs);
+      }
+
+      const result = {
          menus,
          total: totalCount,
          page,
@@ -916,5 +734,13 @@ export class MenusService {
             suggestions: totalCount === 0 && search ? [`Try searching for "${search.slice(0, -1)}"`, 'Check spelling', 'Use fewer keywords'] : undefined
          }
       };
+
+      tracker.finish(true, { 
+         results: totalCount, 
+         search_term: search,
+         filters: filtersApplied.length 
+      });
+
+      return result;
    }
 }
