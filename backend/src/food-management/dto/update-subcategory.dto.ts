@@ -1,9 +1,15 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateSubcategoryDto, SubcategoryTranslationDto } from './create-subcategory.dto';
-import { IsOptional, IsBoolean, IsArray, ValidateNested, IsInt, IsPositive } from 'class-validator';
+import { IsOptional, IsBoolean, IsArray, ValidateNested, IsInt, IsPositive, IsString, IsNotEmpty, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateSubcategoryDto extends PartialType(CreateSubcategoryDto) {
+   @IsOptional()
+   @IsString()
+   @IsNotEmpty()
+   @MaxLength(100)
+   key?: string;
+
    @IsOptional()
    @IsInt()
    @IsPositive()

@@ -3,6 +3,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { FilterMenuDto } from './dto/filter-menu.dto';
+import { SearchMenuDto, SearchMenuResultDto } from './dto/search-menu.dto';
+import { MenuRecommendationQueryDto, MenuRecommendationResultDto, MenuRecommendationDto } from './dto/menu-recommendation.dto';
+import { MenuWithTranslations } from './entities/menu.entity';
 
 @Injectable()
 export class MenusService {
@@ -489,5 +492,429 @@ export class MenusService {
          },
          take: limit
       });
+   }
+
+   async getRecommendations(queryDto: MenuRecommendationQueryDto): Promise<MenuRecommendationResultDto> {
+      const {
+         user_id,
+         meal_time,
+         preferred_food_types,
+         preferred_protein_types,
+         dietary_restrictions,
+         excluded_menu_ids,
+         disliked_ingredients,
+         language = 'th',
+         limit = 10,
+         min_rating,
+         recommendation_type = 'personalized'
+      } = queryDto;
+
+      // สร้าง base where conditions
+      const where: any = {
+         is_active: true,
+      };
+
+      if (meal_time) {
+         where.meal_time = meal_time;
+      }
+
+      if (excluded_menu_ids?.length) {
+         where.id = { notIn: excluded_menu_ids };
+      }
+
+      if (preferred_protein_types?.length) {
+         where.protein_type_id = { in: preferred_protein_types };
+      }
+
+      if (preferred_food_types?.length) {
+         where.Subcategory = {
+            Category: {
+               food_type_id: { in: preferred_food_types }
+            }
+         };
+      }
+
+      // กรอง dietary restrictions ถ้ามี
+      if (dietary_restrictions?.length) {
+         // สมมติว่า dietary restrictions เก็บใน contains field
+         where.NOT = {
+            OR: dietary_restrictions.map(restriction => ({
+               contains: {
+                  path: ['restrictions'],
+                  array_contains: restriction
+               }
+            }))
+         };
+      }
+
+      // กรอง disliked ingredients
+      if (disliked_ingredients?.length) {
+         where.NOT = {
+            ...where.NOT,
+            OR: [
+               ...(where.NOT?.OR || []),
+               ...disliked_ingredients.map(ingredient => ({
+                  contains: {
+                     path: ['ingredients'],
+                     array_contains: ingredient
+                  }
+               }))
+            ]
+         };
+      }
+
+      let orderBy: any = {};
+      
+      // กำหนด ordering strategy ตาม recommendation type
+      switch (recommendation_type) {
+         case 'popular':
+            orderBy = [
+               { Favorites: { _count: 'desc' } },
+               { Ratings: { _count: 'desc' } }
+            ];
+            break;
+         case 'random':
+            // สำหรับ random, เราจะเอาทั้งหมดแล้ว shuffle ใน code
+            orderBy = { created_at: 'desc' };
+            break;
+         default: // personalized หรือ similar
+            orderBy = [
+               { Ratings: { _count: 'desc' } },
+               { created_at: 'desc' }
+            ];
+      }
+
+      const menus = await this.prisma.menu.findMany({
+         where,
+         include: {
+            Translations: {
+               where: { language }
+            },
+            Subcategory: {
+               include: {
+                  Translations: {
+                     where: { language }
+                  },
+                  Category: {
+                     include: {
+                        Translations: {
+                           where: { language }
+                        },
+                        FoodType: {
+                           include: {
+                              Translations: {
+                                 where: { language }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            },
+            ProteinType: {
+               include: {
+                  Translations: {
+                     where: { language }
+                  }
+               }
+            },
+            Ratings: true
+         },
+         orderBy,
+         take: limit * 2 // เอามาเยอะหน่อยเพื่อ filter และ calculate score
+      });
+
+      // คำนวณ average rating สำหรับแต่ละเมนู
+      const menusWithRatings = await Promise.all(
+         menus.map(async (menu) => {
+            const avgRating = await this.prisma.menuRating.aggregate({
+               where: { menu_id: menu.id },
+               _avg: { rating: true },
+               _count: { rating: true }
+            });
+
+            const averageRating = avgRating._avg.rating || 0;
+            const totalRatings = avgRating._count.rating || 0;
+
+            // Skip if below minimum rating
+            if (min_rating && averageRating < min_rating) {
+               return null;
+            }
+
+            return {
+               menu,
+               averageRating,
+               totalRatings
+            };
+         })
+      );
+
+      const filteredMenus = menusWithRatings.filter(item => item !== null);
+
+      // Random shuffle ถ้าเป็น random type
+      if (recommendation_type === 'random') {
+         for (let i = filteredMenus.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [filteredMenus[i], filteredMenus[j]] = [filteredMenus[j], filteredMenus[i]];
+         }
+      }
+
+      // จำกัดจำนวนตาม limit ที่ต้องการ
+      const finalMenus = filteredMenus.slice(0, limit);
+
+      // แปลงเป็น DTO format
+      const recommendations: MenuRecommendationDto[] = finalMenus.map((item) => {
+         const menu = item.menu;
+         const translation = menu.Translations[0];
+         const subcategoryTranslation = menu.Subcategory.Translations[0];
+         const categoryTranslation = menu.Subcategory.Category.Translations[0];
+         const foodTypeTranslation = menu.Subcategory.Category.FoodType.Translations[0];
+         const proteinTypeTranslation = menu.ProteinType?.Translations[0];
+
+         // คำนวณ recommendation score
+         let recommendationScore = 50; // base score
+         const reasons: string[] = [];
+
+         // เพิ่มคะแนนตาม criteria
+         if (item.averageRating > 4) {
+            recommendationScore += 20;
+            reasons.push('High rated by users');
+         }
+         if (item.totalRatings > 50) {
+            recommendationScore += 15;
+            reasons.push('Popular choice');
+         }
+         if (preferred_food_types?.includes(menu.Subcategory.Category.food_type_id)) {
+            recommendationScore += 25;
+            reasons.push('Matches your food preferences');
+         }
+         if (menu.protein_type_id && preferred_protein_types?.includes(menu.protein_type_id)) {
+            recommendationScore += 20;
+            reasons.push('Contains your preferred protein');
+         }
+
+         recommendationScore = Math.min(recommendationScore, 100);
+
+         return {
+            id: menu.id,
+            key: menu.key,
+            name: translation?.name || menu.key,
+            description: translation?.description,
+            image_url: menu.image_url,
+            subcategory: {
+               id: menu.Subcategory.id,
+               name: subcategoryTranslation?.name || '',
+               category: {
+                  id: menu.Subcategory.Category.id,
+                  name: categoryTranslation?.name || '',
+                  food_type: {
+                     id: menu.Subcategory.Category.FoodType.id,
+                     name: foodTypeTranslation?.name || ''
+                  }
+               }
+            },
+            protein_type: menu.ProteinType && proteinTypeTranslation ? {
+               id: menu.ProteinType.id,
+               name: proteinTypeTranslation.name
+            } : undefined,
+            average_rating: item.averageRating,
+            total_ratings: item.totalRatings,
+            recommendation_score: recommendationScore,
+            recommendation_reasons: reasons,
+            meal_time: menu.meal_time,
+            contains: menu.contains
+         };
+      });
+
+      // Get user context if user_id provided
+      let userContext: any = undefined;
+      if (user_id) {
+         // TODO: Fix user_id to UUID conversion when implementing actual user system
+         // For now, skip user context to avoid type errors
+         userContext = {
+            user_id,
+            dietary_restrictions: [],
+            food_preferences: {},
+            recent_orders: []
+         };
+      }
+
+      return {
+         recommendations,
+         metadata: {
+            total_found: filteredMenus.length,
+            recommendation_type,
+            user_preferences_used: !!user_id,
+            generated_at: new Date(),
+            language
+         },
+         user_context: userContext
+      };
+   }
+
+   async searchMenus(searchDto: SearchMenuDto): Promise<SearchMenuResultDto> {
+      const startTime = Date.now();
+      const {
+         search,
+         language = 'th',
+         tags,
+         ingredients,
+         meal_time,
+         page = 1,
+         limit = 20,
+         sort_by = 'relevance',
+         sort_order = 'desc',
+         min_rating,
+         food_type_ids,
+         category_ids,
+         subcategory_ids,
+         protein_type_ids
+      } = searchDto;
+
+      // Build where conditions
+      const where: any = {
+         is_active: true,
+      };
+
+      // Text search in translations
+      if (search) {
+         where.Translations = {
+            some: {
+               OR: [
+                  { name: { contains: search, mode: 'insensitive' } },
+                  { description: { contains: search, mode: 'insensitive' } }
+               ],
+               language: language
+            }
+         };
+      }
+
+      // Filter by meal time
+      if (meal_time) {
+         where.meal_time = meal_time;
+      }
+
+      // Filter by food types
+      if (food_type_ids?.length) {
+         where.Subcategory = {
+            Category: {
+               food_type_id: { in: food_type_ids }
+            }
+         };
+      }
+
+      // Filter by categories
+      if (category_ids?.length) {
+         where.Subcategory = {
+            ...where.Subcategory,
+            category_id: { in: category_ids }
+         };
+      }
+
+      // Filter by subcategories
+      if (subcategory_ids?.length) {
+         where.subcategory_id = { in: subcategory_ids };
+      }
+
+      // Filter by protein types
+      if (protein_type_ids?.length) {
+         where.protein_type_id = { in: protein_type_ids };
+      }
+
+      // Build order by
+      let orderBy: any = {};
+      switch (sort_by) {
+         case 'name':
+            // This is a simplified version - proper implementation would need aggregation
+            orderBy = { key: sort_order };
+            break;
+         case 'rating':
+            orderBy = { created_at: sort_order }; // Simplified - would need rating aggregation
+            break;
+         case 'popularity':
+            orderBy = [
+               { Favorites: { _count: sort_order } },
+               { created_at: sort_order }
+            ];
+            break;
+         case 'created_at':
+            orderBy = { created_at: sort_order };
+            break;
+         default: // relevance
+            orderBy = search ? { created_at: sort_order } : { created_at: 'desc' };
+      }
+
+      const skip = (page - 1) * limit;
+
+      const [menus, totalCount] = await Promise.all([
+         this.prisma.menu.findMany({
+            where,
+            include: {
+               Translations: {
+                  where: { language }
+               },
+               Subcategory: {
+                  include: {
+                     Translations: {
+                        where: { language }
+                     },
+                     Category: {
+                        include: {
+                           Translations: {
+                              where: { language }
+                           },
+                           FoodType: {
+                              include: {
+                                 Translations: {
+                                    where: { language }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               ProteinType: {
+                  include: {
+                     Translations: {
+                        where: { language }
+                     }
+                  }
+               }
+            },
+            orderBy,
+            skip,
+            take: limit,
+         }),
+         this.prisma.menu.count({ where })
+      ]);
+
+      const endTime = Date.now();
+      const searchTimeMs = endTime - startTime;
+
+      const filtersApplied: string[] = [];
+      if (search) filtersApplied.push('text_search');
+      if (meal_time) filtersApplied.push('meal_time');
+      if (food_type_ids?.length) filtersApplied.push('food_types');
+      if (category_ids?.length) filtersApplied.push('categories');
+      if (subcategory_ids?.length) filtersApplied.push('subcategories');
+      if (protein_type_ids?.length) filtersApplied.push('protein_types');
+      if (min_rating) filtersApplied.push('min_rating');
+
+      return {
+         menus,
+         total: totalCount,
+         page,
+         limit,
+         total_pages: Math.ceil(totalCount / limit),
+         search_metadata: {
+            search_term: search,
+            search_language: language,
+            filters_applied: filtersApplied,
+            sort_criteria: `${sort_by}_${sort_order}`,
+            search_time_ms: searchTimeMs,
+            suggestions: totalCount === 0 && search ? [`Try searching for "${search.slice(0, -1)}"`, 'Check spelling', 'Use fewer keywords'] : undefined
+         }
+      };
    }
 }

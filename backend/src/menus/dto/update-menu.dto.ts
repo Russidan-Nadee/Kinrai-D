@@ -10,11 +10,19 @@ import {
    IsUrl,
    MaxLength,
    IsObject,
-   IsEnum
+   IsEnum,
+   IsString,
+   IsNotEmpty
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateMenuDto extends PartialType(CreateMenuDto) {
+   @IsOptional()
+   @IsString()
+   @IsNotEmpty()
+   @MaxLength(100)
+   key?: string;
+
    @IsOptional()
    @IsInt()
    @IsPositive()
