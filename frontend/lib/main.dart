@@ -31,11 +31,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Kinrai D',
         theme: AppTheme.lightTheme,
-<<<<<<< HEAD
         themeMode: ThemeMode.light, // Force light theme
-=======
-        darkTheme: AppTheme.darkTheme,
->>>>>>> d66bafbe63877b76abfccef6daa5e7c7bff83c94
         home: const App(),
         debugShowCheckedModeBanner: false,
       ),
