@@ -71,10 +71,13 @@ class _MainNavigationState extends State<MainNavigation> {
             _currentIndex = index;
           });
         },
+<<<<<<< HEAD
         backgroundColor: Theme.of(context).colorScheme.primary, // Orange background
         selectedItemColor: Colors.white, // White icons when selected
         unselectedItemColor: Colors.white70, // Light white when unselected
         type: BottomNavigationBarType.fixed,
+=======
+>>>>>>> d66bafbe63877b76abfccef6daa5e7c7bff83c94
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
