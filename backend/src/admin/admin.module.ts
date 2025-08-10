@@ -12,9 +12,11 @@ import { AdminFoodManagementService } from './services/admin-food-management.ser
 import { AdminAnalyticsService } from './services/admin-analytics.service';
 
 import { PrismaModule } from '../prisma/prisma.module';
+import { AuthModule } from '../auth/auth.module';
+import { CommonModule } from '../common/common.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule, CommonModule],
   controllers: [
     AdminDashboardController,
     AdminUsersController,

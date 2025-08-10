@@ -12,7 +12,9 @@
       "Bash(npx prisma migrate dev:*)",
       "Bash(npx prisma:*)",
       "Bash(git checkout:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm start)",
+      "Bash(taskkill:*)"
     ],
     "deny": []
   }
