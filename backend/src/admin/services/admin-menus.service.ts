@@ -199,7 +199,7 @@ export class AdminMenusService {
 
   async bulkCreateMenus(bulkMenuDto: BulkMenuDto) {
     const { menus } = bulkMenuDto;
-    const results = [];
+    const results: any[] = [];
 
     for (const menuData of menus) {
       const { translations, ...menu } = menuData;

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/di/injection_container.dart';
 import 'features/authentication/presentation/providers/auth_provider.dart';
+import 'features/admin/presentation/providers/admin_provider.dart';
 import 'app.dart';
 
 void main() async {
@@ -26,6 +27,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(
           value: di.authProvider,
+        ),
+        ChangeNotifierProvider<AdminProvider>.value(
+          value: di.adminProvider,
         ),
       ],
       child: MaterialApp(

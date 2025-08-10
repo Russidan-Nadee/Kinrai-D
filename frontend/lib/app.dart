@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'features/authentication/presentation/providers/auth_provider.dart';
 import 'features/authentication/presentation/pages/login_page.dart';
+import 'features/admin/presentation/pages/admin_main_page.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -58,6 +59,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _pages = [
     const HomePage(title: 'Main'),
     const ProfilePage(title: 'Profile'),
+    const AdminMainPage(),
   ];
 
   @override
@@ -83,6 +85,10 @@ class _MainNavigationState extends State<MainNavigation> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.admin_panel_settings),
+            label: 'Admin',
           ),
         ],
       ),
@@ -145,69 +151,14 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<AuthProvider>(
-        builder: (context, authProvider, child) {
-          final user = authProvider.user;
-          
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (user?.photoUrl != null)
-                  Center(
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundImage: NetworkImage(user!.photoUrl!),
-                    ),
-                  ),
-                const SizedBox(height: 24),
-                
-                _buildInfoRow('Name', user?.name ?? 'Not provided'),
-                _buildInfoRow('Email', user?.email ?? 'Not provided'),
-                _buildInfoRow('Phone', user?.phoneNumber ?? 'Not provided'),
-                _buildInfoRow('Email Verified', user?.emailVerified == true ? 'Yes' : 'No'),
-                
-                const Spacer(),
-                
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<AuthProvider>().signOut();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Sign Out'),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+      body: const Center(
+        child: Text(
+          'Profile page is coming soon!',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.grey,
           ),
-          Expanded(
-            child: Text(value),
-          ),
-        ],
+        ),
       ),
     );
   }
