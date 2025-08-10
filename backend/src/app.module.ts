@@ -9,6 +9,7 @@ import { DietaryRestrictionsModule } from './dietary-restrictions/dietary-restri
 import { FavoritesModule } from './favorites/favorites.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     FavoritesModule,
     RatingsModule,
     AnalyticsModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],

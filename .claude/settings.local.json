@@ -8,7 +8,9 @@
       "Bash(npm install:*)",
       "Bash(flutter pub:*)",
       "Bash(flutter analyze:*)",
-      "Bash(flutter build:*)"
+      "Bash(flutter build:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma:*)"
     ],
     "deny": []
   }
