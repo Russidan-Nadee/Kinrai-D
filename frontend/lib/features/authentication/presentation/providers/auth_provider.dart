@@ -78,6 +78,52 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Email/Password Sign In
+  Future<void> signInWithEmail(String email, String password) async {
+    try {
+      _setState(AuthState.loading);
+      _clearError();
+
+      final result = await loginUsecase('email:$email:$password');
+      result.fold(
+        (failure) {
+          _setError(failure.toString());
+          _setState(AuthState.error);
+        },
+        (user) {
+          _user = user;
+          _setState(AuthState.authenticated);
+        },
+      );
+    } catch (e) {
+      _setError('An unexpected error occurred during sign in: $e');
+      _setState(AuthState.error);
+    }
+  }
+
+  // Email/Password Sign Up
+  Future<void> signUpWithEmail(String email, String password) async {
+    try {
+      _setState(AuthState.loading);
+      _clearError();
+
+      final result = await loginUsecase('signup:$email:$password');
+      result.fold(
+        (failure) {
+          _setError(failure.toString());
+          _setState(AuthState.error);
+        },
+        (user) {
+          _user = user;
+          _setState(AuthState.authenticated);
+        },
+      );
+    } catch (e) {
+      _setError('An unexpected error occurred during sign up: $e');
+      _setState(AuthState.error);
+    }
+  }
+
   // Logout
   Future<void> signOut() async {
     try {

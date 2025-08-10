@@ -5,7 +5,6 @@ import '../services/supabase_service.dart';
 import '../config/supabase_config.dart';
 import '../../features/authentication/data/datasources/auth_remote_datasource.dart';
 import '../../features/authentication/data/datasources/supabase_auth_datasource.dart';
-import '../../features/authentication/data/repositories/auth_repository_impl.dart';
 import '../../features/authentication/data/repositories/supabase_auth_repository_impl.dart';
 import '../../features/authentication/domain/repositories/auth_repository.dart';
 import '../../features/authentication/domain/usecases/get_current_user_usecase.dart';

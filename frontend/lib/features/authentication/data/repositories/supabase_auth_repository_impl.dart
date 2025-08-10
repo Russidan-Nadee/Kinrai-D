@@ -30,6 +30,40 @@ class SupabaseAuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  Future<Either<Failure, UserEntity>> loginWithEmail(String email, String password) async {
+    try {
+      final result = await supabaseDataSource.signInWithEmail(email, password);
+      
+      // Convert UserModel to UserEntity
+      final userEntity = _userModelToEntity(result.user);
+      
+      return Right(userEntity);
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('An unexpected error occurred during email login'));
+    }
+  }
+
+  Future<Either<Failure, UserEntity>> signUpWithEmail(String email, String password) async {
+    try {
+      final result = await supabaseDataSource.signUpWithEmail(email, password);
+      
+      // Convert UserModel to UserEntity
+      final userEntity = _userModelToEntity(result.user);
+      
+      return Right(userEntity);
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('An unexpected error occurred during email signup'));
+    }
+  }
+
   @override
   Future<Either<Failure, UserEntity>> getCurrentUser() async {
     try {

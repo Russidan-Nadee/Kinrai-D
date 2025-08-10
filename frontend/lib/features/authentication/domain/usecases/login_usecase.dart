@@ -8,7 +8,26 @@ class LoginUsecase {
 
   LoginUsecase(this.repository);
 
-  Future<Either<Failure, UserEntity>> call(String googleToken) async {
-    return await repository.loginWithGoogle(googleToken);
+  Future<Either<Failure, UserEntity>> call(String token) async {
+    // Parse the token to determine authentication method
+    if (token.isEmpty) {
+      // Google authentication
+      return await repository.loginWithGoogle('');
+    } else if (token.startsWith('email:')) {
+      // Email/password authentication
+      final parts = token.split(':');
+      if (parts.length == 3) {
+        return await (repository as dynamic).loginWithEmail(parts[1], parts[2]);
+      }
+    } else if (token.startsWith('signup:')) {
+      // Email/password signup
+      final parts = token.split(':');
+      if (parts.length == 3) {
+        return await (repository as dynamic).signUpWithEmail(parts[1], parts[2]);
+      }
+    }
+    
+    // Fallback to Google authentication
+    return await repository.loginWithGoogle(token);
   }
 }

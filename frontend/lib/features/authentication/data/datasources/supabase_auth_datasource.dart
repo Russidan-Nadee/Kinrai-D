@@ -6,6 +6,8 @@ import '../models/auth_response_model.dart';
 
 abstract class SupabaseAuthDataSource {
   Future<AuthResponseModel> signInWithGoogle();
+  Future<AuthResponseModel> signInWithEmail(String email, String password);
+  Future<AuthResponseModel> signUpWithEmail(String email, String password);
   Future<UserModel> getCurrentUser();
   Future<void> signOut();
   Future<bool> isAuthenticated();
@@ -54,6 +56,54 @@ class SupabaseAuthDataSourceImpl implements SupabaseAuthDataSource {
       );
     } catch (e) {
       throw Exception('Google sign in failed: $e');
+    }
+  }
+
+  @override
+  Future<AuthResponseModel> signInWithEmail(String email, String password) async {
+    try {
+      final response = await supabaseService.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (response.user == null || response.session == null) {
+        throw Exception('Sign in failed: Invalid credentials');
+      }
+
+      final userModel = _supabaseUserToUserModel(response.user!);
+      
+      return AuthResponseModel(
+        accessToken: response.session!.accessToken,
+        refreshToken: response.session!.refreshToken ?? '',
+        user: userModel,
+      );
+    } catch (e) {
+      throw Exception('Email sign in failed: $e');
+    }
+  }
+
+  @override
+  Future<AuthResponseModel> signUpWithEmail(String email, String password) async {
+    try {
+      final response = await supabaseService.client.auth.signUp(
+        email: email,
+        password: password,
+      );
+
+      if (response.user == null) {
+        throw Exception('Sign up failed: Unable to create account');
+      }
+
+      final userModel = _supabaseUserToUserModel(response.user!);
+      
+      return AuthResponseModel(
+        accessToken: response.session?.accessToken ?? '',
+        refreshToken: response.session?.refreshToken ?? '',
+        user: userModel,
+      );
+    } catch (e) {
+      throw Exception('Email sign up failed: $e');
     }
   }
 

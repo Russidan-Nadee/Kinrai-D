@@ -3,8 +3,29 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/google_sign_in_button.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+  bool _isLoginMode = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,29 +33,32 @@ class LoginPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // App Logo/Title
-              Text(
-                'Kinrai D',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary, // Orange color
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 40),
+                
+                // App Logo/Title
+                Text(
+                  'Kinrai D',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              Text(
-                'Welcome back!',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.secondary,
+                
+                const SizedBox(height: 16),
+                
+                Text(
+                  _isLoginMode ? 'Welcome back!' : 'Create your account',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
-              ),
-              
-              const SizedBox(height: 64),
+                
+                const SizedBox(height: 48),
               
               // Error Message
               Consumer<AuthProvider>(
@@ -72,6 +96,167 @@ class LoginPage extends StatelessWidget {
                 },
               ),
               
+              // Email/Password Form
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    // Email Field
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Password Field
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outlined),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        if (!_isLoginMode && value.length < 8) {
+                          return 'Password must be at least 8 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    
+                    // Confirm Password Field (only for signup)
+                    if (!_isLoginMode) ...[
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: _obscureConfirmPassword,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          prefixIcon: const Icon(Icons.lock_outlined),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirmPassword = !_obscureConfirmPassword;
+                              });
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (!_isLoginMode) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please confirm your password';
+                            }
+                            if (value != _passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Login/Signup Button
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: authProvider.isLoading ? null : _handleEmailAuth,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: authProvider.isLoading
+                                ? const CircularProgressIndicator()
+                                : Text(_isLoginMode ? 'Sign In' : 'Sign Up'),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Mode Toggle
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _isLoginMode = !_isLoginMode;
+                    _formKey.currentState?.reset();
+                    _confirmPasswordController.clear();
+                  });
+                },
+                child: Text(
+                  _isLoginMode
+                      ? "Don't have an account? Sign up"
+                      : "Already have an account? Sign in",
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Divider
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'OR',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+              
+              const SizedBox(height: 24),
+              
               // Google Sign-In Button
               const GoogleSignInButton(),
               
@@ -83,10 +268,29 @@ class LoginPage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _handleEmailAuth() async {
+    if (_formKey.currentState!.validate()) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      if (_isLoginMode) {
+        await authProvider.signInWithEmail(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+      } else {
+        await authProvider.signUpWithEmail(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+      }
+    }
   }
 }
