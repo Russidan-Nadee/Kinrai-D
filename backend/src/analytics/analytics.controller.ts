@@ -8,10 +8,8 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
-import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('analytics')
-@UseGuards(SupabaseAuthGuard)
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 

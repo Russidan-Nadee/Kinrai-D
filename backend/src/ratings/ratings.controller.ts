@@ -14,15 +14,13 @@ import {
 import { RatingsService } from './ratings.service';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { UpdateRatingDto } from './dto/update-rating.dto';
-import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('ratings')
 export class RatingsController {
   constructor(private readonly ratingsService: RatingsService) {}
 
   @Post()
-  @UseGuards(SupabaseAuthGuard)
-  create(@Body() createRatingDto: CreateRatingDto, @Request() req) {
+    create(@Body() createRatingDto: CreateRatingDto, @Request() req) {
     return this.ratingsService.create(req.user.id, createRatingDto);
   }
 
@@ -36,8 +34,7 @@ export class RatingsController {
   }
 
   @Get('me')
-  @UseGuards(SupabaseAuthGuard)
-  getUserRatings(@Request() req, @Query('language') language = 'en') {
+    getUserRatings(@Request() req, @Query('language') language = 'en') {
     return this.ratingsService.getUserRatings(req.user.id, language);
   }
 
@@ -55,8 +52,7 @@ export class RatingsController {
   }
 
   @Get('me/menu/:menuId')
-  @UseGuards(SupabaseAuthGuard)
-  getUserRating(@Request() req, @Param('menuId', ParseIntPipe) menuId: number) {
+    getUserRating(@Request() req, @Param('menuId', ParseIntPipe) menuId: number) {
     return this.ratingsService.findUserRating(req.user.id, menuId);
   }
 
@@ -66,8 +62,7 @@ export class RatingsController {
   }
 
   @Patch('menu/:menuId')
-  @UseGuards(SupabaseAuthGuard)
-  update(
+    update(
     @Param('menuId', ParseIntPipe) menuId: number,
     @Body() updateRatingDto: UpdateRatingDto,
     @Request() req,
@@ -76,8 +71,7 @@ export class RatingsController {
   }
 
   @Delete('menu/:menuId')
-  @UseGuards(SupabaseAuthGuard)
-  remove(@Param('menuId', ParseIntPipe) menuId: number, @Request() req) {
+    remove(@Param('menuId', ParseIntPipe) menuId: number, @Request() req) {
     return this.ratingsService.remove(req.user.id, menuId);
   }
 }

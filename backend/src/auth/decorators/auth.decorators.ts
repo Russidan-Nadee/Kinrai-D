@@ -6,7 +6,6 @@ import {
   applyDecorators 
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiUnauthorizedResponse, ApiForbiddenResponse } from '@nestjs/swagger';
-import { SupabaseAuthGuard } from '../guards/supabase-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { PermissionsGuard } from '../guards/permissions.guard';
 
@@ -53,19 +52,10 @@ export const AuthToken = createParamDecorator(
 );
 
 /**
- * Combined decorator for authentication only
- */
-export const Auth = () => applyDecorators(
-  UseGuards(SupabaseAuthGuard),
-  ApiBearerAuth(),
-  ApiUnauthorizedResponse({ description: 'Unauthorized' })
-);
-
-/**
- * Combined decorator for authentication + role-based authorization
+ * Combined decorator for role-based authorization (requires custom auth guard implementation)
  */
 export const AuthRoles = (...roles: string[]) => applyDecorators(
-  UseGuards(SupabaseAuthGuard, RolesGuard),
+  UseGuards(RolesGuard),
   Roles(...roles),
   ApiBearerAuth(),
   ApiUnauthorizedResponse({ description: 'Unauthorized' }),
@@ -73,10 +63,10 @@ export const AuthRoles = (...roles: string[]) => applyDecorators(
 );
 
 /**
- * Combined decorator for authentication + permission-based authorization
+ * Combined decorator for permission-based authorization (requires custom auth guard implementation)
  */
 export const AuthPermissions = (...permissions: string[]) => applyDecorators(
-  UseGuards(SupabaseAuthGuard, PermissionsGuard),
+  UseGuards(PermissionsGuard),
   Permissions(...permissions),
   ApiBearerAuth(),
   ApiUnauthorizedResponse({ description: 'Unauthorized' }),
@@ -92,16 +82,6 @@ export const AdminOnly = () => AuthRoles('admin');
  * User or Admin decorator
  */
 export const UserOrAdmin = () => AuthRoles('user', 'admin');
-
-/**
- * Owner or Admin decorator (for resource ownership)
- */
-export const OwnerOrAdmin = () => applyDecorators(
-  UseGuards(SupabaseAuthGuard),
-  ApiBearerAuth(),
-  ApiUnauthorizedResponse({ description: 'Unauthorized' }),
-  ApiForbiddenResponse({ description: 'Forbidden - Not owner or admin' })
-);
 
 /**
  * Optional authentication decorator

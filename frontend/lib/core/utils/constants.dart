@@ -3,7 +3,7 @@ class AppConstants {
   
   // API Configuration
   static const String baseUrl = 'http://localhost:3000'; // Your backend URL
-  static const String apiVersion = '';
+  static const String apiVersion = '/api/v1'; // Backend API version
   
   // Storage Keys
   static const String accessTokenKey = 'access_token';

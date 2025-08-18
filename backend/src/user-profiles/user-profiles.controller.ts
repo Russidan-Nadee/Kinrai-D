@@ -15,10 +15,8 @@ import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { CreateDislikeDto } from './dto/create-dislike.dto';
 import { RemoveDislikeDto } from './dto/remove-dislike.dto';
-import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('user-profiles')
-@UseGuards(SupabaseAuthGuard)
 export class UserProfilesController {
   constructor(private readonly userProfilesService: UserProfilesService) {}
 

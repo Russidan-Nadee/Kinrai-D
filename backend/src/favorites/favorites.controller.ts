@@ -13,10 +13,8 @@ import {
 import { FavoritesService } from './favorites.service';
 import { AddFavoriteDto } from './dto/add-favorite.dto';
 import { RemoveFavoriteDto } from './dto/remove-favorite.dto';
-import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('favorites')
-@UseGuards(SupabaseAuthGuard)
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 

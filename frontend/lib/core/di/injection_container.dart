@@ -1,11 +1,8 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import '../api/api_client.dart';
 import '../storage/secure_storage_service.dart';
-import '../services/supabase_service.dart';
-import '../config/supabase_config.dart';
 import '../../features/authentication/data/datasources/auth_remote_datasource.dart';
-import '../../features/authentication/data/datasources/supabase_auth_datasource.dart';
-import '../../features/authentication/data/repositories/supabase_auth_repository_impl.dart';
+import '../../features/authentication/data/repositories/auth_repository_impl.dart';
 import '../../features/authentication/domain/repositories/auth_repository.dart';
 import '../../features/authentication/domain/usecases/get_current_user_usecase.dart';
 import '../../features/authentication/domain/usecases/login_usecase.dart';
@@ -26,12 +23,10 @@ class InjectionContainer {
   // Core
   late final ApiClient _apiClient;
   late final SecureStorageService _secureStorageService;
-  late final SupabaseService _supabaseService;
   late final GoogleSignIn _googleSignIn;
 
   // Data Sources
   late final AuthRemoteDataSource _authRemoteDataSource;
-  late final SupabaseAuthDataSource _supabaseAuthDataSource;
   late final AdminRemoteDataSource _adminRemoteDataSource;
 
   // Repositories
@@ -56,11 +51,8 @@ class InjectionContainer {
     
     _secureStorageService = SecureStorageService();
     
-    _supabaseService = SupabaseService();
-    await _supabaseService.initialize();
     
     _googleSignIn = GoogleSignIn(
-      clientId: SupabaseConfig.googleClientId,
       scopes: ['email', 'profile'],
     );
 
@@ -69,25 +61,16 @@ class InjectionContainer {
       apiClient: _apiClient,
     );
     
-    _supabaseAuthDataSource = SupabaseAuthDataSourceImpl(
-      supabaseService: _supabaseService,
-      googleSignIn: _googleSignIn,
-    );
 
     _adminRemoteDataSource = AdminRemoteDataSourceImpl(
       apiClient: _apiClient,
     );
 
-    // Repositories - Using Supabase by default
-    _authRepository = SupabaseAuthRepositoryImpl(
-      supabaseDataSource: _supabaseAuthDataSource,
+    // Repositories - Use custom backend authentication
+    _authRepository = AuthRepositoryImpl(
+      remoteDataSource: _authRemoteDataSource,
+      secureStorage: _secureStorageService,
     );
-    
-    // Alternative: Use custom backend instead
-    // _authRepository = AuthRepositoryImpl(
-    //   remoteDataSource: _authRemoteDataSource,
-    //   secureStorage: _secureStorageService,
-    // );
 
     _adminRepository = AdminRepositoryImpl(
       remoteDataSource: _adminRemoteDataSource,
@@ -117,11 +100,9 @@ class InjectionContainer {
   // Getters
   ApiClient get apiClient => _apiClient;
   SecureStorageService get secureStorageService => _secureStorageService;
-  SupabaseService get supabaseService => _supabaseService;
   GoogleSignIn get googleSignIn => _googleSignIn;
   
   AuthRemoteDataSource get authRemoteDataSource => _authRemoteDataSource;
-  SupabaseAuthDataSource get supabaseAuthDataSource => _supabaseAuthDataSource;
   AdminRemoteDataSource get adminRemoteDataSource => _adminRemoteDataSource;
   
   AuthRepository get authRepository => _authRepository;

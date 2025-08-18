@@ -36,7 +36,6 @@ dependencies:
   
   # Authentication
   google_sign_in: ^6.2.1
-  supabase_flutter: ^2.8.0
   
   # HTTP Client & Storage
   dio: ^5.4.0
