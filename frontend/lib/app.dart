@@ -23,6 +23,11 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    // TEMPORARY: Skip login page and go directly to main navigation
+    return const MainNavigation();
+    
+    // Original authentication flow (commented out temporarily)
+    /*
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         switch (authProvider.state) {
@@ -43,6 +48,7 @@ class _AppState extends State<App> {
         }
       },
     );
+    */
   }
 }
 
