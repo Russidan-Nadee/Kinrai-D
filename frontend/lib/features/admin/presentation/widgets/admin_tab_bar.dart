@@ -12,9 +12,6 @@ class AdminTabBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return TabBar(
       controller: controller,
-      labelColor: Colors.white,
-      unselectedLabelColor: Colors.white70,
-      indicatorColor: Colors.white,
       tabs: const [
         Tab(
           icon: Icon(Icons.restaurant_menu),

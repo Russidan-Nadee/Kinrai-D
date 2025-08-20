@@ -70,8 +70,6 @@ class _AdminMainPageState extends State<AdminMainPage> with SingleTickerProvider
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Panel'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

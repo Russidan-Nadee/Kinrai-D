@@ -8,10 +8,12 @@ class ApiClient {
   ApiClient._internal();
 
   late final Dio _dio;
+  bool _isInitialized = false;
 
   Dio get dio => _dio;
 
   void initialize() {
+    if (_isInitialized) return;
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConstants.baseUrl + AppConstants.apiVersion,
@@ -29,6 +31,7 @@ class ApiClient {
     );
 
     _addInterceptors();
+    _isInitialized = true;
   }
 
   void _addInterceptors() {
