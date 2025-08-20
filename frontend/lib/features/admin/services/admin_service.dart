@@ -9,16 +9,18 @@ class AdminService {
     _apiClient.initialize();
   }
 
-  Future<AdminInfoModel> getMenuInfo({int limit = 5}) async {
+  Future<AdminInfoModel> getMenuInfo({int limit = 1000}) async {
     try {
+      print('[AdminService] Attempting to fetch menu info...');
       final response = await _apiClient.get(
         '/admin/menus',
         queryParameters: {'limit': limit.toString()},
       );
       
+      print('[AdminService] API call successful');
       return AdminInfoModel.fromJson(response.data);
     } catch (e) {
-      print('[AdminService] Error getting menu info: $e');
+      print('[AdminService] API call failed: $e');
       rethrow;
     }
   }

@@ -5,12 +5,21 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS Configuration from environment
-  const corsOrigins = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'];
+  // CORS Configuration - allow all localhost ports for development
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://localhost:3001',
+    'http://localhost:4000'
+  ];
 
   app.enableCors({
-    origin: corsOrigins,
+    origin: true, // Allow all origins in development
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Global validation pipe for DTOs
@@ -26,7 +35,7 @@ async function bootstrap() {
   // Global prefix for all routes
   app.setGlobalPrefix('api/v1');
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 8000;
   await app.listen(port);
 
   console.log(`Application is running on: http://localhost:${port}/api/v1`);

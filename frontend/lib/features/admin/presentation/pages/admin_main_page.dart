@@ -29,7 +29,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
         _errorMessage = null;
       });
 
-      final info = await _adminService.getMenuInfo(limit: 5);
+      final info = await _adminService.getMenuInfo();
       
       setState(() {
         _adminInfo = info;
@@ -40,6 +40,34 @@ class _AdminMainPageState extends State<AdminMainPage> {
         _errorMessage = 'Error loading data: $e';
         _isLoading = false;
       });
+    }
+  }
+
+  int _getCrossAxisCount(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    
+    if (width > 2000) {
+      return 7; // Ultra wide monitor
+    } else if (width > 1600) {
+      return 6; // Large monitor
+    } else if (width > 1024) {
+      return 5; // Laptop
+    } else if (width > 800) {
+      return 3; // Tablet landscape
+    } else if (width > 600) {
+      return 2; // Tablet portrait
+    } else {
+      return 2; // Mobile (2 columns)
+    }
+  }
+
+  double _getChildAspectRatio(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    
+    if (width > 800) {
+      return 0.85; // Desktop/Tablet
+    } else {
+      return 0.75; // Mobile - slightly taller cards
     }
   }
 
@@ -168,66 +196,150 @@ class _AdminMainPageState extends State<AdminMainPage> {
           ),
           const SizedBox(height: 8),
           
-          // Menu List
-          ListView.builder(
+          // Menu Grid
+          GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _getCrossAxisCount(context),
+              crossAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
+              mainAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
+              childAspectRatio: _getChildAspectRatio(context),
+            ),
             itemCount: _adminInfo!.menus.length,
             itemBuilder: (context, index) {
               final menu = _adminInfo!.menus[index];
               return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: menu.imageUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            menu.imageUrl!,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(8),
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Image Container
+                    Expanded(
+                      flex: 3,
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(12),
+                            ),
+                            child: menu.imageUrl != null
+                                ? Image.network(
+                                    menu.imageUrl!,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        color: Colors.grey[200],
+                                        child: const Icon(
+                                          Icons.restaurant_menu,
+                                          size: 48,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    color: Colors.grey[200],
+                                    child: const Icon(
+                                      Icons.restaurant_menu,
+                                      size: 48,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                          ),
+                          // Status Badge
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: menu.isActive ? Colors.green : Colors.red,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                menu.isActive ? 'Active' : 'Inactive',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                child: const Icon(Icons.restaurant_menu),
-                              );
-                            },
+                              ),
+                            ),
                           ),
-                        )
-                      : Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.restaurant_menu),
-                        ),
-                  title: Text(
-                    menu.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text('${menu.key} • ${menu.mealTime}'),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: menu.isActive ? Colors.green : Colors.red,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      menu.isActive ? 'Active' : 'Inactive',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        ],
                       ),
                     ),
-                  ),
+                    // Content Container
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              menu.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              menu.key,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                menu.mealTime,
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               );
             },

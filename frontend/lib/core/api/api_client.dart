@@ -32,6 +32,21 @@ class ApiClient {
   }
 
   void _addInterceptors() {
+    // Retry interceptor for development
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (error, handler) async {
+          // Log detailed error info
+          print('[API] Error Type: ${error.type}');
+          print('[API] Error Message: ${error.message}');
+          print('[API] Response: ${error.response}');
+          
+          // Don't retry, just pass the error
+          handler.next(error);
+        },
+      ),
+    );
+    
     // Logging interceptor
     _dio.interceptors.add(
       LogInterceptor(
