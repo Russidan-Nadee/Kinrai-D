@@ -1,29 +1,7 @@
 import 'package:flutter/material.dart';
-import 'menu_management_page.dart';
-import 'food_management_page.dart';
 
-class AdminMainPage extends StatefulWidget {
+class AdminMainPage extends StatelessWidget {
   const AdminMainPage({super.key});
-
-  @override
-  State<AdminMainPage> createState() => _AdminMainPageState();
-}
-
-class _AdminMainPageState extends State<AdminMainPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,29 +10,35 @@ class _AdminMainPageState extends State<AdminMainPage>
         title: const Text('Admin Panel'),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(
-              icon: Icon(Icons.restaurant_menu),
-              text: 'Menu Management',
+      ),
+      body: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.admin_panel_settings,
+              size: 80,
+              color: Colors.grey,
             ),
-            Tab(
-              icon: Icon(Icons.category),
-              text: 'Food Management',
+            SizedBox(height: 24),
+            Text(
+              'Admin Panel',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Admin features will be implemented here',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
             ),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          MenuManagementPage(),
-          FoodManagementPage(),
-        ],
       ),
     );
   }

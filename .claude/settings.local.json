@@ -19,7 +19,8 @@
       "Bash(grep:*)",
       "Bash(curl:*)",
       "Bash(start http://localhost:3000/api/v1/auth/health)",
-      "Bash(npx http-server:*)"
+      "Bash(npx http-server:*)",
+      "Bash(flutter clean:*)"
     ],
     "deny": []
   }

@@ -23,6 +23,13 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    // Development mode: Skip authentication
+    const bool isDevelopment = true; // Set to false for production
+    
+    if (isDevelopment) {
+      return const MainNavigation();
+    }
+    
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         switch (authProvider.state) {

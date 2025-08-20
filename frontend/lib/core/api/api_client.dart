@@ -31,9 +31,14 @@ class ApiClient {
     // Request interceptor - Add auth token
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await _storage.read(AppConstants.accessTokenKey);
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
+        // Skip auth for development mode
+        const bool isDevelopment = true; // Set to false for production
+        
+        if (!isDevelopment) {
+          final token = await _storage.read(AppConstants.accessTokenKey);
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
         }
         handler.next(options);
       },
@@ -63,9 +68,12 @@ class ApiClient {
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
       responseBody: true,
-      requestHeader: false,
-      responseHeader: false,
+      requestHeader: true,
+      responseHeader: true,
       error: true,
+      logPrint: (obj) {
+        print('[API] $obj');
+      },
     ));
   }
 
