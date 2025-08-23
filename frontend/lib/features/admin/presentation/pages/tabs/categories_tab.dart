@@ -6,7 +6,7 @@ class CategoriesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
+    return const Padding(
       padding: EdgeInsets.all(16),
       child: CategoriesNestedTabs(),
     );

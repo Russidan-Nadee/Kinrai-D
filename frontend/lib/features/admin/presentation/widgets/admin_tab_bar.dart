@@ -19,7 +19,7 @@ class AdminTabBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         Tab(
           icon: Icon(Icons.category),
-          text: 'XXX',
+          text: 'Configuration',
         ),
       ],
     );
