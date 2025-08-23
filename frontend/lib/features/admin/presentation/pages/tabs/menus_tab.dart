@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/admin_menu_entity.dart';
 import '../../widgets/menu_grid_item.dart';
+import '../../widgets/add_menu_dialog.dart';
+import '../../../services/admin_service.dart';
 
 class MenusTab extends StatelessWidget {
   final AdminMenuListEntity? adminInfo;
@@ -15,6 +17,64 @@ class MenusTab extends StatelessWidget {
     this.errorMessage,
     required this.onRefresh,
   });
+
+  void _showAddMenuDialog(BuildContext context) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const AddMenuDialog(),
+    );
+    
+    if (result != null) {
+      await _createMenu(context, result);
+    }
+  }
+
+  Future<void> _createMenu(BuildContext context, Map<String, dynamic> menuData) async {
+    try {
+      // Show loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 16),
+              Text('Creating menu...'),
+            ],
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Call API (without auth for now)
+      final adminService = AdminService();
+      final success = await adminService.createMenu(menuData);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Menu created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Refresh the list
+        onRefresh();
+      } else {
+        throw Exception('Failed to create menu');
+      }
+    } catch (e) {
+      print('Error creating menu: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to create menu: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,93 +131,100 @@ class MenusTab extends StatelessWidget {
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.admin_panel_settings,
-                    size: 40,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Admin Dashboard',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Total: ${adminInfo!.pagination.total} menus',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          // Menus Section
-          const Text(
-            'Recent Menus',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          
-          // Menu Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _getCrossAxisCount(context),
-              crossAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
-              mainAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
-              childAspectRatio: _getChildAspectRatio(context),
-            ),
-            itemCount: adminInfo!.menus.length,
-            itemBuilder: (context, index) {
-              final menu = adminInfo!.menus[index];
-              return MenuGridItem(menu: menu);
-            },
-          ),
-          
-          // Pagination Info
-          if (adminInfo!.pagination.totalPages > 1)
+    return Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Card
             Card(
-              margin: const EdgeInsets.only(top: 16),
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Showing ${adminInfo!.menus.length} of ${adminInfo!.pagination.total} menus (Page ${adminInfo!.pagination.page}/${adminInfo!.pagination.totalPages})',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                  textAlign: TextAlign.center,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.admin_panel_settings,
+                      size: 40,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Admin Dashboard',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Total: ${adminInfo!.pagination.total} menus',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-        ],
+            const SizedBox(height: 16),
+            
+            // Menus Section
+            const Text(
+              'Recent Menus',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            
+            // Menu Grid
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _getCrossAxisCount(context),
+                crossAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
+                mainAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
+                childAspectRatio: _getChildAspectRatio(context),
+              ),
+              itemCount: adminInfo!.menus.length,
+              itemBuilder: (context, index) {
+                final menu = adminInfo!.menus[index];
+                return MenuGridItem(menu: menu);
+              },
+            ),
+            
+            // Pagination Info
+            if (adminInfo!.pagination.totalPages > 1)
+              Card(
+                margin: const EdgeInsets.only(top: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'Showing ${adminInfo!.menus.length} of ${adminInfo!.pagination.total} menus (Page ${adminInfo!.pagination.page}/${adminInfo!.pagination.totalPages})',
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddMenuDialog(context),
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -36,4 +36,9 @@ class AdminRepositoryImpl implements AdminRepository {
     // TODO: Implement when needed
     throw UnimplementedError();
   }
+
+  @override
+  Future<bool> createMenu(Map<String, dynamic> menuData) async {
+    return await remoteDataSource.createMenu(menuData);
+  }
 }

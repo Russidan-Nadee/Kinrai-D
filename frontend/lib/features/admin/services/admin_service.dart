@@ -24,4 +24,20 @@ class AdminService {
       rethrow;
     }
   }
+
+  Future<bool> createMenu(Map<String, dynamic> menuData) async {
+    try {
+      print('[AdminService] Attempting to create menu...');
+      final response = await _apiClient.post(
+        '/menus',
+        data: menuData,
+      );
+      
+      print('[AdminService] Menu creation successful');
+      return response.statusCode == 201;
+    } catch (e) {
+      print('[AdminService] Menu creation failed: $e');
+      rethrow;
+    }
+  }
 }

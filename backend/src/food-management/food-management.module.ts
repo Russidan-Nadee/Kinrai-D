@@ -6,6 +6,7 @@ import { CategoriesService } from './services/categories.service';
 import { CategoriesController } from './controllers/categories.controller';
 import { SubcategoriesService } from './services/subcategories.service';
 import { SubcategoriesController } from './controllers/subcategories.controller';
+import { ProteinTypesController } from './controllers/protein-types.controller';
 
 @Module({
    imports: [PrismaModule],
@@ -13,6 +14,7 @@ import { SubcategoriesController } from './controllers/subcategories.controller'
       FoodTypesController,
       CategoriesController,
       SubcategoriesController,
+      ProteinTypesController,
    ],
    providers: [
       FoodTypesService,
