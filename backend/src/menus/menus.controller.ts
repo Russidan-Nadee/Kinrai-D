@@ -65,6 +65,16 @@ export class MenusController {
     return this.menusService.getPopularMenus(language, limit);
   }
 
+  @Get('random')
+  @ApiOperation({ summary: 'Get a single random menu item' })
+  @ApiResponse({ status: 200, description: 'Random menu item retrieved successfully.' })
+  @ApiQuery({ name: 'language', required: false, type: String, description: 'Language code (th, en, jp, zh)' })
+  getRandomMenu(
+    @Query('language') language?: string,
+  ) {
+    return this.menusService.getRandomMenu(language);
+  }
+
   @Get('key/:key')
   @ApiOperation({ summary: 'Get menu item by key' })
   @ApiResponse({ status: 200, description: 'Menu item retrieved successfully.' })

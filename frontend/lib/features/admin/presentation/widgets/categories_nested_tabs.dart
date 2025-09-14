@@ -16,12 +16,12 @@ class CategoriesNestedTabs extends StatefulWidget {
 
 class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
   late CategoryRemoteDataSource _dataSource;
-  
+
   // Filter states
   String? _selectedFoodTypeId;
   String? _selectedCategoryId;
   List<FoodTypeEntity> _foodTypes = [];
-  
+
   // Collapsible filter states
   bool _isCategoryFilterExpanded = false;
   bool _isSubcategoryFilterExpanded = false;
@@ -51,7 +51,7 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
       context: context,
       builder: (context) => const AddFoodTypeDialog(),
     );
-    
+
     if (result != null) {
       // TODO: Call API to create food type
       print('Food Type data: $result');
@@ -69,7 +69,7 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
       context: context,
       builder: (context) => const AddCategoryDialog(),
     );
-    
+
     if (result != null) {
       // TODO: Call API to create category
       print('Category data: $result');
@@ -87,7 +87,7 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
       context: context,
       builder: (context) => const AddSubcategoryDialog(),
     );
-    
+
     if (result != null) {
       // TODO: Call API to create subcategory
       print('Subcategory data: $result');
@@ -106,8 +106,8 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
       length: 3,
       child: Builder(
         builder: (context) {
-          final TabController tabController = DefaultTabController.of(context)!;
-          
+          final TabController tabController = DefaultTabController.of(context);
+
           return Column(
             children: [
               TabBar(
@@ -133,7 +133,7 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
                         _buildSubcategoriesContent(),
                       ],
                     ),
-                    
+
                     // Floating Action Buttons
                     Positioned(
                       bottom: 16,
@@ -255,15 +255,15 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
                       ),
                       const Spacer(),
                       Icon(
-                        _isCategoryFilterExpanded 
-                            ? Icons.expand_less 
+                        _isCategoryFilterExpanded
+                            ? Icons.expand_less
                             : Icons.expand_more,
                       ),
                     ],
                   ),
                 ),
               ),
-              
+
               // Filter Content
               AnimatedCrossFade(
                 firstChild: const SizedBox.shrink(),
@@ -304,7 +304,7 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
             ],
           ),
         ),
-        
+
         // Categories List
         Expanded(
           child: FutureBuilder<List<CategoryEntity>>(
@@ -312,9 +312,11 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
                 ? _dataSource.getCategories().then(
                     (models) => models.map((m) => m.toEntity()).toList(),
                   )
-                : _dataSource.getCategoriesByFoodType(int.parse(_selectedFoodTypeId!)).then(
-                    (models) => models.map((m) => m.toEntity()).toList(),
-                  ),
+                : _dataSource
+                      .getCategoriesByFoodType(int.parse(_selectedFoodTypeId!))
+                      .then(
+                        (models) => models.map((m) => m.toEntity()).toList(),
+                      ),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -345,7 +347,11 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.category_outlined, size: 64, color: Colors.grey),
+                      Icon(
+                        Icons.category_outlined,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
                       SizedBox(height: 16),
                       Text('No Categories found'),
                     ],
@@ -379,7 +385,8 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
               InkWell(
                 onTap: () {
                   setState(() {
-                    _isSubcategoryFilterExpanded = !_isSubcategoryFilterExpanded;
+                    _isSubcategoryFilterExpanded =
+                        !_isSubcategoryFilterExpanded;
                   });
                 },
                 child: Padding(
@@ -397,15 +404,15 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
                       ),
                       const Spacer(),
                       Icon(
-                        _isSubcategoryFilterExpanded 
-                            ? Icons.expand_less 
+                        _isSubcategoryFilterExpanded
+                            ? Icons.expand_less
                             : Icons.expand_more,
                       ),
                     ],
                   ),
                 ),
               ),
-              
+
               // Filter Content
               AnimatedCrossFade(
                 firstChild: const SizedBox.shrink(),
@@ -437,24 +444,32 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
                         onChanged: (String? newValue) {
                           setState(() {
                             _selectedFoodTypeId = newValue;
-                            _selectedCategoryId = null; // Reset category when food type changes
+                            _selectedCategoryId =
+                                null; // Reset category when food type changes
                           });
                         },
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Category Filter
                       FutureBuilder<List<CategoryEntity>>(
                         future: _selectedFoodTypeId == null
                             ? _dataSource.getCategories().then(
-                                (models) => models.map((m) => m.toEntity()).toList(),
+                                (models) =>
+                                    models.map((m) => m.toEntity()).toList(),
                               )
-                            : _dataSource.getCategoriesByFoodType(int.parse(_selectedFoodTypeId!)).then(
-                                (models) => models.map((m) => m.toEntity()).toList(),
-                              ),
+                            : _dataSource
+                                  .getCategoriesByFoodType(
+                                    int.parse(_selectedFoodTypeId!),
+                                  )
+                                  .then(
+                                    (models) => models
+                                        .map((m) => m.toEntity())
+                                        .toList(),
+                                  ),
                         builder: (context, snapshot) {
                           final categories = snapshot.data ?? [];
-                          
+
                           return DropdownButtonFormField<String>(
                             value: _selectedCategoryId,
                             decoration: const InputDecoration(
@@ -471,7 +486,9 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
                               ...categories.map((category) {
                                 return DropdownMenuItem<String>(
                                   value: category.id.toString(),
-                                  child: Text('${category.key} - ${category.name}'),
+                                  child: Text(
+                                    '${category.key} - ${category.name}',
+                                  ),
                                 );
                               }),
                             ],
@@ -494,7 +511,7 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
             ],
           ),
         ),
-        
+
         // Subcategories List
         Expanded(
           child: FutureBuilder<List<SubcategoryEntity>>(
@@ -529,7 +546,11 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.subdirectory_arrow_right, size: 64, color: Colors.grey),
+                      Icon(
+                        Icons.subdirectory_arrow_right,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
                       SizedBox(height: 16),
                       Text('No Subcategories found'),
                     ],
@@ -554,18 +575,23 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
   Future<List<SubcategoryEntity>> _getFilteredSubcategories() async {
     if (_selectedCategoryId != null) {
       // Filter by specific category
-      final models = await _dataSource.getSubcategoriesByCategory(int.parse(_selectedCategoryId!));
+      final models = await _dataSource.getSubcategoriesByCategory(
+        int.parse(_selectedCategoryId!),
+      );
       return models.map((m) => m.toEntity()).toList();
     } else if (_selectedFoodTypeId != null) {
       // Get all subcategories for all categories of the selected food type
-      final categories = await _dataSource.getCategoriesByFoodType(int.parse(_selectedFoodTypeId!));
+      final categories = await _dataSource.getCategoriesByFoodType(
+        int.parse(_selectedFoodTypeId!),
+      );
       final List<SubcategoryEntity> allSubcategories = [];
-      
+
       for (final category in categories) {
-        final subcategoriesModels = await _dataSource.getSubcategoriesByCategory(category.id);
+        final subcategoriesModels = await _dataSource
+            .getSubcategoriesByCategory(category.id);
         allSubcategories.addAll(subcategoriesModels.map((m) => m.toEntity()));
       }
-      
+
       return allSubcategories;
     } else {
       // No filters, get all subcategories

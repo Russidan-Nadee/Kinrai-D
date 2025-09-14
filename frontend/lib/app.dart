@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'features/admin/presentation/pages/admin_main_page.dart';
+import 'features/random_menu/presentation/widgets/random_menu_widget.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -17,11 +18,11 @@ class MainNavigation extends StatefulWidget {
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> with TickerProviderStateMixin {
+class _MainNavigationState extends State<MainNavigation>
+    with TickerProviderStateMixin {
   int _currentIndex = 0;
   bool _isCollapsed = false;
   late AnimationController _animationController;
-  late Animation<double> _widthAnimation;
 
   final List<Widget> _pages = [
     const HomePage(title: 'Main'),
@@ -36,13 +37,6 @@ class _MainNavigationState extends State<MainNavigation> with TickerProviderStat
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _widthAnimation = Tween<double>(
-      begin: 240,
-      end: 80,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
   }
 
   @override
@@ -60,16 +54,13 @@ class _MainNavigationState extends State<MainNavigation> with TickerProviderStat
           body: Row(
             children: [
               _buildLeftSidebar(context, constraints),
-              Expanded(
-                child: _pages[_currentIndex],
-              ),
+              Expanded(child: _pages[_currentIndex]),
             ],
           ),
         );
       },
     );
   }
-
 
   Widget _buildLeftSidebar(BuildContext context, BoxConstraints constraints) {
     final isMobile = constraints.maxWidth < 600;
@@ -80,10 +71,7 @@ class _MainNavigationState extends State<MainNavigation> with TickerProviderStat
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFF8A50),
-            Color(0xFFFF6B35),
-          ],
+          colors: [Color(0xFFFF8A50), Color(0xFFFF6B35)],
         ),
         boxShadow: [
           BoxShadow(
@@ -136,9 +124,7 @@ class _MainNavigationState extends State<MainNavigation> with TickerProviderStat
   Widget _buildSidebarHeader(BuildContext context, bool isMobile) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
-      ),
+      decoration: const BoxDecoration(color: Colors.transparent),
       child: Column(
         children: [
           Row(
@@ -222,26 +208,28 @@ class _MainNavigationState extends State<MainNavigation> with TickerProviderStat
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: isSelected
-                ? Colors.white.withOpacity(0.9)
-                : Colors.white.withOpacity(0.1),
+                  ? Colors.white.withOpacity(0.9)
+                  : Colors.white.withOpacity(0.1),
               border: isSelected
-                ? Border.all(color: Colors.white, width: 1)
-                : null,
+                  ? Border.all(color: Colors.white, width: 1)
+                  : null,
               boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
             child: isCompact
                 ? Center(
                     child: Icon(
                       isSelected ? selectedIcon : icon,
-                      color: isSelected ? const Color(0xFFFF6B35) : Colors.white,
+                      color: isSelected
+                          ? const Color(0xFFFF6B35)
+                          : Colors.white,
                       size: 24,
                     ),
                   )
@@ -249,7 +237,9 @@ class _MainNavigationState extends State<MainNavigation> with TickerProviderStat
                     children: [
                       Icon(
                         isSelected ? selectedIcon : icon,
-                        color: isSelected ? const Color(0xFFFF6B35) : Colors.white,
+                        color: isSelected
+                            ? const Color(0xFFFF6B35)
+                            : Colors.white,
                         size: 24,
                       ),
                       const SizedBox(width: 16),
@@ -257,8 +247,12 @@ class _MainNavigationState extends State<MainNavigation> with TickerProviderStat
                         child: Text(
                           label,
                           style: TextStyle(
-                            color: isSelected ? const Color(0xFFFF6B35) : Colors.white,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            color: isSelected
+                                ? const Color(0xFFFF6B35)
+                                : Colors.white,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w500,
                             fontSize: 16,
                           ),
                         ),
@@ -290,24 +284,34 @@ class HomePage extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Welcome to Kinrai D!',
-              style: Theme.of(context).textTheme.headlineMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Text(
-              '$title Page',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'ยินดีต้อนรับสู่ Kinrai D!',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: const Color(0xFFFF6B35),
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+
+              // Random Menu Feature
+              const Expanded(
+                child: SingleChildScrollView(
+                  child: RandomMenuWidget(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 }
 
 class ProfilePage extends StatelessWidget {
@@ -330,10 +334,7 @@ class ProfilePage extends StatelessWidget {
       body: const Center(
         child: Text(
           'Profile page is coming soon!',
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.grey,
-          ),
+          style: TextStyle(fontSize: 18, color: Colors.grey),
         ),
       ),
     );

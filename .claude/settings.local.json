@@ -24,7 +24,9 @@
       "Bash(flutter run:*)",
       "WebFetch(domain:invest-fam.com)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(nc:*)",
+      "Bash(cmd /c:*)"
     ],
     "deny": []
   }
