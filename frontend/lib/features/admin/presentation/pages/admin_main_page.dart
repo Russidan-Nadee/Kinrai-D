@@ -77,6 +77,12 @@ class _AdminMainPageState extends State<AdminMainPage> with SingleTickerProvider
           ),
         ],
         bottom: AdminTabBar(controller: _tabController),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
+        ),
       ),
       body: TabBarView(
         controller: _tabController,

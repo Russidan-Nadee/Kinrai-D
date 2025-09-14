@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'add_subcategory_dialog.dart';
 
 class MenuTranslation {
   String language;
@@ -240,12 +241,36 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
     'zh': 'Chinese (中文)',
   };
 
+  Future<void> _showCreateSubcategoryDialog() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext context) {
+        return const AddSubcategoryDialog();
+      },
+    );
+
+    if (result != null) {
+      // Subcategory created successfully, reload subcategories
+      if (_selectedCategoryKey != null) {
+        await _loadSubcategories(_selectedCategoryKey!);
+
+        // Try to select the newly created subcategory
+        final newSubcategoryKey = result['key'] as String?;
+        if (newSubcategoryKey != null) {
+          setState(() {
+            _selectedSubcategoryKey = newSubcategoryKey;
+          });
+        }
+      }
+    }
+  }
+
   Map<String, dynamic> _getMenuData() {
     // Find the selected subcategory ID by key
     final selectedSubcategory = _subcategories.firstWhere(
       (sc) => sc.key == _selectedSubcategoryKey,
     );
-    
+
     // Find the selected protein type ID by key (if selected)
     DropdownOption? selectedProteinType;
     if (_selectedProteinTypeKey != null) {
@@ -259,8 +284,8 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
       'subcategory_id': selectedSubcategory.id,
       'protein_type_id': selectedProteinType?.id,
       'image_url': _imageUrlController.text.isEmpty ? null : _imageUrlController.text,
-      'contains': _containsController.text.isEmpty 
-          ? {} 
+      'contains': _containsController.text.isEmpty
+          ? {}
           : {'description': _containsController.text},
       'meal_time': _selectedMealTime,
       'translations': _translations.map((t) => t.toJson()).toList(),
@@ -453,71 +478,96 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
                       Row(
                         children: [
                           Expanded(
-                            child: DropdownButtonFormField<String>(
-                              value: _selectedSubcategoryKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: DropdownButtonFormField<String>(
+                                        value: _selectedSubcategoryKey,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Subcategory*',
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        hint: const Text('Select existing subcategory'),
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Subcategory is required';
+                                          }
+                                          return null;
+                                        },
+                                        items: _subcategories.map((subcategory) {
+                                          return DropdownMenuItem<String>(
+                                            value: subcategory.key,
+                                            child: Text(
+                                              '${subcategory.key} - ${subcategory.name}',
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: _selectedCategoryKey == null
+                                            ? null
+                                            : (String? newValue) {
+                                                setState(() {
+                                                  _selectedSubcategoryKey = newValue;
+                                                });
+                                              },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    OutlinedButton.icon(
+                                      onPressed: _selectedCategoryKey == null
+                                          ? null
+                                          : _showCreateSubcategoryDialog,
+                                      icon: const Icon(Icons.add),
+                                      label: const Text('Create New'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Protein Type Dropdown (moved to separate row)
+                      _isLoadingData
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : DropdownButtonFormField<String>(
+                              value: _selectedProteinTypeKey,
                               decoration: const InputDecoration(
-                                labelText: 'Subcategory*',
+                                labelText: 'Protein Type',
+                                hintText: 'Optional',
                                 border: OutlineInputBorder(),
                               ),
-                              hint: const Text('Select subcategory'),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Subcategory is required';
-                                }
-                                return null;
-                              },
-                              items: _subcategories.map((subcategory) {
+                              hint: const Text('Select protein type'),
+                              items: _proteinTypes.map((proteinType) {
                                 return DropdownMenuItem<String>(
-                                  value: subcategory.key,
+                                  value: proteinType.key,
                                   child: Text(
-                                    '${subcategory.key} - ${subcategory.name}',
+                                    '${proteinType.key} - ${proteinType.name}',
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                   ),
                                 );
                               }).toList(),
-                              onChanged: _selectedCategoryKey == null 
-                                  ? null 
-                                  : (String? newValue) {
-                                      setState(() {
-                                        _selectedSubcategoryKey = newValue;
-                                      });
-                                    },
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedProteinTypeKey = newValue;
+                                });
+                              },
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _isLoadingData
-                                ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : DropdownButtonFormField<String>(
-                                    value: _selectedProteinTypeKey,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Protein Type',
-                                      hintText: 'Optional',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    hint: const Text('Select protein type'),
-                                    items: _proteinTypes.map((proteinType) {
-                                      return DropdownMenuItem<String>(
-                                        value: proteinType.key,
-                                        child: Text(
-                                          '${proteinType.key} - ${proteinType.name}',
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? newValue) {
-                                      setState(() {
-                                        _selectedProteinTypeKey = newValue;
-                                      });
-                                    },
-                                  ),
-                          ),
-                        ],
-                      ),
                       const SizedBox(height: 16),
                       
                       TextFormField(
