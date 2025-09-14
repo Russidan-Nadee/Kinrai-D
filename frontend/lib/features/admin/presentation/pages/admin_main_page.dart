@@ -70,12 +70,6 @@ class _AdminMainPageState extends State<AdminMainPage> with SingleTickerProvider
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Panel'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadAdminInfo,
-          ),
-        ],
         bottom: AdminTabBar(controller: _tabController),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(

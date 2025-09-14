@@ -1,0 +1,25 @@
+{
+  "@@locale": "th",
+
+  "profile": "โปรไฟล์",
+
+  "user": "ผู้ใช้งาน",
+
+  "manageSettings": "จัดการการตั้งค่าของคุณ",
+
+  "selectLanguage": "เลือกภาษา",
+
+  "languageChanged": "เปลี่ยนภาษาเป็น {language} แล้ว",
+
+  "thai": "ไทย",
+
+  "english": "English",
+
+  "japanese": "日本語",
+
+  "chinese": "中文",
+
+  "otherFeaturesDeveloping": "ฟีเจอร์อื่นๆ กำลังพัฒนา",
+
+  "comingSoon": "เร็วๆ นี้!"
+}

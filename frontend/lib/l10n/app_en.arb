@@ -1,0 +1,89 @@
+{
+  "@@locale": "en",
+
+  "appName": "Kinrai D",
+  "@appName": {
+    "description": "The application name"
+  },
+
+  "welcome": "Welcome to Kinrai D!",
+  "@welcome": {
+    "description": "Welcome message on home page"
+  },
+
+  "tapToRandomMenu": "Tap to random delicious menu",
+  "@tapToRandomMenu": {
+    "description": "Instruction text for random menu button"
+  },
+
+  "randomMenu": "Random Menu",
+  "@randomMenu": {
+    "description": "Random menu button text"
+  },
+
+  "recommendedMenu": "Recommended Menu",
+  "@recommendedMenu": {
+    "description": "Header text for recommended menu card"
+  },
+
+  "cannotRandomMenu": "Cannot random menu. Please try again.",
+  "@cannotRandomMenu": {
+    "description": "Error message when random menu fails"
+  },
+
+  "noRating": "No rating yet",
+  "@noRating": {
+    "description": "Text when menu has no ratings"
+  },
+
+  "user": "User",
+  "@user": {
+    "description": "User profile title"
+  },
+
+  "manageSettings": "Manage your settings",
+  "@manageSettings": {
+    "description": "User profile subtitle"
+  },
+
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Language selection title"
+  },
+
+  "languageChanged": "Language changed to {language}",
+  "@languageChanged": {
+    "description": "Language change confirmation message",
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "description": "The selected language name"
+      }
+    }
+  },
+
+  "otherFeaturesDeveloping": "Other features are being developed",
+  "@otherFeaturesDeveloping": {
+    "description": "Coming soon features message"
+  },
+
+  "comingSoon": "Coming soon!",
+  "@comingSoon": {
+    "description": "Coming soon text"
+  },
+
+  "main": "Main",
+  "@main": {
+    "description": "Main tab title"
+  },
+
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile tab title"
+  },
+
+  "admin": "Admin",
+  "@admin": {
+    "description": "Admin tab title"
+  }
+}

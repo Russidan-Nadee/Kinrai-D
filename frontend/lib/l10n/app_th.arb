@@ -1,0 +1,35 @@
+{
+  "@@locale": "th",
+
+  "appName": "Kinrai D",
+
+  "welcome": "ยินดีต้อนรับสู่ Kinrai D!",
+
+  "tapToRandomMenu": "กดปุ่มเพื่อสุ่มเมนูอาหารแสนอร่อย",
+
+  "randomMenu": "สุ่มเมนูอาหาร",
+
+  "recommendedMenu": "เมนูที่แนะนำ",
+
+  "cannotRandomMenu": "ไม่สามารถสุ่มเมนูได้ กรุณาลองใหม่อีกครั้ง",
+
+  "noRating": "ยังไม่มีคะแนน",
+
+  "user": "ผู้ใช้งาน",
+
+  "manageSettings": "จัดการการตั้งค่าของคุณ",
+
+  "selectLanguage": "เลือกภาษา",
+
+  "languageChanged": "เปลี่ยนภาษาเป็น {language} แล้ว",
+
+  "otherFeaturesDeveloping": "ฟีเจอร์อื่นๆ กำลังพัฒนา",
+
+  "comingSoon": "เร็วๆ นี้!",
+
+  "main": "หน้าหลัก",
+
+  "profile": "โปรไฟล์",
+
+  "admin": "ผู้ดูแล"
+}

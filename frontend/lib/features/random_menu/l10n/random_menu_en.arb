@@ -1,0 +1,28 @@
+{
+  "@@locale": "en",
+
+  "randomMenuButton": "Random Menu",
+  "@randomMenuButton": {
+    "description": "Text on the random menu button"
+  },
+
+  "recommendedMenu": "Recommended Menu",
+  "@recommendedMenu": {
+    "description": "Header for the recommended menu card"
+  },
+
+  "randomMenuError": "Cannot random menu. Please try again.",
+  "@randomMenuError": {
+    "description": "Error message when random menu API fails"
+  },
+
+  "noMenusAvailable": "No menus available",
+  "@noMenusAvailable": {
+    "description": "Message when no menus are found"
+  },
+
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading state text"
+  }
+}

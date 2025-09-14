@@ -1,0 +1,15 @@
+{
+  "@@locale": "th",
+
+  "appName": "Kinrai D",
+
+  "main": "หน้าหลัก",
+
+  "profile": "โปรไฟล์",
+
+  "admin": "ผู้ดูแล",
+
+  "welcome": "ยินดีต้อนรับสู่ Kinrai D!",
+
+  "tapToRandomMenu": "กดปุ่มเพื่อสุ่มเมนูอาหารแสนอร่อย"
+}

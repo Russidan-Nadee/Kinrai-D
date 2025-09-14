@@ -1,0 +1,15 @@
+{
+  "@@locale": "ja",
+
+  "appName": "Kinrai D",
+
+  "main": "メイン",
+
+  "profile": "プロフィール",
+
+  "admin": "管理者",
+
+  "welcome": "Kinrai Dへようこそ！",
+
+  "tapToRandomMenu": "ボタンを押して美味しいメニューをランダムに選択"
+}

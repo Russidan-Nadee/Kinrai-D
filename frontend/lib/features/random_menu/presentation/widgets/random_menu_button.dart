@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/app_localizations.dart';
 
 class RandomMenuButton extends StatelessWidget {
   final bool isLoading;
@@ -59,7 +60,7 @@ class RandomMenuButton extends StatelessWidget {
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          'สุ่มเมนูอาหาร',
+                          AppLocalizations.of(context).randomMenu,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,

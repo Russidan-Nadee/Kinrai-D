@@ -1,0 +1,25 @@
+{
+  "@@locale": "ja",
+
+  "profile": "プロフィール",
+
+  "user": "ユーザー",
+
+  "manageSettings": "設定を管理する",
+
+  "selectLanguage": "言語を選択",
+
+  "languageChanged": "言語を{language}に変更しました",
+
+  "thai": "ไทย",
+
+  "english": "English",
+
+  "japanese": "日本語",
+
+  "chinese": "中文",
+
+  "otherFeaturesDeveloping": "その他の機能を開発中",
+
+  "comingSoon": "近日公開！"
+}

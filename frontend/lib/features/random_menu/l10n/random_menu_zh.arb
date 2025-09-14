@@ -1,0 +1,13 @@
+{
+  "@@locale": "zh",
+
+  "randomMenuButton": "随机菜单",
+
+  "recommendedMenu": "推荐菜单",
+
+  "randomMenuError": "无法随机选择菜单，请重试。",
+
+  "noMenusAvailable": "没有可用的菜单",
+
+  "loading": "加载中..."
+}

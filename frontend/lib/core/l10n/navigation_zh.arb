@@ -1,0 +1,15 @@
+{
+  "@@locale": "zh",
+
+  "appName": "Kinrai D",
+
+  "main": "主页",
+
+  "profile": "个人资料",
+
+  "admin": "管理员",
+
+  "welcome": "欢迎来到 Kinrai D！",
+
+  "tapToRandomMenu": "点击按钮随机选择美味菜单"
+}

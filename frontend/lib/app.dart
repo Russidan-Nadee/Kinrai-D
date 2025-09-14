@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'features/admin/presentation/pages/admin_main_page.dart';
 import 'features/random_menu/presentation/widgets/random_menu_widget.dart';
+import 'core/providers/language_provider.dart';
+import 'core/l10n/app_localizations.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -21,7 +24,8 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation>
     with TickerProviderStateMixin {
   int _currentIndex = 0;
-  bool _isCollapsed = false;
+  bool _isCollapsed = true;
+  bool _isMobileSidebarOpen = false;
   late AnimationController _animationController;
 
   final List<Widget> _pages = [
@@ -49,12 +53,40 @@ class _MainNavigationState extends State<MainNavigation>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // ใช้ Left Sidebar หมดเลย แต่ responsive
+        final isMobile = constraints.maxWidth < 600;
+
         return Scaffold(
-          body: Row(
+          endDrawer: isMobile && _isCollapsed ? Drawer(
+            child: _buildMobileDrawer(context),
+          ) : null,
+          body: Stack(
             children: [
-              _buildLeftSidebar(context, constraints),
-              Expanded(child: _pages[_currentIndex]),
+              Row(
+                children: [
+                  if (!(constraints.maxWidth < 600 && _isCollapsed))
+                    _buildLeftSidebar(context, constraints),
+                  Expanded(child: _pages[_currentIndex]),
+                ],
+              ),
+              if (isMobile && _isCollapsed)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  right: 16,
+                  child: Builder(
+                    builder: (BuildContext context) {
+                      return FloatingActionButton.small(
+                        onPressed: () {
+                          Scaffold.of(context).openEndDrawer();
+                        },
+                        backgroundColor: const Color(0xFFFF6B35),
+                        child: const Icon(
+                          Icons.menu,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           ),
         );
@@ -64,7 +96,7 @@ class _MainNavigationState extends State<MainNavigation>
 
   Widget _buildLeftSidebar(BuildContext context, BoxConstraints constraints) {
     final isMobile = constraints.maxWidth < 600;
-    final sidebarWidth = isMobile ? 80.0 : (_isCollapsed ? 80.0 : 240.0);
+    final sidebarWidth = isMobile ? (_isCollapsed ? 50.0 : 240.0) : (_isCollapsed ? 80.0 : 240.0);
     return Container(
       width: sidebarWidth,
       decoration: BoxDecoration(
@@ -150,14 +182,41 @@ class _MainNavigationState extends State<MainNavigation>
                   splashRadius: 20,
                 ),
               ] else ...[
-                // Mobile: แสดงแค่ logo
-                Expanded(
-                  child: Icon(
-                    Icons.restaurant_menu,
-                    color: Colors.white,
-                    size: 28,
+                // Mobile: แสดงแค่ปุ่มเดียว เมื่อพับเก็บ หรือแสดงเต็ม เมื่อขยาย
+                if (_isCollapsed) ...[
+                  // แสดงแค่ปุ่มเดียว
+                  Center(
+                    child: IconButton(
+                      onPressed: _toggleSidebar,
+                      icon: const Icon(
+                        Icons.menu,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      splashRadius: 16,
+                    ),
                   ),
-                ),
+                ] else ...[
+                  // แสดงเต็ม
+                  Expanded(
+                    child: Text(
+                      'Kinrai D',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _toggleSidebar,
+                    icon: const Icon(
+                      Icons.chevron_left,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    splashRadius: 16,
+                  ),
+                ],
               ],
             ],
           ),
@@ -245,7 +304,7 @@ class _MainNavigationState extends State<MainNavigation>
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          label,
+                          _getNavLabel(context, index),
                           style: TextStyle(
                             color: isSelected
                                 ? const Color(0xFFFF6B35)
@@ -264,6 +323,163 @@ class _MainNavigationState extends State<MainNavigation>
       ),
     );
   }
+
+  String _getNavLabel(BuildContext context, int index) {
+    final l10n = AppLocalizations.of(context);
+    switch (index) {
+      case 0:
+        return l10n.main;
+      case 1:
+        return l10n.profile;
+      case 2:
+        return l10n.admin;
+      default:
+        return '';
+    }
+  }
+
+  Widget _buildMobileDrawer(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFF8A50), Color(0xFFFF6B35)],
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 16,
+              left: 16,
+              right: 16,
+              bottom: 16,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Kinrai D',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              children: [
+                const SizedBox(height: 16),
+                _buildMobileNavItem(
+                  context: context,
+                  icon: Icons.home_outlined,
+                  selectedIcon: Icons.home,
+                  label: 'Main',
+                  index: 0,
+                ),
+                _buildMobileNavItem(
+                  context: context,
+                  icon: Icons.person_outline,
+                  selectedIcon: Icons.person,
+                  label: 'Profile',
+                  index: 1,
+                ),
+                _buildMobileNavItem(
+                  context: context,
+                  icon: Icons.admin_panel_settings_outlined,
+                  selectedIcon: Icons.admin_panel_settings,
+                  label: 'Admin',
+                  index: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileNavItem({
+    required BuildContext context,
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+    required int index,
+  }) {
+    final isSelected = _currentIndex == index;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            setState(() {
+              _currentIndex = index;
+            });
+            Navigator.of(context).pop(); // ปิด drawer
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 16,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: isSelected
+                  ? Colors.white.withOpacity(0.9)
+                  : Colors.white.withOpacity(0.1),
+              border: isSelected
+                  ? Border.all(color: Colors.white, width: 1)
+                  : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isSelected ? selectedIcon : icon,
+                  color: isSelected
+                      ? const Color(0xFFFF6B35)
+                      : Colors.white,
+                  size: 24,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    _getNavLabel(context, index),
+                    style: TextStyle(
+                      color: isSelected
+                          ? const Color(0xFFFF6B35)
+                          : Colors.white,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class HomePage extends StatelessWidget {
@@ -273,9 +489,11 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(l10n.main),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(16),
@@ -290,7 +508,7 @@ class HomePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'ยินดีต้อนรับสู่ Kinrai D!',
+                l10n.welcome,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: const Color(0xFFFF6B35),
                   fontWeight: FontWeight.bold,
@@ -314,16 +532,31 @@ class HomePage extends StatelessWidget {
 
 }
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   final String title;
 
   const ProfilePage({super.key, required this.title});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final List<Map<String, String>> _languages = [
+    {'code': 'th', 'name': 'ไทย', 'flag': '🇹🇭'},
+    {'code': 'en', 'name': 'English', 'flag': '🇺🇸'},
+    {'code': 'ja', 'name': '日本語', 'flag': '🇯🇵'},
+    {'code': 'zh', 'name': '中文', 'flag': '🇨🇳'},
+  ];
+
+  @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(l10n.profile),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(16),
@@ -331,10 +564,172 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-      body: const Center(
-        child: Text(
-          'Profile page is coming soon!',
-          style: TextStyle(fontSize: 18, color: Colors.grey),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Profile Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.orange[50]!, Colors.orange[100]!],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFFF6B35).withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B35),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.user,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFF6B35),
+                        ),
+                      ),
+                      Text(
+                        l10n.manageSettings,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Language Selection
+            Text(
+              l10n.selectLanguage,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[300]!),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: _languages.map((language) {
+                  return _buildLanguageOption(
+                    language['code']!,
+                    language['name']!,
+                    language['flag']!,
+                  );
+                }).toList(),
+              ),
+            ),
+
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String code, String name, String flag) {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context);
+    final isSelected = languageProvider.currentLanguageCode == code;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () async {
+            await languageProvider.changeLanguage(code);
+
+            // Show confirmation
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(l10n.languageChanged(name)),
+                  duration: const Duration(seconds: 2),
+                  backgroundColor: const Color(0xFFFF6B35),
+                ),
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? const Color(0xFFFF6B35).withOpacity(0.1)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: isSelected
+                  ? Border.all(color: const Color(0xFFFF6B35), width: 1)
+                  : null,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  flag,
+                  style: const TextStyle(fontSize: 24),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? const Color(0xFFFF6B35)
+                        : Colors.grey[700],
+                  ),
+                ),
+                const Spacer(),
+                if (isSelected)
+                  const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFFFF6B35),
+                    size: 20,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

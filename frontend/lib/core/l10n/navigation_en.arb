@@ -1,0 +1,33 @@
+{
+  "@@locale": "en",
+
+  "appName": "Kinrai D",
+  "@appName": {
+    "description": "The application name"
+  },
+
+  "main": "Main",
+  "@main": {
+    "description": "Main tab navigation title"
+  },
+
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile tab navigation title"
+  },
+
+  "admin": "Admin",
+  "@admin": {
+    "description": "Admin tab navigation title"
+  },
+
+  "welcome": "Welcome to Kinrai D!",
+  "@welcome": {
+    "description": "Welcome message on home page"
+  },
+
+  "tapToRandomMenu": "Tap to random delicious menu",
+  "@tapToRandomMenu": {
+    "description": "Instruction text for random menu"
+  }
+}

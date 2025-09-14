@@ -1,0 +1,13 @@
+{
+  "@@locale": "th",
+
+  "randomMenuButton": "สุ่มเมนูอาหาร",
+
+  "recommendedMenu": "เมนูที่แนะนำ",
+
+  "randomMenuError": "ไม่สามารถสุ่มเมนูได้ กรุณาลองใหม่อีกครั้ง",
+
+  "noMenusAvailable": "ไม่มีเมนูที่พร้อมใช้งาน",
+
+  "loading": "กำลังโหลด..."
+}

@@ -1,0 +1,64 @@
+{
+  "@@locale": "en",
+
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile page title"
+  },
+
+  "user": "User",
+  "@user": {
+    "description": "User profile header"
+  },
+
+  "manageSettings": "Manage your settings",
+  "@manageSettings": {
+    "description": "Profile subtitle"
+  },
+
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Language selection section title"
+  },
+
+  "languageChanged": "Language changed to {language}",
+  "@languageChanged": {
+    "description": "Language change confirmation",
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "description": "The selected language name"
+      }
+    }
+  },
+
+  "thai": "Thai",
+  "@thai": {
+    "description": "Thai language name in English"
+  },
+
+  "english": "English",
+  "@english": {
+    "description": "English language name"
+  },
+
+  "japanese": "Japanese",
+  "@japanese": {
+    "description": "Japanese language name in English"
+  },
+
+  "chinese": "Chinese",
+  "@chinese": {
+    "description": "Chinese language name in English"
+  },
+
+  "otherFeaturesDeveloping": "Other features are being developed",
+  "@otherFeaturesDeveloping": {
+    "description": "Coming soon message"
+  },
+
+  "comingSoon": "Coming soon!",
+  "@comingSoon": {
+    "description": "Coming soon text"
+  }
+}

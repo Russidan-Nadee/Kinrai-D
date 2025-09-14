@@ -30,20 +30,26 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
   # UI
   cupertino_icons: ^1.0.8
-  
+
   # Authentication
   google_sign_in: ^6.2.1
-  
+
   # HTTP Client & Storage
   dio: ^5.4.0
   flutter_secure_storage: ^9.0.0
-  
+
   # State Management
   provider: ^6.1.1
-  
+
+  # Storage
+  shared_preferences: ^2.2.2
+
   # Utils
   equatable: ^2.0.5
   dartz: ^0.10.1
@@ -64,6 +70,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

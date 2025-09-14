@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/models/menu_model.dart';
 import '../../../../core/services/menu_service.dart';
+import '../../../../core/providers/language_provider.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import 'random_menu_button.dart';
 import 'random_menu_card.dart';
 
@@ -18,20 +21,23 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
   String? _errorMessage;
 
   Future<void> _getRandomMenu() async {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context);
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final randomMenu = await _menuService.getRandomMenu(language: 'th');
+      final randomMenu = await _menuService.getRandomMenu(language: languageProvider.currentLanguageCode);
       setState(() {
         _randomMenu = randomMenu;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'ไม่สามารถสุ่มเมนูได้ กรุณาลองใหม่อีกครั้ง';
+        _errorMessage = l10n.cannotRandomMenu;
         _isLoading = false;
       });
     }
@@ -39,11 +45,13 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         // Title
         Text(
-          'กดปุ่มเพื่อสุ่มเมนูอาหารแสนอร่อย',
+          l10n.tapToRandomMenu,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Colors.grey[600],
               ),
