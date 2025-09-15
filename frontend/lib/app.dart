@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'features/admin/presentation/pages/admin_main_page.dart';
 import 'features/random_menu/presentation/widgets/random_menu_widget.dart';
 import 'core/providers/language_provider.dart';
+import 'core/providers/auth_provider.dart';
 import 'core/l10n/app_localizations.dart';
 
 class App extends StatelessWidget {
@@ -25,7 +26,6 @@ class _MainNavigationState extends State<MainNavigation>
     with TickerProviderStateMixin {
   int _currentIndex = 0;
   bool _isCollapsed = true;
-  bool _isMobileSidebarOpen = false;
   late AnimationController _animationController;
 
   final List<Widget> _pages = [
@@ -56,9 +56,9 @@ class _MainNavigationState extends State<MainNavigation>
         final isMobile = constraints.maxWidth < 600;
 
         return Scaffold(
-          endDrawer: isMobile && _isCollapsed ? Drawer(
-            child: _buildMobileDrawer(context),
-          ) : null,
+          endDrawer: isMobile && _isCollapsed
+              ? Drawer(child: _buildMobileDrawer(context))
+              : null,
           body: Stack(
             children: [
               Row(
@@ -79,10 +79,7 @@ class _MainNavigationState extends State<MainNavigation>
                           Scaffold.of(context).openEndDrawer();
                         },
                         backgroundColor: const Color(0xFFFF6B35),
-                        child: const Icon(
-                          Icons.menu,
-                          color: Colors.white,
-                        ),
+                        child: const Icon(Icons.menu, color: Colors.white),
                       );
                     },
                   ),
@@ -96,7 +93,9 @@ class _MainNavigationState extends State<MainNavigation>
 
   Widget _buildLeftSidebar(BuildContext context, BoxConstraints constraints) {
     final isMobile = constraints.maxWidth < 600;
-    final sidebarWidth = isMobile ? (_isCollapsed ? 50.0 : 240.0) : (_isCollapsed ? 80.0 : 240.0);
+    final sidebarWidth = isMobile
+        ? (_isCollapsed ? 50.0 : 240.0)
+        : (_isCollapsed ? 80.0 : 240.0);
     return Container(
       width: sidebarWidth,
       decoration: BoxDecoration(
@@ -201,10 +200,11 @@ class _MainNavigationState extends State<MainNavigation>
                   Expanded(
                     child: Text(
                       'Kinrai D',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                     ),
                   ),
                   IconButton(
@@ -427,10 +427,7 @@ class _MainNavigationState extends State<MainNavigation>
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 16,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: isSelected
@@ -453,9 +450,7 @@ class _MainNavigationState extends State<MainNavigation>
               children: [
                 Icon(
                   isSelected ? selectedIcon : icon,
-                  color: isSelected
-                      ? const Color(0xFFFF6B35)
-                      : Colors.white,
+                  color: isSelected ? const Color(0xFFFF6B35) : Colors.white,
                   size: 24,
                 ),
                 const SizedBox(width: 16),
@@ -519,9 +514,7 @@ class HomePage extends StatelessWidget {
 
               // Random Menu Feature
               const Expanded(
-                child: SingleChildScrollView(
-                  child: RandomMenuWidget(),
-                ),
+                child: SingleChildScrollView(child: RandomMenuWidget()),
               ),
             ],
           ),
@@ -529,7 +522,6 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class ProfilePage extends StatefulWidget {
@@ -552,6 +544,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
@@ -564,7 +557,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,25 +592,28 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.user,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFF6B35),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          authProvider.user?.email ?? l10n.user,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFF6B35),
+                          ),
                         ),
-                      ),
-                      Text(
-                        l10n.manageSettings,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.manageSettings,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -661,6 +657,56 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
+            const SizedBox(height: 32),
+
+            // Sign Out Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red[200]!),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.logout, color: Colors.red[700], size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.signOut,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final authProvider = Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        );
+                        await authProvider.signOut();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[600],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(l10n.signOut),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -668,7 +714,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLanguageOption(String code, String name, String flag) {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
     final l10n = AppLocalizations.of(context);
     final isSelected = languageProvider.currentLanguageCode == code;
 
@@ -705,10 +754,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             child: Row(
               children: [
-                Text(
-                  flag,
-                  style: const TextStyle(fontSize: 24),
-                ),
+                Text(flag, style: const TextStyle(fontSize: 24)),
                 const SizedBox(width: 12),
                 Text(
                   name,

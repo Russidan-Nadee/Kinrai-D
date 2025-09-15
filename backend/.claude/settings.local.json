@@ -6,7 +6,9 @@
       "Read(//d/.Work/Kinrai-D/frontend/**)",
       "Bash(flutter clean:*)",
       "Bash(flutter pub:*)",
-      "Bash(flutter run:*)"
+      "Bash(flutter run:*)",
+      "Bash(npm run seed:*)",
+      "Bash(npx ts-node:*)"
     ],
     "deny": [],
     "ask": []
