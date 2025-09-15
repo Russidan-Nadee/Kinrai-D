@@ -29,32 +29,6 @@ export const foodTypeSeedData = [
       },
     ],
   },
-  {
-    key: 'sweet_food',
-    is_active: true,
-    translations: [
-      {
-        language: 'en',
-        name: 'Sweet Food',
-        description: 'Desserts and sweet treats',
-      },
-      {
-        language: 'th',
-        name: 'ของหวาน',
-        description: 'ขนมหวาน ของหวานต่างๆ',
-      },
-      {
-        language: 'jp',
-        name: '甘い食べ物',
-        description: 'デザートと甘いお菓子',
-      },
-      {
-        language: 'zh',
-        name: '甜食',
-        description: '甜点和甜品',
-      },
-    ],
-  },
 ];
 
 export async function seedFoodTypes() {

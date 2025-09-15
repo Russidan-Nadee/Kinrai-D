@@ -179,6 +179,28 @@ export const proteinTypeSeedData = [
       },
     ],
   },
+  {
+    key: 'shrimp',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Shrimp',
+      },
+      {
+        language: 'th',
+        name: 'กุ้ง',
+      },
+      {
+        language: 'jp',
+        name: 'エビ',
+      },
+      {
+        language: 'zh',
+        name: '虾',
+      },
+    ],
+  },
 ];
 
 export async function seedProteinTypes() {

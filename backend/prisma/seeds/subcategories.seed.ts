@@ -114,28 +114,28 @@ export const subcategorySeedData = [
   },
   {
     category_key: 'rice_dishes',
-    key: 'khao_mun_gai',
+    key: 'khao_mun',
     is_active: true,
     translations: [
       {
         language: 'en',
-        name: 'Khao Mun Gai',
-        description: 'Thai-style chicken rice',
+        name: 'Hainanese Rice',
+        description: 'Thai-style Hainanese rice with meat',
       },
       {
         language: 'th',
-        name: 'ข้าวมันไก่',
-        description: 'ข้าวมันไก่ต้ม ข้าวมันไก่ย่าง',
+        name: 'ข้าวมัน',
+        description: 'ข้าวมันสไตล์ไทย เสิร์ฟคู่กับเนื้อสัตว์',
       },
       {
         language: 'jp',
-        name: 'カオマンガイ',
-        description: 'タイ風チキンライス',
+        name: 'カオマン',
+        description: 'タイ風海南ライス',
       },
       {
         language: 'zh',
-        name: '海南鸡饭',
-        description: '泰式海南鸡饭',
+        name: '海南饭',
+        description: '泰式海南饭配肉类',
       },
     ],
   },
@@ -409,6 +409,201 @@ export const subcategorySeedData = [
         language: 'zh',
         name: '粉丝沙拉',
         description: '泰式粉丝沙拉',
+      },
+    ],
+  },
+
+  // Subcategories for stir_fry (ผัด)
+  {
+    category_key: 'stir_fry',
+    key: 'pad_pak',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Stir-fried Vegetables',
+        description: 'Thai stir-fried vegetable dishes',
+      },
+      {
+        language: 'th',
+        name: 'ผัดผัก',
+        description: 'ผัดผักรวม ผัดบวบกิ้ง ผัดคะน้า',
+      },
+      {
+        language: 'jp',
+        name: '野菜炒め',
+        description: 'タイ風野菜炒め',
+      },
+      {
+        language: 'zh',
+        name: '炒蔬菜',
+        description: '泰式炒蔬菜',
+      },
+    ],
+  },
+  {
+    category_key: 'stir_fry',
+    key: 'pad_kana',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Stir-fried Chinese Broccoli',
+        description: 'Stir-fried Chinese broccoli with meat',
+      },
+      {
+        language: 'th',
+        name: 'ผัดคะน้า',
+        description: 'ผัดคะน้าหมูกรอบ ไก่ เนื้อ',
+      },
+      {
+        language: 'jp',
+        name: 'カナ炒め',
+        description: '中国ブロッコリー炒め',
+      },
+      {
+        language: 'zh',
+        name: '炒芥兰',
+        description: '炒芥兰菜',
+      },
+    ],
+  },
+
+  // Subcategories for soup (ต้ม)
+  {
+    category_key: 'soup',
+    key: 'tom_yum',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Tom Yum',
+        description: 'Spicy and sour Thai soup',
+      },
+      {
+        language: 'th',
+        name: 'ต้มยำ',
+        description: 'ต้มยำกุ้ง ต้มยำไก่ ต้มยำมิกซ์',
+      },
+      {
+        language: 'jp',
+        name: 'トムヤム',
+        description: '辛酸っぱいタイスープ',
+      },
+      {
+        language: 'zh',
+        name: '冬阴功',
+        description: '泰式酸辣汤',
+      },
+    ],
+  },
+  {
+    category_key: 'soup',
+    key: 'tom_kha',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Tom Kha',
+        description: 'Coconut soup with galangal',
+      },
+      {
+        language: 'th',
+        name: 'ต้มข่า',
+        description: 'ต้มข่าไก่ ต้มข่าหอย ต้มข่ากุ้ง',
+      },
+      {
+        language: 'jp',
+        name: 'トムカー',
+        description: 'ココナッツとガランガルのスープ',
+      },
+      {
+        language: 'zh',
+        name: '椰汁汤',
+        description: '椰浆高良姜汤',
+      },
+    ],
+  },
+  {
+    category_key: 'soup',
+    key: 'tom_jeud',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Clear Soup',
+        description: 'Thai clear soup with vegetables and meat',
+      },
+      {
+        language: 'th',
+        name: 'ต้มจืด',
+        description: 'ต้มจืดผักรวม ต้มจืดฟักเมล็ดมะขาม',
+      },
+      {
+        language: 'jp',
+        name: 'トムジュート',
+        description: 'タイ風澄ましスープ',
+      },
+      {
+        language: 'zh',
+        name: '清汤',
+        description: '泰式清汤',
+      },
+    ],
+  },
+
+  // Subcategories for grilled (ย่าง/เผา)
+  {
+    category_key: 'grilled',
+    key: 'grilled_meat',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Grilled Meat',
+        description: 'Thai-style grilled meat dishes',
+      },
+      {
+        language: 'th',
+        name: 'เนื้อย่าง',
+        description: 'เนื้อย่างสไตล์ไทย ย่างบนเตาถ่าน',
+      },
+      {
+        language: 'jp',
+        name: '焼き肉',
+        description: 'タイ風焼き肉',
+      },
+      {
+        language: 'zh',
+        name: '烤肉',
+        description: '泰式烤肉',
+      },
+    ],
+  },
+  {
+    category_key: 'grilled',
+    key: 'grilled_seafood',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Grilled Seafood',
+        description: 'Thai-style grilled seafood',
+      },
+      {
+        language: 'th',
+        name: 'อาหารทะเลย่าง',
+        description: 'อาหารทะเลย่างสไตล์ไทย',
+      },
+      {
+        language: 'jp',
+        name: '焼きシーフード',
+        description: 'タイ風焼きシーフード',
+      },
+      {
+        language: 'zh',
+        name: '烤海鲜',
+        description: '泰式烤海鲜',
       },
     ],
   },

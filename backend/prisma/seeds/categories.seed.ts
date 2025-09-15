@@ -193,61 +193,6 @@ export const categorySeedData = [
       },
     ],
   },
-  // Categories for sweet_food (ของหวาน)
-  {
-    food_type_key: 'sweet_food',
-    key: 'thai_desserts',
-    is_active: true,
-    translations: [
-      {
-        language: 'en',
-        name: 'Thai Desserts',
-        description: 'Traditional Thai sweets and desserts',
-      },
-      {
-        language: 'th',
-        name: 'ขนมไทย',
-        description: 'ขนมหวานไทยโบราณ ทองหยิบ ฟักทอง',
-      },
-      {
-        language: 'jp',
-        name: 'タイのデザート',
-        description: '伝統的なタイの甘いお菓子',
-      },
-      {
-        language: 'zh',
-        name: '泰式甜品',
-        description: '传统泰式甜点',
-      },
-    ],
-  },
-  {
-    food_type_key: 'sweet_food',
-    key: 'modern_desserts',
-    is_active: true,
-    translations: [
-      {
-        language: 'en',
-        name: 'Modern Desserts',
-        description: 'Cakes, ice cream, and modern sweets',
-      },
-      {
-        language: 'th',
-        name: 'ของหวานสมัยใหม่',
-        description: 'เค้ก ไอศกรีม ของหวานสไตล์ใหม่',
-      },
-      {
-        language: 'jp',
-        name: '現代のデザート',
-        description: 'ケーキ、アイスクリーム、現代風スイーツ',
-      },
-      {
-        language: 'zh',
-        name: '现代甜品',
-        description: '蛋糕、冰淇淋和现代甜点',
-      },
-    ],
-  },
 ];
 
 export async function seedCategories() {
