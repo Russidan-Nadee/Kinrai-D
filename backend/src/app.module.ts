@@ -4,6 +4,7 @@ import { FoodManagementModule } from './food-management/food-management.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MenusModule } from './menus/menus.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 import { UserProfilesModule } from './user-profiles/user-profiles.module';
 import { DietaryRestrictionsModule } from './dietary-restrictions/dietary-restrictions.module';
 import { FavoritesModule } from './favorites/favorites.module';
@@ -19,6 +20,7 @@ import { AdminModule } from './admin/admin.module';
     }),
     PrismaModule,
     AuthModule,
+    UsersModule,
     FoodManagementModule,
     MenusModule,
     UserProfilesModule,
