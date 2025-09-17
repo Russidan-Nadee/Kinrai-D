@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/.Work/Kinrai-D/backend/prisma/seeds/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
