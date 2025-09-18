@@ -17,7 +17,7 @@ class RandomMenuCard extends StatelessWidget {
 
     return Card(
       elevation: 8,
-      shadowColor: const Color(0xFFFF6B35).withOpacity(0.2),
+      shadowColor: const Color(0xFFFF6B35).withValues(alpha: 0.2),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -34,7 +34,7 @@ class RandomMenuCard extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color(0xFFFF6B35).withOpacity(0.2),
+            color: const Color(0xFFFF6B35).withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -53,12 +53,12 @@ class RandomMenuCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF6B35).withOpacity(0.2),
+                          color: const Color(0xFFFF6B35).withValues(alpha: 0.2),
                           blurRadius: 16,
                           offset: const Offset(0, 8),
                         ),
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -99,10 +99,10 @@ class RandomMenuCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B35).withOpacity(0.1),
+                  color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFFFF6B35).withOpacity(0.3),
+                    color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),

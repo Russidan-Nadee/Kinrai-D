@@ -6,6 +6,7 @@ import 'category_list_item.dart';
 import 'add_food_type_dialog.dart';
 import 'add_category_dialog.dart';
 import 'add_subcategory_dialog.dart';
+import '../../../../core/utils/logger.dart';
 
 class CategoriesNestedTabs extends StatefulWidget {
   const CategoriesNestedTabs({super.key});
@@ -42,20 +43,20 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
         _foodTypes = models.map((m) => m.toEntity()).toList();
       });
     } catch (e) {
-      print('Error loading food types: $e');
+      AppLogger.error('Error loading food types', e);
     }
   }
 
   void _showAddFoodTypeDialog(BuildContext context) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => const AddFoodTypeDialog(),
     );
 
-    if (result != null) {
-      // TODO: Call API to create food type
-      print('Food Type data: $result');
-      ScaffoldMessenger.of(context).showSnackBar(
+    if (result != null && mounted) {
+      AppLogger.debug('Food Type data: $result');
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Food type creation will be implemented soon'),
           backgroundColor: Colors.blue,
@@ -65,15 +66,15 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
   }
 
   void _showAddCategoryDialog(BuildContext context) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => const AddCategoryDialog(),
     );
 
-    if (result != null) {
-      // TODO: Call API to create category
-      print('Category data: $result');
-      ScaffoldMessenger.of(context).showSnackBar(
+    if (result != null && mounted) {
+      AppLogger.debug('Category data: $result');
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Category creation will be implemented soon'),
           backgroundColor: Colors.blue,
@@ -83,15 +84,15 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
   }
 
   void _showAddSubcategoryDialog(BuildContext context) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => const AddSubcategoryDialog(),
     );
 
-    if (result != null) {
-      // TODO: Call API to create subcategory
-      print('Subcategory data: $result');
-      ScaffoldMessenger.of(context).showSnackBar(
+    if (result != null && mounted) {
+      AppLogger.debug('Subcategory data: $result');
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Subcategory creation will be implemented soon'),
           backgroundColor: Colors.blue,

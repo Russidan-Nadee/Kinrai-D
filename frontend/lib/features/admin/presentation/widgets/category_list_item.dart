@@ -18,7 +18,7 @@ class FoodTypeListItem extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: foodType.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+            color: foodType.isActive ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -81,7 +81,7 @@ class CategoryListItem extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: category.isActive ? Colors.blue.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+            color: category.isActive ? Colors.blue.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -145,7 +145,7 @@ class SubcategoryListItem extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: subcategory.isActive ? Colors.orange.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+            color: subcategory.isActive ? Colors.orange.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

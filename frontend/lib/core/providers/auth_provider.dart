@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dio/dio.dart';
+import '../utils/logger.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
@@ -39,21 +40,21 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      print('🔐 Attempting login with: $email'); // Debug
+      AppLogger.info('🔐 Attempting login with: $email');
 
       final response = await Supabase.instance.client.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
-      print('✅ Login response: ${response.user?.email}'); // Debug
+      AppLogger.info('✅ Login response: ${response.user?.email}');
 
       _user = response.user;
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
-      print('❌ Login error: $e'); // Debug
+      AppLogger.error('❌ Login error', e);
 
       // Handle email not confirmed error
       if (e.toString().contains('email_not_confirmed')) {
@@ -74,7 +75,7 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      print('📧 Attempting signup with: $email'); // Debug
+      AppLogger.info('📧 Attempting signup with: $email');
 
       final response = await Supabase.instance.client.auth.signUp(
         email: email,
@@ -82,7 +83,7 @@ class AuthProvider extends ChangeNotifier {
       );
 
       if (response.user != null) {
-        print('✅ Signup successful, syncing user to database'); // Debug
+        AppLogger.info('✅ Signup successful, syncing user to database');
 
         // Sync user to backend database
         await _syncUserToDatabase(response.user!);
@@ -94,7 +95,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      print('❌ Signup error: $e'); // Debug
+      AppLogger.error('❌ Signup error', e);
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -104,7 +105,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _syncUserToDatabase(User user) async {
     try {
-      print('🔄 Syncing user ${user.email} to database'); // Debug
+      AppLogger.info('🔄 Syncing user ${user.email} to database');
 
       final response = await _dio.post('/users/sync', data: {
         'id': user.id,
@@ -114,10 +115,10 @@ class AuthProvider extends ChangeNotifier {
       });
 
       if (response.statusCode == 201) {
-        print('✅ User synced to database successfully'); // Debug
+        AppLogger.info('✅ User synced to database successfully');
       }
     } catch (e) {
-      print('❌ Failed to sync user to database: $e'); // Debug
+      AppLogger.error('❌ Failed to sync user to database', e);
       // Don't throw error - user is still created in Supabase
     }
   }

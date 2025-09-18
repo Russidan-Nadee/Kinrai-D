@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'add_subcategory_dialog.dart';
+import '../../../../core/utils/logger.dart';
 
 class MenuTranslation {
   String language;
@@ -66,7 +67,7 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
   List<DropdownOption> _proteinTypes = [];
   bool _isLoadingData = false;
   
-  List<MenuTranslation> _translations = [
+  final List<MenuTranslation> _translations = [
     MenuTranslation(language: 'en', name: ''),
     MenuTranslation(language: 'th', name: ''),
     MenuTranslation(language: 'jp', name: ''),
@@ -100,7 +101,7 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
         _loadProteinTypes(),
       ]);
     } catch (e) {
-      print('Error loading dropdown data: $e');
+      AppLogger.error('Error loading dropdown data', e);
     } finally {
       setState(() {
         _isLoadingData = false;
@@ -130,7 +131,7 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
         });
       }
     } catch (e) {
-      print('Error loading food types: $e');
+      AppLogger.error('Error loading food types', e);
     }
   }
 
@@ -169,7 +170,7 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
         });
       }
     } catch (e) {
-      print('Error loading categories: $e');
+      AppLogger.error('Error loading categories', e);
     }
   }
 
@@ -206,7 +207,7 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
         });
       }
     } catch (e) {
-      print('Error loading subcategories: $e');
+      AppLogger.error('Error loading subcategories', e);
     }
   }
 
@@ -230,7 +231,7 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
         });
       }
     } catch (e) {
-      print('Error loading protein types: $e');
+      AppLogger.error('Error loading protein types', e);
     }
   }
 

@@ -3,6 +3,7 @@ import '../../../domain/entities/admin_menu_entity.dart';
 import '../../widgets/menu_grid_item.dart';
 import '../../widgets/add_menu_dialog.dart';
 import '../../../services/admin_service.dart';
+import '../../../../../core/utils/logger.dart';
 
 class MenusTab extends StatelessWidget {
   final AdminMenuListEntity? adminInfo;
@@ -23,16 +24,19 @@ class MenusTab extends StatelessWidget {
       context: context,
       builder: (context) => const AddMenuDialog(),
     );
-    
-    if (result != null) {
+
+    if (result != null && context.mounted) {
       await _createMenu(context, result);
     }
   }
 
   Future<void> _createMenu(BuildContext context, Map<String, dynamic> menuData) async {
+    // Store scaffoldMessenger before async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     try {
       // Show loading
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Row(
             children: [
@@ -54,7 +58,7 @@ class MenusTab extends StatelessWidget {
       final success = await adminService.createMenu(menuData);
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Menu created successfully!'),
             backgroundColor: Colors.green,
@@ -66,8 +70,8 @@ class MenusTab extends StatelessWidget {
         throw Exception('Failed to create menu');
       }
     } catch (e) {
-      print('Error creating menu: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppLogger.error('Error creating menu', e);
+      scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text('Failed to create menu: ${e.toString()}'),
           backgroundColor: Colors.red,

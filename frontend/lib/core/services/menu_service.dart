@@ -1,6 +1,7 @@
 import 'dart:math';
 import '../api/api_client.dart';
 import '../models/menu_model.dart';
+import '../utils/logger.dart';
 
 class MenuService {
   late final ApiClient _apiClient;
@@ -17,7 +18,7 @@ class MenuService {
     int? page,
   }) async {
     try {
-      print('[MenuService] Attempting to fetch all menus...');
+      AppLogger.info('[MenuService] Attempting to fetch all menus...');
 
       final queryParams = <String, dynamic>{};
       if (language != null) queryParams['language'] = language;
@@ -29,13 +30,13 @@ class MenuService {
         queryParameters: queryParams,
       );
 
-      print('[MenuService] Response received: ${response.statusCode}');
-      print('[MenuService] Response data type: ${response.data.runtimeType}');
+      AppLogger.info('[MenuService] Response received: ${response.statusCode}');
+      AppLogger.debug('[MenuService] Response data type: ${response.data.runtimeType}');
 
       // ตรวจสอบโครงสร้างข้อมูล
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
-        print('[MenuService] Response keys: ${data.keys.toList()}');
+        AppLogger.debug('[MenuService] Response keys: ${data.keys.toList()}');
 
         // ลองหาข้อมูลเมนูจากโครงสร้างที่ต่างกัน
         List<dynamic> menuList;
@@ -46,7 +47,7 @@ class MenuService {
           menuList = [data];
         }
 
-        print('[MenuService] Found ${menuList.length} menus');
+        AppLogger.info('[MenuService] Found ${menuList.length} menus');
 
         final menus = <MenuModel>[];
         for (int i = 0; i < menuList.length; i++) {
@@ -54,8 +55,8 @@ class MenuService {
             final menu = MenuModel.fromJson(menuList[i] as Map<String, dynamic>);
             menus.add(menu);
           } catch (e) {
-            print('[MenuService] Error parsing menu at index $i: $e');
-            print('[MenuService] Menu data: ${menuList[i]}');
+            AppLogger.error('[MenuService] Error parsing menu at index $i', e);
+            AppLogger.debug('[MenuService] Menu data: ${menuList[i]}');
           }
         }
 
@@ -64,7 +65,7 @@ class MenuService {
         throw Exception('Unexpected response format');
       }
     } catch (e) {
-      print('[MenuService] Menus fetch failed: $e');
+      AppLogger.error('[MenuService] Menus fetch failed', e);
       if (e.toString().contains('Connection refused') ||
           e.toString().contains('Network error')) {
         throw Exception('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
@@ -79,7 +80,7 @@ class MenuService {
     int? limit,
   }) async {
     try {
-      print('[MenuService] Attempting to fetch popular menus...');
+      AppLogger.info('[MenuService] Attempting to fetch popular menus...');
 
       final queryParams = <String, dynamic>{};
       if (language != null) queryParams['language'] = language;
@@ -90,12 +91,12 @@ class MenuService {
         queryParameters: queryParams,
       );
 
-      print('[MenuService] Popular menus fetch successful');
+      AppLogger.info('[MenuService] Popular menus fetch successful');
 
       final List<dynamic> menuList = response.data['data'] ?? response.data;
       return menuList.map((json) => MenuModel.fromJson(json)).toList();
     } catch (e) {
-      print('[MenuService] Popular menus fetch failed: $e');
+      AppLogger.error('[MenuService] Popular menus fetch failed', e);
       rethrow;
     }
   }
@@ -103,7 +104,7 @@ class MenuService {
   /// สุ่มเมนู 1 รายการ (ใช้ API endpoint ที่เฉพาะเจาะจง)
   Future<MenuModel> getRandomMenu({String? language = 'th'}) async {
     try {
-      print('[MenuService] Attempting to get random menu from API...');
+      AppLogger.info('[MenuService] Attempting to get random menu from API...');
 
       final queryParams = <String, dynamic>{};
       if (language != null) queryParams['language'] = language;
@@ -113,15 +114,15 @@ class MenuService {
         queryParameters: queryParams,
       );
 
-      print('[MenuService] Random menu API call successful');
+      AppLogger.info('[MenuService] Random menu API call successful');
 
       // สำหรับ single menu response
       final MenuModel randomMenu = MenuModel.fromJson(response.data);
-      print('[MenuService] Random menu selected: ${randomMenu.getName(language: language ?? 'th')}');
+      AppLogger.info('[MenuService] Random menu selected: ${randomMenu.getName(language: language ?? 'th')}');
 
       return randomMenu;
     } catch (e) {
-      print('[MenuService] Random menu fetch failed: $e');
+      AppLogger.error('[MenuService] Random menu fetch failed', e);
       if (e.toString().contains('Connection refused') ||
           e.toString().contains('Network error')) {
         throw Exception('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
@@ -136,7 +137,7 @@ class MenuService {
     int count = 5,
   }) async {
     try {
-      print('[MenuService] Attempting to get $count random menus...');
+      AppLogger.info('[MenuService] Attempting to get $count random menus...');
 
       final allMenus = await getAllMenus(language: language);
 
@@ -155,11 +156,11 @@ class MenuService {
         selectedMenus.add(availableMenus.removeAt(randomIndex));
       }
 
-      print('[MenuService] $actualCount random menus selected');
+      AppLogger.info('[MenuService] $actualCount random menus selected');
 
       return selectedMenus;
     } catch (e) {
-      print('[MenuService] Random menus fetch failed: $e');
+      AppLogger.error('[MenuService] Random menus fetch failed', e);
       rethrow;
     }
   }
@@ -167,7 +168,7 @@ class MenuService {
   /// ดึงเมนูตาม ID
   Future<MenuModel> getMenuById(int id, {String? language = 'th'}) async {
     try {
-      print('[MenuService] Attempting to fetch menu by ID: $id');
+      AppLogger.info('[MenuService] Attempting to fetch menu by ID: $id');
 
       final queryParams = <String, dynamic>{};
       if (language != null) queryParams['language'] = language;
@@ -177,11 +178,11 @@ class MenuService {
         queryParameters: queryParams,
       );
 
-      print('[MenuService] Menu fetch by ID successful');
+      AppLogger.info('[MenuService] Menu fetch by ID successful');
 
       return MenuModel.fromJson(response.data);
     } catch (e) {
-      print('[MenuService] Menu fetch by ID failed: $e');
+      AppLogger.error('[MenuService] Menu fetch by ID failed', e);
       rethrow;
     }
   }
@@ -198,7 +199,7 @@ class MenuService {
     String? sortOrder,
   }) async {
     try {
-      print('[MenuService] Attempting to search menus...');
+      AppLogger.info('[MenuService] Attempting to search menus...');
 
       final queryParams = <String, dynamic>{};
       if (searchTerm != null) queryParams['search'] = searchTerm;
@@ -215,12 +216,12 @@ class MenuService {
         queryParameters: queryParams,
       );
 
-      print('[MenuService] Menu search successful');
+      AppLogger.info('[MenuService] Menu search successful');
 
       final List<dynamic> menuList = response.data['data'] ?? response.data;
       return menuList.map((json) => MenuModel.fromJson(json)).toList();
     } catch (e) {
-      print('[MenuService] Menu search failed: $e');
+      AppLogger.error('[MenuService] Menu search failed', e);
       rethrow;
     }
   }

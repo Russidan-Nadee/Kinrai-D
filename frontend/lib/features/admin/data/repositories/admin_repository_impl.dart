@@ -10,18 +10,22 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<AdminMenuListEntity> getMenus({int limit = 1000}) async {
     final model = await remoteDataSource.getMenus(limit: limit);
-    
+
     return AdminMenuListEntity(
-      menus: model.menus.map((menu) => AdminMenuEntity(
-        id: menu.id,
-        key: menu.key,
-        imageUrl: menu.imageUrl,
-        mealTime: menu.mealTime,
-        isActive: menu.isActive,
-        name: menu.name,
-        createdAt: DateTime.now(), // TODO: Add from model when available
-        updatedAt: DateTime.now(), // TODO: Add from model when available
-      )).toList(),
+      menus: model.menus
+          .map(
+            (menu) => AdminMenuEntity(
+              id: menu.id,
+              key: menu.key,
+              imageUrl: menu.imageUrl,
+              mealTime: menu.mealTime,
+              isActive: menu.isActive,
+              name: menu.name,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+          )
+          .toList(),
       pagination: PaginationEntity(
         page: model.pagination.page,
         limit: model.pagination.limit,
@@ -33,7 +37,6 @@ class AdminRepositoryImpl implements AdminRepository {
 
   @override
   Future<AdminMenuEntity> getMenuById(int id) async {
-    // TODO: Implement when needed
     throw UnimplementedError();
   }
 

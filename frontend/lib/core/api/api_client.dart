@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../utils/constants.dart';
 import '../errors/exceptions.dart';
+import '../utils/logger.dart';
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
@@ -40,9 +41,10 @@ class ApiClient {
       InterceptorsWrapper(
         onError: (error, handler) async {
           // Log detailed error info
-          print('[API] Error Type: ${error.type}');
-          print('[API] Error Message: ${error.message}');
-          print('[API] Response: ${error.response}');
+          AppLogger.error(
+            '[API] Error: ${error.type} - ${error.message}',
+            error.response,
+          );
           
           // Don't retry, just pass the error
           handler.next(error);
@@ -59,7 +61,7 @@ class ApiClient {
         responseHeader: true,
         error: true,
         logPrint: (obj) {
-          print('[API] $obj');
+          AppLogger.debug('[API] $obj');
         },
       ),
     );

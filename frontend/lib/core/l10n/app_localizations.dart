@@ -153,7 +153,7 @@ class AppLocalizations {
       case 'en':
         return 'Language changed to $language';
       case 'ja':
-        return '言語を${language}に変更しました';
+        return '言語を$languageに変更しました';
       case 'zh':
         return '已切换到$language';
       default:
@@ -410,7 +410,8 @@ class AppLocalizations {
   }
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override

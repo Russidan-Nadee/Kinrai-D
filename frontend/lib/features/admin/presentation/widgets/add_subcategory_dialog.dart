@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../../core/utils/logger.dart';
 
 class SubcategoryTranslation {
   String language;
@@ -84,7 +85,7 @@ class _AddSubcategoryDialogState extends State<AddSubcategoryDialog> {
   List<CategoryOption> _categories = [];
   bool _isLoadingData = false;
   
-  List<SubcategoryTranslation> _translations = [
+  final List<SubcategoryTranslation> _translations = [
     SubcategoryTranslation(language: 'en', name: ''),
     SubcategoryTranslation(language: 'th', name: ''),
     SubcategoryTranslation(language: 'jp', name: ''),
@@ -130,7 +131,7 @@ class _AddSubcategoryDialogState extends State<AddSubcategoryDialog> {
         });
       }
     } catch (e) {
-      print('Error loading food types: $e');
+      AppLogger.error('Error loading food types', e);
     } finally {
       setState(() {
         _isLoadingData = false;
@@ -159,7 +160,7 @@ class _AddSubcategoryDialogState extends State<AddSubcategoryDialog> {
         });
       }
     } catch (e) {
-      print('Error loading categories: $e');
+      AppLogger.error('Error loading categories', e);
     }
   }
 

@@ -1,4 +1,5 @@
 import '../../../../core/api/api_client.dart';
+import '../../../../core/utils/logger.dart';
 import '../../models/admin_info_model.dart';
 
 abstract class AdminRemoteDataSource {
@@ -14,16 +15,16 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   @override
   Future<AdminInfoModel> getMenus({int limit = 1000}) async {
     try {
-      print('[AdminRemoteDataSource] Fetching menus with limit: $limit');
+      AppLogger.info('[AdminRemoteDataSource] Fetching menus with limit: $limit');
       final response = await apiClient.get(
         '/admin/menus',
         queryParameters: {'limit': limit.toString()},
       );
       
-      print('[AdminRemoteDataSource] API call successful');
+      AppLogger.info('[AdminRemoteDataSource] API call successful');
       return AdminInfoModel.fromJson(response.data);
     } catch (e) {
-      print('[AdminRemoteDataSource] API call failed: $e');
+      AppLogger.error('[AdminRemoteDataSource] API call failed', e);
       rethrow;
     }
   }
@@ -31,16 +32,16 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   @override
   Future<bool> createMenu(Map<String, dynamic> menuData) async {
     try {
-      print('[AdminRemoteDataSource] Creating menu: $menuData');
+      AppLogger.info('[AdminRemoteDataSource] Creating menu: $menuData');
       final response = await apiClient.post(
         '/menus',
         data: menuData,
       );
       
-      print('[AdminRemoteDataSource] Menu creation successful');
+      AppLogger.info('[AdminRemoteDataSource] Menu creation successful');
       return response.statusCode == 201;
     } catch (e) {
-      print('[AdminRemoteDataSource] Menu creation failed: $e');
+      AppLogger.error('[AdminRemoteDataSource] Menu creation failed', e);
       rethrow;
     }
   }

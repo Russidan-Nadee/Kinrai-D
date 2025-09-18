@@ -30,7 +30,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final languageProvider = Provider.of<LanguageProvider>(context);
+    Provider.of<LanguageProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -39,7 +39,7 @@ class _SignUpPageState extends State<SignUpPage> {
           padding: const EdgeInsets.all(24.0),
           child: Card(
             elevation: 8,
-            shadowColor: const Color(0xFFFF6B35).withOpacity(0.2),
+            shadowColor: const Color(0xFFFF6B35).withValues(alpha: 0.2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -55,7 +55,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF6B35).withOpacity(0.1),
+                        color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(50),
                       ),
                       child: const Icon(
@@ -78,10 +78,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
                     Text(
                       AppLocalizations.of(context).createNewAccount,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 32),
 
@@ -107,7 +104,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         if (value == null || value.isEmpty) {
                           return AppLocalizations.of(context).emailRequired;
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return AppLocalizations.of(context).emailInvalid;
                         }
                         return null;
@@ -123,8 +122,13 @@ class _SignUpPageState extends State<SignUpPage> {
                         labelText: AppLocalizations.of(context).password,
                         prefixIcon: const Icon(Icons.lock_outlined),
                         suffixIcon: IconButton(
-                          icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () => setState(() => _isObscure = !_isObscure),
+                          icon: Icon(
+                            _isObscure
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () =>
+                              setState(() => _isObscure = !_isObscure),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -157,8 +161,14 @@ class _SignUpPageState extends State<SignUpPage> {
                         labelText: AppLocalizations.of(context).confirmPassword,
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
-                          icon: Icon(_isConfirmObscure ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () => setState(() => _isConfirmObscure = !_isConfirmObscure),
+                          icon: Icon(
+                            _isConfirmObscure
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () => setState(
+                            () => _isConfirmObscure = !_isConfirmObscure,
+                          ),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -173,10 +183,14 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return AppLocalizations.of(context).confirmPasswordRequired;
+                          return AppLocalizations.of(
+                            context,
+                          ).confirmPasswordRequired;
                         }
                         if (value != _passwordController.text) {
-                          return AppLocalizations.of(context).passwordsDoNotMatch;
+                          return AppLocalizations.of(
+                            context,
+                          ).passwordsDoNotMatch;
                         }
                         return null;
                       },
@@ -194,7 +208,11 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline, color: Colors.red[700], size: 20),
+                            Icon(
+                              Icons.error_outline,
+                              color: Colors.red[700],
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -213,7 +231,9 @@ class _SignUpPageState extends State<SignUpPage> {
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: authProvider.isLoading ? null : _handleSignUp,
+                        onPressed: authProvider.isLoading
+                            ? null
+                            : _handleSignUp,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFF6B35),
                           foregroundColor: Colors.white,
@@ -228,7 +248,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : Text(
@@ -251,7 +273,11 @@ class _SignUpPageState extends State<SignUpPage> {
                         text: TextSpan(
                           style: TextStyle(color: Colors.grey[600]),
                           children: [
-                            TextSpan(text: AppLocalizations.of(context).alreadyHaveAccount),
+                            TextSpan(
+                              text: AppLocalizations.of(
+                                context,
+                              ).alreadyHaveAccount,
+                            ),
                             const TextSpan(text: ' '),
                             TextSpan(
                               text: AppLocalizations.of(context).signIn,
@@ -294,7 +320,9 @@ class _SignUpPageState extends State<SignUpPage> {
       );
 
       // Navigate back to login - AuthWrapper will handle the redirect
-      Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../../core/utils/logger.dart';
 
 class CategoryTranslation {
   String language;
@@ -57,7 +58,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
   List<FoodTypeOption> _foodTypes = [];
   bool _isLoadingData = false;
   
-  List<CategoryTranslation> _translations = [
+  final List<CategoryTranslation> _translations = [
     CategoryTranslation(language: 'en', name: ''),
     CategoryTranslation(language: 'th', name: ''),
     CategoryTranslation(language: 'jp', name: ''),
@@ -103,7 +104,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
         });
       }
     } catch (e) {
-      print('Error loading food types: $e');
+      AppLogger.error('Error loading food types', e);
     } finally {
       setState(() {
         _isLoadingData = false;

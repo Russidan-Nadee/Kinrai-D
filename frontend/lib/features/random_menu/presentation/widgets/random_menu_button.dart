@@ -23,7 +23,7 @@ class RandomMenuButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF6B35).withOpacity(0.3),
+            color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),

@@ -29,7 +29,7 @@ class _AddFoodTypeDialogState extends State<AddFoodTypeDialog> {
   final _formKey = GlobalKey<FormState>();
   final _keyController = TextEditingController();
   
-  List<FoodTypeTranslation> _translations = [
+  final List<FoodTypeTranslation> _translations = [
     FoodTypeTranslation(language: 'en', name: ''),
     FoodTypeTranslation(language: 'th', name: ''),
     FoodTypeTranslation(language: 'jp', name: ''),

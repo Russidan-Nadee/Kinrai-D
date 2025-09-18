@@ -106,7 +106,7 @@ class _MainNavigationState extends State<MainNavigation>
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
+            color: Colors.orange.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(2, 0),
           ),
@@ -267,15 +267,15 @@ class _MainNavigationState extends State<MainNavigation>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: isSelected
-                  ? Colors.white.withOpacity(0.9)
-                  : Colors.white.withOpacity(0.1),
+                  ? Colors.white.withValues(alpha: 0.9)
+                  : Colors.white.withValues(alpha: 0.1),
               border: isSelected
                   ? Border.all(color: Colors.white, width: 1)
                   : null,
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -431,15 +431,15 @@ class _MainNavigationState extends State<MainNavigation>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: isSelected
-                  ? Colors.white.withOpacity(0.9)
-                  : Colors.white.withOpacity(0.1),
+                  ? Colors.white.withValues(alpha: 0.9)
+                  : Colors.white.withValues(alpha: 0.1),
               border: isSelected
                   ? Border.all(color: Colors.white, width: 1)
                   : null,
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -543,7 +543,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
+    Provider.of<LanguageProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
     final l10n = AppLocalizations.of(context);
 
@@ -573,7 +573,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFFFF6B35).withOpacity(0.3),
+                  color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -640,7 +640,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 border: Border.all(color: Colors.grey[300]!),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -745,7 +745,7 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFFFF6B35).withOpacity(0.1)
+                  ? const Color(0xFFFF6B35).withValues(alpha: 0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
               border: isSelected

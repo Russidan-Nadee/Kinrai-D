@@ -1,4 +1,5 @@
 import '../../../../core/api/api_client.dart';
+import '../../../../core/utils/logger.dart';
 import '../models/category_models.dart';
 
 abstract class CategoryRemoteDataSource {
@@ -17,10 +18,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<FoodTypeModel>> getFoodTypes() async {
     try {
-      print('[CategoryRemoteDataSource] Fetching food types...');
+      AppLogger.info('[CategoryRemoteDataSource] Fetching food types...');
       final response = await apiClient.get('/food-types?lang=en');
       
-      print('[CategoryRemoteDataSource] Food types API call successful');
+      AppLogger.info('[CategoryRemoteDataSource] Food types API call successful');
       final apiResponse = ApiResponseModel.fromJson(
         response.data,
         (data) => (data as List<dynamic>)
@@ -30,7 +31,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
       
       return apiResponse.data;
     } catch (e) {
-      print('[CategoryRemoteDataSource] Food types API call failed: $e');
+      AppLogger.error('[CategoryRemoteDataSource] Food types API call failed', e);
       rethrow;
     }
   }
@@ -38,10 +39,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategories() async {
     try {
-      print('[CategoryRemoteDataSource] Fetching categories...');
+      AppLogger.info('[CategoryRemoteDataSource] Fetching categories...');
       final response = await apiClient.get('/categories?lang=en');
       
-      print('[CategoryRemoteDataSource] Categories API call successful');
+      AppLogger.info('[CategoryRemoteDataSource] Categories API call successful');
       final apiResponse = ApiResponseModel.fromJson(
         response.data,
         (data) => (data as List<dynamic>)
@@ -51,7 +52,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
       
       return apiResponse.data;
     } catch (e) {
-      print('[CategoryRemoteDataSource] Categories API call failed: $e');
+      AppLogger.error('[CategoryRemoteDataSource] Categories API call failed', e);
       rethrow;
     }
   }
@@ -59,10 +60,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategoriesByFoodType(int foodTypeId) async {
     try {
-      print('[CategoryRemoteDataSource] Fetching categories by food type: $foodTypeId');
+      AppLogger.info('[CategoryRemoteDataSource] Fetching categories by food type: $foodTypeId');
       final response = await apiClient.get('/categories/food-type/$foodTypeId?lang=en');
       
-      print('[CategoryRemoteDataSource] Categories by food type API call successful');
+      AppLogger.info('[CategoryRemoteDataSource] Categories by food type API call successful');
       final apiResponse = ApiResponseModel.fromJson(
         response.data,
         (data) => (data as List<dynamic>)
@@ -72,7 +73,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
       
       return apiResponse.data;
     } catch (e) {
-      print('[CategoryRemoteDataSource] Categories by food type API call failed: $e');
+      AppLogger.error('[CategoryRemoteDataSource] Categories by food type API call failed', e);
       rethrow;
     }
   }
@@ -80,10 +81,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<SubcategoryModel>> getSubcategories() async {
     try {
-      print('[CategoryRemoteDataSource] Fetching subcategories...');
+      AppLogger.info('[CategoryRemoteDataSource] Fetching subcategories...');
       final response = await apiClient.get('/subcategories?lang=en');
       
-      print('[CategoryRemoteDataSource] Subcategories API call successful');
+      AppLogger.info('[CategoryRemoteDataSource] Subcategories API call successful');
       final apiResponse = ApiResponseModel.fromJson(
         response.data,
         (data) => (data as List<dynamic>)
@@ -93,7 +94,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
       
       return apiResponse.data;
     } catch (e) {
-      print('[CategoryRemoteDataSource] Subcategories API call failed: $e');
+      AppLogger.error('[CategoryRemoteDataSource] Subcategories API call failed', e);
       rethrow;
     }
   }
@@ -101,10 +102,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<SubcategoryModel>> getSubcategoriesByCategory(int categoryId) async {
     try {
-      print('[CategoryRemoteDataSource] Fetching subcategories by category: $categoryId');
+      AppLogger.info('[CategoryRemoteDataSource] Fetching subcategories by category: $categoryId');
       final response = await apiClient.get('/subcategories/category/$categoryId?lang=en');
       
-      print('[CategoryRemoteDataSource] Subcategories by category API call successful');
+      AppLogger.info('[CategoryRemoteDataSource] Subcategories by category API call successful');
       final apiResponse = ApiResponseModel.fromJson(
         response.data,
         (data) => (data as List<dynamic>)
@@ -114,7 +115,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
       
       return apiResponse.data;
     } catch (e) {
-      print('[CategoryRemoteDataSource] Subcategories by category API call failed: $e');
+      AppLogger.error('[CategoryRemoteDataSource] Subcategories by category API call failed', e);
       rethrow;
     }
   }

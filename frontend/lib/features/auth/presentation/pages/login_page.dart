@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final languageProvider = Provider.of<LanguageProvider>(context);
+    Provider.of<LanguageProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.all(24.0),
           child: Card(
             elevation: 8,
-            shadowColor: const Color(0xFFFF6B35).withOpacity(0.2),
+            shadowColor: const Color(0xFFFF6B35).withValues(alpha: 0.2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF6B35).withOpacity(0.1),
+                        color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(50),
                       ),
                       child: const Icon(
@@ -76,10 +76,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     Text(
                       AppLocalizations.of(context).signInToAccount,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 32),
 
@@ -105,7 +102,9 @@ class _LoginPageState extends State<LoginPage> {
                         if (value == null || value.isEmpty) {
                           return AppLocalizations.of(context).emailRequired;
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return AppLocalizations.of(context).emailInvalid;
                         }
                         return null;
@@ -121,8 +120,13 @@ class _LoginPageState extends State<LoginPage> {
                         labelText: AppLocalizations.of(context).password,
                         prefixIcon: const Icon(Icons.lock_outlined),
                         suffixIcon: IconButton(
-                          icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () => setState(() => _isObscure = !_isObscure),
+                          icon: Icon(
+                            _isObscure
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () =>
+                              setState(() => _isObscure = !_isObscure),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -158,7 +162,11 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline, color: Colors.red[700], size: 20),
+                            Icon(
+                              Icons.error_outline,
+                              color: Colors.red[700],
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -192,7 +200,9 @@ class _LoginPageState extends State<LoginPage> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : Text(
@@ -219,7 +229,11 @@ class _LoginPageState extends State<LoginPage> {
                         text: TextSpan(
                           style: TextStyle(color: Colors.grey[600]),
                           children: [
-                            TextSpan(text: AppLocalizations.of(context).dontHaveAccount),
+                            TextSpan(
+                              text: AppLocalizations.of(
+                                context,
+                              ).dontHaveAccount,
+                            ),
                             const TextSpan(text: ' '),
                             TextSpan(
                               text: AppLocalizations.of(context).signUp,
