@@ -15,8 +15,10 @@ import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { CreateDislikeDto } from './dto/create-dislike.dto';
 import { RemoveDislikeDto } from './dto/remove-dislike.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('user-profiles')
+@UseGuards(JwtAuthGuard)
 export class UserProfilesController {
   constructor(private readonly userProfilesService: UserProfilesService) {}
 
@@ -59,6 +61,11 @@ export class UserProfilesController {
   @Delete('me/dislikes')
   removeDislike(@Body() removeDislikeDto: RemoveDislikeDto, @Request() req) {
     return this.userProfilesService.removeDislike(req.user.id, removeDislikeDto);
+  }
+
+  @Delete('me/dislikes/bulk')
+  removeBulkDislikes(@Body() body: { menu_ids: number[] }, @Request() req) {
+    return this.userProfilesService.removeBulkDislikes(req.user.id, body.menu_ids);
   }
 
   @Get('me/dislikes')

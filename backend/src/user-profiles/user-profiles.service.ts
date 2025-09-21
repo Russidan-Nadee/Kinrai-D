@@ -198,4 +198,24 @@ export class UserProfilesService {
       dietaryRestrictions,
     };
   }
+
+  async removeBulkDislikes(userId: string, menuIds: number[]) {
+    if (!menuIds || menuIds.length === 0) {
+      throw new Error('No menu IDs provided');
+    }
+
+    const result = await this.prisma.userDislike.deleteMany({
+      where: {
+        user_profile_id: userId,
+        menu_id: {
+          in: menuIds,
+        },
+      },
+    });
+
+    return {
+      message: `Successfully removed ${result.count} dislikes`,
+      removedCount: result.count,
+    };
+  }
 }

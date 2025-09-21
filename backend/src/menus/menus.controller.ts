@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { MenusService } from './menus.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
@@ -18,6 +19,7 @@ import { FilterMenuDto } from './dto/filter-menu.dto';
 import { SearchMenuDto } from './dto/search-menu.dto';
 import { MenuRecommendationQueryDto } from './dto/menu-recommendation.dto';
 import { AdminOnly, CurrentUser, OptionalAuth, UserId } from '../auth/decorators/auth.decorators';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('menus')
@@ -73,6 +75,19 @@ export class MenusController {
     @Query('language') language?: string,
   ) {
     return this.menusService.getRandomMenu(language);
+  }
+
+  @Get('random/personalized')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get a random menu item excluding user dislikes (requires authentication)' })
+  @ApiResponse({ status: 200, description: 'Personalized random menu item retrieved successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required.' })
+  @ApiQuery({ name: 'language', required: false, type: String, description: 'Language code (th, en, jp, zh)' })
+  getPersonalizedRandomMenu(
+    @UserId() userId: string,
+    @Query('language') language?: string,
+  ) {
+    return this.menusService.getPersonalizedRandomMenu(language, userId);
   }
 
   @Get('key/:key')

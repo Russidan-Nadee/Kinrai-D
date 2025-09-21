@@ -131,6 +131,36 @@ class MenuService {
     }
   }
 
+  /// สุ่มเมนู 1 รายการ ที่ไม่รวมเมนูที่ user ไม่ชอบ (ต้องเข้าสู่ระบบ)
+  Future<MenuModel> getPersonalizedRandomMenu({String? language = 'th'}) async {
+    try {
+      AppLogger.info('[MenuService] Attempting to get personalized random menu from API...');
+
+      final queryParams = <String, dynamic>{};
+      if (language != null) queryParams['language'] = language;
+
+      final response = await _apiClient.get(
+        '/menus/random/personalized',
+        queryParameters: queryParams,
+      );
+
+      AppLogger.info('[MenuService] Personalized random menu API call successful');
+
+      // สำหรับ single menu response
+      final MenuModel randomMenu = MenuModel.fromJson(response.data);
+      AppLogger.info('[MenuService] Personalized random menu selected: ${randomMenu.getName(language: language ?? 'th')}');
+
+      return randomMenu;
+    } catch (e) {
+      AppLogger.error('[MenuService] Personalized random menu fetch failed', e);
+      if (e.toString().contains('Connection refused') ||
+          e.toString().contains('Network error')) {
+        throw Exception('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+      }
+      rethrow;
+    }
+  }
+
   /// สุ่มเมนูหลายรายการ
   Future<List<MenuModel>> getRandomMenus({
     String? language = 'th',

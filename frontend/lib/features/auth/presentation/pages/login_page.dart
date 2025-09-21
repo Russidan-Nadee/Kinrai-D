@@ -116,6 +116,7 @@ class _LoginPageState extends State<LoginPage> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _isObscure,
+                      onFieldSubmitted: (_) => _handleLogin(),
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context).password,
                         prefixIcon: const Icon(Icons.lock_outlined),

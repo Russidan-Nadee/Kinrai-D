@@ -21,5 +21,19 @@
 
   "otherFeaturesDeveloping": "ฟีเจอร์อื่นๆ กำลังพัฒนา",
 
-  "comingSoon": "เร็วๆ นี้!"
+  "comingSoon": "เร็วๆ นี้!",
+
+  "dislikeList": "รายการที่ไม่ชอบ",
+
+  "noDislikesYet": "ยังไม่มีรายการที่ไม่ชอบ",
+
+  "removedFromDislikes": "ลบออกจากรายการไม่ชอบแล้ว",
+
+  "removeFromDislikes": "ลบจากรายการไม่ชอบ",
+
+  "errorTryAgain": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+
+  "reason": "เหตุผล",
+
+  "addedOn": "เพิ่มเมื่อ"
 }

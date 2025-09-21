@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Read(//d/.Work/Kinrai-D/backend/prisma/seeds/**)"
+      "Read(//d/.Work/Kinrai-D/backend/prisma/seeds/**)",
+      "Read(//d/.Work/Kinrai-D/backend/**)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run start:dev:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(flutter analyze:*)"
     ],
     "deny": [],
     "ask": []

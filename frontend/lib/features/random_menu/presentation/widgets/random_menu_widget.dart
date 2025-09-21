@@ -30,7 +30,7 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
     });
 
     try {
-      final randomMenu = await _menuService.getRandomMenu(language: languageProvider.currentLanguageCode);
+      final randomMenu = await _menuService.getPersonalizedRandomMenu(language: languageProvider.currentLanguageCode);
       setState(() {
         _randomMenu = randomMenu;
         _isLoading = false;
@@ -90,7 +90,14 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
             ),
           )
         else if (_randomMenu != null)
-          RandomMenuCard(menu: _randomMenu!),
+          RandomMenuCard(
+            key: ValueKey(_randomMenu!.id),
+            menu: _randomMenu!,
+            onDisliked: () {
+              // Optional: Auto-generate new menu after dislike
+              _getRandomMenu();
+            },
+          ),
       ],
     );
   }

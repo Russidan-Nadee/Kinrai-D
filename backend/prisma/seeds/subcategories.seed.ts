@@ -607,6 +607,64 @@ export const subcategorySeedData = [
       },
     ],
   },
+
+  // Additional subcategory for rice dishes - Khao Na
+  {
+    category_key: 'rice_dishes',
+    key: 'khao_na',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Rice with Topping',
+        description: 'Thai rice topped with protein and vegetables',
+      },
+      {
+        language: 'th',
+        name: 'ข้าวหน้า',
+        description: 'ข้าวราดหน้าและผักรวม',
+      },
+      {
+        language: 'jp',
+        name: 'カオナー',
+        description: 'のせご飯',
+      },
+      {
+        language: 'zh',
+        name: '盖浇饭',
+        description: '泰式盖浇饭',
+      },
+    ],
+  },
+
+  // Additional subcategory for noodles - Khao Soi
+  {
+    category_key: 'noodles',
+    key: 'khao_soi',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Khao Soi',
+        description: 'Northern Thai curry noodle soup',
+      },
+      {
+        language: 'th',
+        name: 'ข้าวซอย',
+        description: 'ข้าวซอยเส้นนิ่มและกรอบ',
+      },
+      {
+        language: 'jp',
+        name: 'カオソイ',
+        description: '北タイ風カレー麺',
+      },
+      {
+        language: 'zh',
+        name: '咖喱面',
+        description: '泰北咖喱面',
+      },
+    ],
+  },
 ];
 
 export async function seedSubcategories() {

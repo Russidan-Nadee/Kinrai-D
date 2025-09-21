@@ -60,5 +60,40 @@
   "comingSoon": "Coming soon!",
   "@comingSoon": {
     "description": "Coming soon text"
+  },
+
+  "dislikeList": "Dislike List",
+  "@dislikeList": {
+    "description": "Dislike list section title"
+  },
+
+  "noDislikesYet": "No dislikes yet",
+  "@noDislikesYet": {
+    "description": "Empty dislike list message"
+  },
+
+  "removedFromDislikes": "Removed from dislike list",
+  "@removedFromDislikes": {
+    "description": "Success message when removing dislike"
+  },
+
+  "removeFromDislikes": "Remove from dislike list",
+  "@removeFromDislikes": {
+    "description": "Remove dislike button tooltip"
+  },
+
+  "errorTryAgain": "An error occurred. Please try again",
+  "@errorTryAgain": {
+    "description": "Generic error message"
+  },
+
+  "reason": "Reason",
+  "@reason": {
+    "description": "Dislike reason label"
+  },
+
+  "addedOn": "Added on",
+  "@addedOn": {
+    "description": "Date when dislike was added"
   }
 }

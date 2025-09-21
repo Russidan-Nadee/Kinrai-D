@@ -26,7 +26,8 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(nc:*)",
-      "Bash(cmd /c:*)"
+      "Bash(cmd /c:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": []
   }

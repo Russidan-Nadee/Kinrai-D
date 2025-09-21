@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../utils/constants.dart';
-import '../errors/exceptions.dart';
+import '../errors/exceptions.dart' as custom_exceptions;
 import '../utils/logger.dart';
 
 class ApiClient {
@@ -36,16 +37,24 @@ class ApiClient {
   }
 
   void _addInterceptors() {
-    // Retry interceptor for development
+    // Auth interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          // Add auth token if available
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session != null) {
+            options.headers['Authorization'] = 'Bearer ${session.accessToken}';
+          }
+          handler.next(options);
+        },
         onError: (error, handler) async {
           // Log detailed error info
           AppLogger.error(
             '[API] Error: ${error.type} - ${error.message}',
             error.response,
           );
-          
+
           // Don't retry, just pass the error
           handler.next(error);
         },
@@ -112,10 +121,15 @@ class ApiClient {
   // DELETE request
   Future<Response> delete(
     String path, {
+    dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      return await _dio.delete(path, queryParameters: queryParameters);
+      return await _dio.delete(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -126,12 +140,12 @@ class ApiClient {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return NetworkException(
+        return custom_exceptions.NetworkException(
           'Connection timeout. Please check your internet connection.',
         );
 
       case DioExceptionType.connectionError:
-        return NetworkException(
+        return custom_exceptions.NetworkException(
           'No internet connection. Please check your network settings.',
         );
 
@@ -141,25 +155,25 @@ class ApiClient {
             error.response?.data?['message'] ?? 'Server error occurred';
 
         if (statusCode == 401) {
-          return AuthException('Authentication failed. Please login again.');
+          return custom_exceptions.AuthException('Authentication failed. Please login again.');
         } else if (statusCode == 403) {
-          return AuthException('Access denied. You don\'t have permission.');
+          return custom_exceptions.AuthException('Access denied. You don\'t have permission.');
         } else if (statusCode == 404) {
-          return ServerException('Resource not found.', statusCode: statusCode);
+          return custom_exceptions.ServerException('Resource not found.', statusCode: statusCode);
         } else if (statusCode != null && statusCode >= 500) {
-          return ServerException(
+          return custom_exceptions.ServerException(
             'Server error. Please try again later.',
             statusCode: statusCode,
           );
         } else {
-          return ServerException(message, statusCode: statusCode);
+          return custom_exceptions.ServerException(message, statusCode: statusCode);
         }
 
       case DioExceptionType.cancel:
-        return NetworkException('Request was cancelled.');
+        return custom_exceptions.NetworkException('Request was cancelled.');
 
       default:
-        return NetworkException(
+        return custom_exceptions.NetworkException(
           'An unexpected error occurred. Please try again.',
         );
     }
