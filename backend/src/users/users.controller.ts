@@ -1,4 +1,11 @@
-import { Controller, Post, Body, Logger, HttpStatus, HttpException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Logger,
+  HttpStatus,
+  HttpException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import type { CreateUserDto } from './users.service';
 

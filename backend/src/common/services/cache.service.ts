@@ -21,11 +21,11 @@ export class CacheService implements OnModuleDestroy {
   private readonly redis: Redis;
   private readonly defaultTTL = 3600; // 1 hour
   private readonly keyPrefix = 'kinrai:';
-  
+
   // Cache statistics
   private stats = {
     hits: 0,
-    misses: 0
+    misses: 0,
   };
 
   constructor(private configService: ConfigService) {
@@ -65,7 +65,7 @@ export class CacheService implements OnModuleDestroy {
     try {
       const fullKey = this.buildKey(key);
       const value = await this.redis.get(fullKey);
-      
+
       if (value === null) {
         this.stats.misses++;
         return null;
@@ -100,7 +100,7 @@ export class CacheService implements OnModuleDestroy {
   async del(key: string | string[]): Promise<number> {
     try {
       const keys = Array.isArray(key) ? key : [key];
-      const fullKeys = keys.map(k => this.buildKey(k));
+      const fullKeys = keys.map((k) => this.buildKey(k));
       return await this.redis.del(...fullKeys);
     } catch (error) {
       this.logger.error(`Cache delete error:`, error);
@@ -142,7 +142,7 @@ export class CacheService implements OnModuleDestroy {
   async getOrSet<T>(
     key: string,
     fetchFn: () => Promise<T>,
-    options?: CacheOptions
+    options?: CacheOptions,
   ): Promise<T> {
     const cached = await this.get<T>(key);
     if (cached !== null) {
@@ -161,7 +161,7 @@ export class CacheService implements OnModuleDestroy {
     try {
       const fullPattern = this.buildKey(pattern);
       const keys = await this.redis.keys(fullPattern);
-      
+
       if (keys.length === 0) {
         return 0;
       }
@@ -180,19 +180,24 @@ export class CacheService implements OnModuleDestroy {
     key: string,
     value: T,
     tags: string[],
-    options?: CacheOptions
+    options?: CacheOptions,
   ): Promise<void> {
     await this.set(key, value, options);
-    
+
     // Store tags for this key
     const tagKey = this.buildKey(`tags:${key}`);
-    await this.set(tagKey, tags, { ttl: (options?.ttl || this.defaultTTL) + 60 });
-    
+    await this.set(tagKey, tags, {
+      ttl: (options?.ttl || this.defaultTTL) + 60,
+    });
+
     // Add key to each tag's key list
     for (const tag of tags) {
       const tagListKey = this.buildKey(`tag_keys:${tag}`);
       await this.redis.sadd(tagListKey, key);
-      await this.redis.expire(tagListKey, (options?.ttl || this.defaultTTL) + 60);
+      await this.redis.expire(
+        tagListKey,
+        (options?.ttl || this.defaultTTL) + 60,
+      );
     }
   }
 
@@ -203,19 +208,19 @@ export class CacheService implements OnModuleDestroy {
     try {
       const tagListKey = this.buildKey(`tag_keys:${tag}`);
       const keys = await this.redis.smembers(tagListKey);
-      
+
       if (keys.length === 0) {
         return 0;
       }
 
       // Delete the actual keys and their tag references
-      const fullKeys = keys.map(key => this.buildKey(key));
-      const tagKeys = keys.map(key => this.buildKey(`tags:${key}`));
-      
+      const fullKeys = keys.map((key) => this.buildKey(key));
+      const tagKeys = keys.map((key) => this.buildKey(`tags:${key}`));
+
       await Promise.all([
         this.redis.del(...fullKeys),
         this.redis.del(...tagKeys),
-        this.redis.del(tagListKey)
+        this.redis.del(tagListKey),
       ]);
 
       return keys.length;
@@ -232,15 +237,15 @@ export class CacheService implements OnModuleDestroy {
     try {
       const info = await this.redis.info('memory');
       const keyspace = await this.redis.info('keyspace');
-      
+
       const memoryMatch = info.match(/used_memory_human:(.+)/);
       const keysMatch = keyspace.match(/keys=(\d+)/);
-      
+
       return {
         hits: this.stats.hits,
         misses: this.stats.misses,
         keys: keysMatch ? parseInt(keysMatch[1]) : 0,
-        memory: memoryMatch ? memoryMatch[1].trim() : 'N/A'
+        memory: memoryMatch ? memoryMatch[1].trim() : 'N/A',
       };
     } catch (error) {
       this.logger.error('Error getting cache stats:', error);
@@ -248,7 +253,7 @@ export class CacheService implements OnModuleDestroy {
         hits: this.stats.hits,
         misses: this.stats.misses,
         keys: 0,
-        memory: 'N/A'
+        memory: 'N/A',
       };
     }
   }
@@ -258,7 +263,7 @@ export class CacheService implements OnModuleDestroy {
    */
   async warmUp(): Promise<void> {
     this.logger.log('Starting cache warm-up...');
-    
+
     try {
       // This would typically load commonly accessed data
       // For now, we'll just log that warm-up is starting
@@ -271,9 +276,12 @@ export class CacheService implements OnModuleDestroy {
   /**
    * Health check for cache
    */
-  async healthCheck(): Promise<{ status: 'healthy' | 'unhealthy'; latency: number }> {
+  async healthCheck(): Promise<{
+    status: 'healthy' | 'unhealthy';
+    latency: number;
+  }> {
     const start = Date.now();
-    
+
     try {
       await this.redis.ping();
       const latency = Date.now() - start;

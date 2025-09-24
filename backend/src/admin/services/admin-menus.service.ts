@@ -1,120 +1,87 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  CreateMenuDto,
-  UpdateMenuDto,
-  MenuQueryDto,
-  BulkMenuDto,
-} from '../dto/menu-batch.dto';
+
+export interface MenuCard {
+  id: number;
+  name: string;
+  subcategory_name: string;
+  protein_name: string | null;
+  meal_time: string;
+  is_active: boolean;
+  favorites_count: number;
+  ratings_count: number;
+  image_url: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
 
 @Injectable()
 export class AdminMenusService {
   constructor(private prisma: PrismaService) {}
 
-  async getMenus(query: MenuQueryDto) {
-    const { page = 1, limit = 10, search, subcategory_id, meal_time, is_active } = query;
-    const skip = (page - 1) * limit;
-
-    const where: any = {};
-    
-    if (search) {
-      where.OR = [
-        { key: { contains: search, mode: 'insensitive' } },
-        {
-          Translations: {
-            some: {
-              name: { contains: search, mode: 'insensitive' },
-            },
-          },
-        },
-      ];
-    }
-
-    if (subcategory_id) {
-      where.subcategory_id = subcategory_id;
-    }
-
-    if (meal_time) {
-      where.meal_time = meal_time;
-    }
-
-    if (is_active !== undefined) {
-      where.is_active = is_active;
-    }
-
-    const [menus, total] = await Promise.all([
-      this.prisma.menu.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { created_at: 'desc' },
-        include: {
-          Translations: true,
-          Subcategory: {
-            include: {
-              Translations: {
-                where: { language: 'en' },
-              },
-            },
-          },
-          ProteinType: {
-            include: {
-              Translations: {
-                where: { language: 'en' },
-              },
-            },
-          },
-          _count: {
-            select: {
-              Favorites: true,
-              Ratings: true,
-            },
-          },
-        },
-      }),
-      this.prisma.menu.count({ where }),
-    ]);
-
-    return {
-      menus,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  async getMenuById(id: number) {
-    const menu = await this.prisma.menu.findUnique({
-      where: { id },
+  async getMenuCards(): Promise<MenuCard[]> {
+    const menus = await this.prisma.menu.findMany({
       include: {
-        Translations: true,
         Subcategory: {
           include: {
-            Translations: true,
-            Category: {
-              include: {
-                Translations: true,
-                FoodType: {
-                  include: {
-                    Translations: true,
-                  },
-                },
-              },
+            Translations: {
+              where: { language: 'th' },
             },
           },
         },
         ProteinType: {
           include: {
-            Translations: true,
+            Translations: {
+              where: { language: 'th' },
+            },
           },
         },
-        Ratings: {
+        _count: {
+          select: {
+            Favorites: true,
+            Ratings: true,
+          },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return menus.map((menu) => {
+      const subcategoryName = menu.Subcategory?.Translations[0]?.name || menu.Subcategory?.key || 'Unknown';
+      const proteinName = menu.ProteinType?.Translations[0]?.name;
+      const displayName = proteinName ? `${subcategoryName}${proteinName}` : subcategoryName;
+
+      return {
+        id: menu.id,
+        name: displayName,
+        subcategory_name: subcategoryName,
+        protein_name: proteinName || null,
+        meal_time: menu.meal_time,
+        is_active: menu.is_active,
+        favorites_count: menu._count.Favorites,
+        ratings_count: menu._count.Ratings,
+        image_url: menu.image_url,
+        created_at: menu.created_at,
+        updated_at: menu.updated_at,
+      };
+    });
+  }
+
+  async getMenuCard(id: number): Promise<MenuCard> {
+    const menu = await this.prisma.menu.findUnique({
+      where: { id },
+      include: {
+        Subcategory: {
           include: {
-            UserProfile: {
-              select: { email: true, name: true },
+            Translations: {
+              where: { language: 'th' },
+            },
+          },
+        },
+        ProteinType: {
+          include: {
+            Translations: {
+              where: { language: 'th' },
             },
           },
         },
@@ -131,111 +98,55 @@ export class AdminMenusService {
       throw new NotFoundException('Menu not found');
     }
 
-    return menu;
-  }
-
-  async createMenu(createMenuDto: CreateMenuDto) {
-    const { translations, ...menuData } = createMenuDto;
-
-    return this.prisma.menu.create({
-      data: {
-        ...menuData,
-        Translations: {
-          create: translations,
-        },
-      },
-      include: {
-        Translations: true,
-      },
-    });
-  }
-
-  async updateMenu(id: number, updateMenuDto: UpdateMenuDto) {
-    const { translations, ...menuData } = updateMenuDto;
-
-    const menu = await this.prisma.menu.findUnique({
-      where: { id },
-    });
-
-    if (!menu) {
-      throw new NotFoundException('Menu not found');
-    }
-
-    if (translations) {
-      await this.prisma.menuTranslation.deleteMany({
-        where: { menu_id: id },
-      });
-    }
-
-    return this.prisma.menu.update({
-      where: { id },
-      data: {
-        ...menuData,
-        ...(translations && {
-          Translations: {
-            create: translations,
-          },
-        }),
-      },
-      include: {
-        Translations: true,
-      },
-    });
-  }
-
-  async deleteMenu(id: number) {
-    const menu = await this.prisma.menu.findUnique({
-      where: { id },
-    });
-
-    if (!menu) {
-      throw new NotFoundException('Menu not found');
-    }
-
-    return this.prisma.menu.delete({
-      where: { id },
-    });
-  }
-
-  async bulkCreateMenus(bulkMenuDto: BulkMenuDto) {
-    const { menus } = bulkMenuDto;
-    const results: any[] = [];
-
-    for (const menuData of menus) {
-      const { translations, ...menu } = menuData;
-      
-      const createdMenu = await this.prisma.menu.create({
-        data: {
-          ...menu,
-          Translations: {
-            create: translations,
-          },
-        },
-        include: {
-          Translations: true,
-        },
-      });
-
-      results.push(createdMenu);
-    }
+    const subcategoryName = menu.Subcategory?.Translations[0]?.name || menu.Subcategory?.key || 'Unknown';
+    const proteinName = menu.ProteinType?.Translations[0]?.name;
+    const displayName = proteinName ? `${subcategoryName}${proteinName}` : subcategoryName;
 
     return {
-      created: results.length,
-      menus: results,
+      id: menu.id,
+      name: displayName,
+      subcategory_name: subcategoryName,
+      protein_name: proteinName || null,
+      meal_time: menu.meal_time,
+      is_active: menu.is_active,
+      favorites_count: menu._count.Favorites,
+      ratings_count: menu._count.Ratings,
+      image_url: menu.image_url,
+      created_at: menu.created_at,
+      updated_at: menu.updated_at,
     };
   }
 
-  async activateMenu(id: number) {
-    return this.prisma.menu.update({
+  async toggleMenuStatus(id: number): Promise<MenuCard> {
+    const menu = await this.prisma.menu.findUnique({
       where: { id },
-      data: { is_active: true },
     });
+
+    if (!menu) {
+      throw new NotFoundException('Menu not found');
+    }
+
+    await this.prisma.menu.update({
+      where: { id },
+      data: { is_active: !menu.is_active },
+    });
+
+    return this.getMenuCard(id);
   }
 
-  async deactivateMenu(id: number) {
-    return this.prisma.menu.update({
+  async deleteMenu(id: number): Promise<{ success: boolean }> {
+    const menu = await this.prisma.menu.findUnique({
       where: { id },
-      data: { is_active: false },
     });
+
+    if (!menu) {
+      throw new NotFoundException('Menu not found');
+    }
+
+    await this.prisma.menu.delete({
+      where: { id },
+    });
+
+    return { success: true };
   }
 }

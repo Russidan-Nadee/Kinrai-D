@@ -9,22 +9,14 @@ import { SubcategoriesController } from './controllers/subcategories.controller'
 import { ProteinTypesController } from './controllers/protein-types.controller';
 
 @Module({
-   imports: [PrismaModule],
-   controllers: [
-      FoodTypesController,
-      CategoriesController,
-      SubcategoriesController,
-      ProteinTypesController,
-   ],
-   providers: [
-      FoodTypesService,
-      CategoriesService,
-      SubcategoriesService,
-   ],
-   exports: [
-      FoodTypesService,
-      CategoriesService,
-      SubcategoriesService,
-   ],
+  imports: [PrismaModule],
+  controllers: [
+    FoodTypesController,
+    CategoriesController,
+    SubcategoriesController,
+    ProteinTypesController,
+  ],
+  providers: [FoodTypesService, CategoriesService, SubcategoriesService],
+  exports: [FoodTypesService, CategoriesService, SubcategoriesService],
 })
-export class FoodManagementModule { }
+export class FoodManagementModule {}

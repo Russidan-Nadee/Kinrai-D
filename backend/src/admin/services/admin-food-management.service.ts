@@ -317,8 +317,19 @@ export class AdminFoodManagementService {
         },
         Menus: {
           include: {
-            Translations: {
-              where: { language: 'en' },
+            Subcategory: {
+              include: {
+                Translations: {
+                  where: { language: 'en' },
+                },
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: {
+                  where: { language: 'en' },
+                },
+              },
             },
           },
         },
@@ -348,7 +359,10 @@ export class AdminFoodManagementService {
     });
   }
 
-  async updateSubcategory(id: number, updateSubcategoryDto: UpdateSubcategoryDto) {
+  async updateSubcategory(
+    id: number,
+    updateSubcategoryDto: UpdateSubcategoryDto,
+  ) {
     const { translations, ...subcategoryData } = updateSubcategoryDto;
 
     const subcategory = await this.prisma.subcategory.findUnique({
@@ -433,8 +447,19 @@ export class AdminFoodManagementService {
         Translations: true,
         Menus: {
           include: {
-            Translations: {
-              where: { language: 'en' },
+            Subcategory: {
+              include: {
+                Translations: {
+                  where: { language: 'en' },
+                },
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: {
+                  where: { language: 'en' },
+                },
+              },
             },
           },
         },
@@ -464,7 +489,10 @@ export class AdminFoodManagementService {
     });
   }
 
-  async updateProteinType(id: number, updateProteinTypeDto: UpdateProteinTypeDto) {
+  async updateProteinType(
+    id: number,
+    updateProteinTypeDto: UpdateProteinTypeDto,
+  ) {
     const { translations, ...proteinTypeData } = updateProteinTypeDto;
 
     const proteinType = await this.prisma.proteinType.findUnique({

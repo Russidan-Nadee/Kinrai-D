@@ -20,7 +20,7 @@ export class RatingsController {
   constructor(private readonly ratingsService: RatingsService) {}
 
   @Post()
-    create(@Body() createRatingDto: CreateRatingDto, @Request() req) {
+  create(@Body() createRatingDto: CreateRatingDto, @Request() req) {
     return this.ratingsService.create(req.user.id, createRatingDto);
   }
 
@@ -34,7 +34,7 @@ export class RatingsController {
   }
 
   @Get('me')
-    getUserRatings(@Request() req, @Query('language') language = 'en') {
+  getUserRatings(@Request() req, @Query('language') language = 'en') {
     return this.ratingsService.getUserRatings(req.user.id, language);
   }
 
@@ -52,7 +52,7 @@ export class RatingsController {
   }
 
   @Get('me/menu/:menuId')
-    getUserRating(@Request() req, @Param('menuId', ParseIntPipe) menuId: number) {
+  getUserRating(@Request() req, @Param('menuId', ParseIntPipe) menuId: number) {
     return this.ratingsService.findUserRating(req.user.id, menuId);
   }
 
@@ -62,7 +62,7 @@ export class RatingsController {
   }
 
   @Patch('menu/:menuId')
-    update(
+  update(
     @Param('menuId', ParseIntPipe) menuId: number,
     @Body() updateRatingDto: UpdateRatingDto,
     @Request() req,
@@ -71,7 +71,7 @@ export class RatingsController {
   }
 
   @Delete('menu/:menuId')
-    remove(@Param('menuId', ParseIntPipe) menuId: number, @Request() req) {
+  remove(@Param('menuId', ParseIntPipe) menuId: number, @Request() req) {
     return this.ratingsService.remove(req.user.id, menuId);
   }
 }

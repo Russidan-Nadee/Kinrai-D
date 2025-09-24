@@ -55,7 +55,16 @@ export class UsersService {
           include: {
             Menu: {
               include: {
-                Translations: true,
+                Subcategory: {
+                  include: {
+                    Translations: true,
+                  },
+                },
+                ProteinType: {
+                  include: {
+                    Translations: true,
+                  },
+                },
               },
             },
           },
@@ -64,7 +73,16 @@ export class UsersService {
           include: {
             Menu: {
               include: {
-                Translations: true,
+                Subcategory: {
+                  include: {
+                    Translations: true,
+                  },
+                },
+                ProteinType: {
+                  include: {
+                    Translations: true,
+                  },
+                },
               },
             },
           },

@@ -8,14 +8,14 @@ export class AnalyticsReportDto {
     most_liked_category?: string;
     most_liked_meal_time?: string;
   };
-  
+
   activity_timeline: Array<{
     date: string;
     favorites_added: number;
     ratings_given: number;
     dislikes_added: number;
   }>;
-  
+
   preferences_insight: {
     top_categories: Array<{
       category: string;

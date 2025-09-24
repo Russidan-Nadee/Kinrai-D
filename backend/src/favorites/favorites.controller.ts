@@ -34,7 +34,10 @@ export class FavoritesController {
   }
 
   @Get('check/:menuId')
-  checkIsFavorite(@Request() req, @Param('menuId', ParseIntPipe) menuId: number) {
+  checkIsFavorite(
+    @Request() req,
+    @Param('menuId', ParseIntPipe) menuId: number,
+  ) {
     return this.favoritesService.checkIsFavorite(req.user.id, menuId);
   }
 
@@ -44,6 +47,10 @@ export class FavoritesController {
     @Param('mealTime') mealTime: string,
     @Query('language') language = 'en',
   ) {
-    return this.favoritesService.getFavoritesByMealTime(req.user.id, mealTime, language);
+    return this.favoritesService.getFavoritesByMealTime(
+      req.user.id,
+      mealTime,
+      language,
+    );
   }
 }

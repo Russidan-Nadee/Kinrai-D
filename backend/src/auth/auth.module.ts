@@ -8,13 +8,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
   imports: [ConfigModule, CommonModule, PrismaModule],
   controllers: [],
-  providers: [
-    RolesGuard,
-    PermissionsGuard
-  ],
-  exports: [
-    RolesGuard,
-    PermissionsGuard
-  ],
+  providers: [RolesGuard, PermissionsGuard],
+  exports: [RolesGuard, PermissionsGuard],
 })
 export class AuthModule {}

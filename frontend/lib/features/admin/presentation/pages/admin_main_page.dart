@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/admin_menu_entity.dart';
-import '../../domain/usecases/get_admin_menus.dart';
-import '../../data/datasources/admin_remote_data_source.dart';
-import '../../data/repositories/admin_repository_impl.dart';
-import '../../../../core/api/api_client.dart';
 import '../widgets/admin_tab_bar.dart';
 import 'tabs/menus_tab.dart';
 import 'tabs/categories_tab.dart';
@@ -17,25 +12,11 @@ class AdminMainPage extends StatefulWidget {
 
 class _AdminMainPageState extends State<AdminMainPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late GetAdminMenus _getAdminMenus;
-  AdminMenuListEntity? _adminInfo;
-  bool _isLoading = true;
-  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _initializeDependencies();
-    _loadAdminInfo();
-  }
-
-  void _initializeDependencies() {
-    final apiClient = ApiClient();
-    apiClient.initialize();
-    final remoteDataSource = AdminRemoteDataSourceImpl(apiClient: apiClient);
-    final repository = AdminRepositoryImpl(remoteDataSource: remoteDataSource);
-    _getAdminMenus = GetAdminMenus(repository: repository);
   }
 
   @override
@@ -44,26 +25,6 @@ class _AdminMainPageState extends State<AdminMainPage> with SingleTickerProvider
     super.dispose();
   }
 
-  Future<void> _loadAdminInfo() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
-
-      final info = await _getAdminMenus();
-      
-      setState(() {
-        _adminInfo = info;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error loading data: $e';
-        _isLoading = false;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,12 +42,7 @@ class _AdminMainPageState extends State<AdminMainPage> with SingleTickerProvider
       body: TabBarView(
         controller: _tabController,
         children: [
-          MenusTab(
-            adminInfo: _adminInfo,
-            isLoading: _isLoading,
-            errorMessage: _errorMessage,
-            onRefresh: _loadAdminInfo,
-          ),
+          const MenusTab(),
           const CategoriesTab(),
         ],
       ),

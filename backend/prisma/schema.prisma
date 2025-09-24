@@ -116,7 +116,6 @@ model Menu {
   id              Int               @id @default(autoincrement())
   subcategory_id  Int
   protein_type_id Int?
-  key             String            @unique
   image_url       String?
   contains        Json
   meal_time       MealTime
@@ -125,29 +124,17 @@ model Menu {
   updated_at      DateTime          @updatedAt
   Favorites       FavoriteMenu[]
   Ratings         MenuRating[]
-  Translations    MenuTranslation[]
   ProteinType     ProteinType?      @relation(fields: [protein_type_id], references: [id])
   Subcategory     Subcategory       @relation(fields: [subcategory_id], references: [id])
   UserDislikes    UserDislike[]
 
+  @@unique([subcategory_id, protein_type_id])
   @@index([subcategory_id])
   @@index([protein_type_id])
   @@index([meal_time])
   @@map("menus")
 }
 
-model MenuTranslation {
-  id          Int     @id @default(autoincrement())
-  menu_id     Int
-  language    String
-  name        String
-  description String?
-  Menu        Menu    @relation(fields: [menu_id], references: [id])
-
-  @@unique([menu_id, language])
-  @@index([language])
-  @@map("menu_translations")
-}
 
 model DietaryRestriction {
   id                      Int                             @id @default(autoincrement())

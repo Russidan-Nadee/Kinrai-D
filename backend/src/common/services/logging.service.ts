@@ -57,10 +57,10 @@ export class LoggingService {
         userAgent: context.userAgent,
         ip: context.ip,
         userId: context.userId,
-        requestId: context.requestId
+        requestId: context.requestId,
       },
       ...(context.error && { error: this.sanitizeError(context.error) }),
-      ...(context.metadata && { metadata: context.metadata })
+      ...(context.metadata && { metadata: context.metadata }),
     };
 
     this.writeLog(logData);
@@ -80,15 +80,18 @@ export class LoggingService {
         duration: metrics.duration,
         success: metrics.success,
         ...(metrics.error && { error: metrics.error }),
-        ...(metrics.metadata && { metadata: metrics.metadata })
-      }
+        ...(metrics.metadata && { metadata: metrics.metadata }),
+      },
     };
 
     this.writeLog(logData);
 
     // Alert if performance is poor
-    if (metrics.duration > 5000) { // 5 seconds
-      this.logger.warn(`Slow operation detected: ${metrics.operation} took ${metrics.duration}ms`);
+    if (metrics.duration > 5000) {
+      // 5 seconds
+      this.logger.warn(
+        `Slow operation detected: ${metrics.operation} took ${metrics.duration}ms`,
+      );
     }
   }
 
@@ -106,8 +109,8 @@ export class LoggingService {
         action: activity.action,
         resource: activity.resource,
         resourceId: activity.resourceId,
-        ...(activity.metadata && { metadata: activity.metadata })
-      }
+        ...(activity.metadata && { metadata: activity.metadata }),
+      },
     };
 
     this.writeLog(logData);
@@ -116,7 +119,11 @@ export class LoggingService {
   /**
    * Log business events
    */
-  logBusinessEvent(event: string, data: Record<string, any>, userId?: string): void {
+  logBusinessEvent(
+    event: string,
+    data: Record<string, any>,
+    userId?: string,
+  ): void {
     const logData = {
       timestamp: new Date().toISOString(),
       level: 'info',
@@ -125,8 +132,8 @@ export class LoggingService {
       event: {
         name: event,
         userId,
-        data
-      }
+        data,
+      },
     };
 
     this.writeLog(logData);
@@ -135,7 +142,11 @@ export class LoggingService {
   /**
    * Log security events
    */
-  logSecurityEvent(event: string, context: LogContext, severity: 'low' | 'medium' | 'high' = 'medium'): void {
+  logSecurityEvent(
+    event: string,
+    context: LogContext,
+    severity: 'low' | 'medium' | 'high' = 'medium',
+  ): void {
     const logData = {
       timestamp: new Date().toISOString(),
       level: severity === 'high' ? 'error' : 'warn',
@@ -149,8 +160,8 @@ export class LoggingService {
         userId: context.userId,
         url: context.url,
         method: context.method,
-        ...(context.metadata && { metadata: context.metadata })
-      }
+        ...(context.metadata && { metadata: context.metadata }),
+      },
     };
 
     this.writeLog(logData);
@@ -181,10 +192,10 @@ export class LoggingService {
             userId: context.userId,
             requestId: context.requestId,
             ip: context.ip,
-            userAgent: context.userAgent
-          }
-        })
-      }
+            userAgent: context.userAgent,
+          },
+        }),
+      },
     };
 
     this.writeLog(logData);
@@ -193,7 +204,11 @@ export class LoggingService {
   /**
    * Log cache operations
    */
-  logCacheOperation(operation: 'hit' | 'miss' | 'set' | 'del', key: string, duration?: number): void {
+  logCacheOperation(
+    operation: 'hit' | 'miss' | 'set' | 'del',
+    key: string,
+    duration?: number,
+  ): void {
     const logData = {
       timestamp: new Date().toISOString(),
       level: 'debug',
@@ -202,8 +217,8 @@ export class LoggingService {
       cache: {
         operation,
         key,
-        ...(duration && { duration })
-      }
+        ...(duration && { duration }),
+      },
     };
 
     this.writeLog(logData);
@@ -212,7 +227,12 @@ export class LoggingService {
   /**
    * Log search operations for analytics
    */
-  logSearchOperation(query: string, results: number, duration: number, userId?: string): void {
+  logSearchOperation(
+    query: string,
+    results: number,
+    duration: number,
+    userId?: string,
+  ): void {
     const logData = {
       timestamp: new Date().toISOString(),
       level: 'info',
@@ -222,8 +242,8 @@ export class LoggingService {
         query: this.sanitizeSearchQuery(query),
         results,
         duration,
-        userId
-      }
+        userId,
+      },
     };
 
     this.writeLog(logData);
@@ -233,11 +253,11 @@ export class LoggingService {
    * Log recommendation operations
    */
   logRecommendationOperation(
-    type: string, 
-    userId?: string, 
-    results: number = 0, 
+    type: string,
+    userId?: string,
+    results: number = 0,
     duration: number = 0,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): void {
     const logData = {
       timestamp: new Date().toISOString(),
@@ -249,8 +269,8 @@ export class LoggingService {
         userId,
         results,
         duration,
-        ...(metadata && { metadata })
-      }
+        ...(metadata && { metadata }),
+      },
     };
 
     this.writeLog(logData);
@@ -263,7 +283,7 @@ export class LoggingService {
     finish: (success?: boolean, metadata?: Record<string, any>) => void;
   } {
     const startTime = Date.now();
-    
+
     return {
       finish: (success: boolean = true, metadata?: Record<string, any>) => {
         const duration = Date.now() - startTime;
@@ -272,9 +292,9 @@ export class LoggingService {
           duration,
           timestamp: new Date(),
           success,
-          metadata
+          metadata,
         });
-      }
+      },
     };
   }
 
@@ -291,7 +311,7 @@ export class LoggingService {
     return {
       totalErrors: 0,
       errorRate: 0,
-      topErrors: []
+      topErrors: [],
     };
   }
 
@@ -307,7 +327,7 @@ export class LoggingService {
     return {
       averageResponseTime: 0,
       slowestOperations: [],
-      requestsPerHour: 0
+      requestsPerHour: 0,
     };
   }
 
@@ -324,7 +344,7 @@ export class LoggingService {
       return {
         name: error.name,
         message: error.message,
-        stack: this.isProduction ? undefined : error.stack
+        stack: this.isProduction ? undefined : error.stack,
       };
     }
     return error;
@@ -338,7 +358,7 @@ export class LoggingService {
   private writeLog(logData: any): void {
     // In production, this would write to structured logging system
     // (e.g., ELK stack, CloudWatch, etc.)
-    
+
     switch (logData.level) {
       case 'error':
         this.logger.error(JSON.stringify(logData));

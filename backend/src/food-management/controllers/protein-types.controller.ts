@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Query, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Controller('protein-types')
@@ -28,7 +23,7 @@ export class ProteinTypesController {
       },
     });
 
-    const data = proteinTypes.map(proteinType => ({
+    const data = proteinTypes.map((proteinType) => ({
       id: proteinType.id,
       key: proteinType.key,
       name: proteinType.Translations[0]?.name || proteinType.key,
@@ -44,7 +39,7 @@ export class ProteinTypesController {
       meta: {
         language: language,
         total: data.length,
-      }
+      },
     };
   }
 }

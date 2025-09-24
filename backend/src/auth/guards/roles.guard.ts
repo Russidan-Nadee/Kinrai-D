@@ -3,7 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  Logger
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { LoggingService } from '../../common/services/logging.service';
@@ -14,7 +14,7 @@ export class RolesGuard implements CanActivate {
 
   constructor(
     private reflector: Reflector,
-    private readonly loggingService: LoggingService
+    private readonly loggingService: LoggingService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -23,5 +23,4 @@ export class RolesGuard implements CanActivate {
     this.logger.warn('Role guard bypassed - implement proper authentication');
     return true;
   }
-
 }

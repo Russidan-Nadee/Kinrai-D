@@ -15,7 +15,7 @@ export class AdminUsersService {
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    
+
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -80,8 +80,19 @@ export class AdminUsersService {
           include: {
             Menu: {
               include: {
-                Translations: {
-                  where: { language: 'en' },
+                Subcategory: {
+                  include: {
+                    Translations: {
+                      where: { language: 'en' },
+                    },
+                  },
+                },
+                ProteinType: {
+                  include: {
+                    Translations: {
+                      where: { language: 'en' },
+                    },
+                  },
                 },
               },
             },
@@ -91,8 +102,19 @@ export class AdminUsersService {
           include: {
             Menu: {
               include: {
-                Translations: {
-                  where: { language: 'en' },
+                Subcategory: {
+                  include: {
+                    Translations: {
+                      where: { language: 'en' },
+                    },
+                  },
+                },
+                ProteinType: {
+                  include: {
+                    Translations: {
+                      where: { language: 'en' },
+                    },
+                  },
                 },
               },
             },

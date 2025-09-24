@@ -9,6 +9,7 @@ class MenuModel {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? name; // Generated menu name from backend
   final List<MenuTranslation>? translations;
   final MenuSubcategory? subcategory;
   final MenuProteinType? proteinType;
@@ -26,6 +27,7 @@ class MenuModel {
     required this.isActive,
     required this.createdAt,
     required this.updatedAt,
+    this.name,
     this.translations,
     this.subcategory,
     this.proteinType,
@@ -56,6 +58,7 @@ class MenuModel {
       isActive: json['is_active'] ?? true,
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+      name: json['name'], // Generated menu name from backend
       // Support both raw Prisma data (Translations) and cleaned data (translations)
       translations: json['Translations'] != null
           ? (json['Translations'] as List)
@@ -95,6 +98,7 @@ class MenuModel {
       'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'name': name,
       'translations': translations?.map((e) => e.toJson()).toList(),
       'subcategory': subcategory?.toJson(),
       'protein_type': proteinType?.toJson(),
@@ -104,14 +108,22 @@ class MenuModel {
   }
 
   String getName({String language = 'th'}) {
-    if (translations == null || translations!.isEmpty) return key;
+    // Use backend-generated name if available
+    if (name != null && name!.isNotEmpty) {
+      return name!;
+    }
 
-    final translation = translations!.firstWhere(
-      (t) => t.language == language,
-      orElse: () => translations!.first,
-    );
+    // Fallback to translations
+    if (translations != null && translations!.isNotEmpty) {
+      final translation = translations!.firstWhere(
+        (t) => t.language == language,
+        orElse: () => translations!.first,
+      );
+      return translation.name;
+    }
 
-    return translation.name;
+    // Final fallback to key
+    return key;
   }
 
   String? getDescription({String language = 'th'}) {

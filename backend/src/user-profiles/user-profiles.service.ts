@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
@@ -30,7 +34,16 @@ export class UserProfilesService {
           include: {
             Menu: {
               include: {
-                Translations: true,
+                Subcategory: {
+                  include: {
+                    Translations: true,
+                  },
+                },
+                ProteinType: {
+                  include: {
+                    Translations: true,
+                  },
+                },
               },
             },
           },
@@ -48,7 +61,16 @@ export class UserProfilesService {
           include: {
             Menu: {
               include: {
-                Translations: true,
+                Subcategory: {
+                  include: {
+                    Translations: true,
+                  },
+                },
+                ProteinType: {
+                  include: {
+                    Translations: true,
+                  },
+                },
               },
             },
           },
@@ -93,13 +115,20 @@ export class UserProfilesService {
     });
   }
 
-  async addDislike(userId: string, createDislikeDto: CreateDislikeDto) {
-    const profile = await this.prisma.userProfile.findUnique({
+  async addDislike(userId: string, createDislikeDto: CreateDislikeDto, userEmail: string) {
+    // Auto-create profile if it doesn't exist
+    let profile = await this.prisma.userProfile.findUnique({
       where: { id: userId },
     });
 
     if (!profile) {
-      throw new NotFoundException('User profile not found');
+      profile = await this.prisma.userProfile.create({
+        data: {
+          id: userId,
+          email: userEmail,
+          is_active: true,
+        },
+      });
     }
 
     const menu = await this.prisma.menu.findUnique({
@@ -119,7 +148,16 @@ export class UserProfilesService {
         include: {
           Menu: {
             include: {
-              Translations: true,
+              Subcategory: {
+                include: {
+                  Translations: true,
+                },
+              },
+              ProteinType: {
+                include: {
+                  Translations: true,
+                },
+              },
             },
           },
         },
@@ -155,8 +193,19 @@ export class UserProfilesService {
       include: {
         Menu: {
           include: {
-            Translations: {
-              where: { language },
+            Subcategory: {
+              include: {
+                Translations: {
+                  where: { language },
+                },
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: {
+                  where: { language },
+                },
+              },
             },
           },
         },

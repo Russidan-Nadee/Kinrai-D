@@ -14,11 +14,7 @@ export class AdminAnalyticsService {
       ...(endDate && { lte: new Date(endDate) }),
     };
 
-    const [
-      userRegistrations,
-      usersByRole,
-      activeUsers,
-    ] = await Promise.all([
+    const [userRegistrations, usersByRole, activeUsers] = await Promise.all([
       this.prisma.userProfile.groupBy({
         by: ['created_at'],
         _count: { id: true },
@@ -54,38 +50,34 @@ export class AdminAnalyticsService {
       ...(endDate && { lte: new Date(endDate) }),
     };
 
-    const [
-      menusByCategory,
-      menusByMealTime,
-      activeMenus,
-      totalMenus,
-    ] = await Promise.all([
-      this.prisma.menu.groupBy({
-        by: ['subcategory_id'],
-        _count: { id: true },
-        where: {
-          created_at: dateFilter,
-        },
-      }),
-      this.prisma.menu.groupBy({
-        by: ['meal_time'],
-        _count: { id: true },
-        where: {
-          created_at: dateFilter,
-        },
-      }),
-      this.prisma.menu.count({
-        where: {
-          is_active: true,
-          created_at: dateFilter,
-        },
-      }),
-      this.prisma.menu.count({
-        where: {
-          created_at: dateFilter,
-        },
-      }),
-    ]);
+    const [menusByCategory, menusByMealTime, activeMenus, totalMenus] =
+      await Promise.all([
+        this.prisma.menu.groupBy({
+          by: ['subcategory_id'],
+          _count: { id: true },
+          where: {
+            created_at: dateFilter,
+          },
+        }),
+        this.prisma.menu.groupBy({
+          by: ['meal_time'],
+          _count: { id: true },
+          where: {
+            created_at: dateFilter,
+          },
+        }),
+        this.prisma.menu.count({
+          where: {
+            is_active: true,
+            created_at: dateFilter,
+          },
+        }),
+        this.prisma.menu.count({
+          where: {
+            created_at: dateFilter,
+          },
+        }),
+      ]);
 
     return {
       menusByCategory,
@@ -103,55 +95,64 @@ export class AdminAnalyticsService {
       ...(endDate && { lte: new Date(endDate) }),
     };
 
-    const [
-      avgRating,
-      ratingDistribution,
-      totalRatings,
-      topRatedMenus,
-    ] = await Promise.all([
-      this.prisma.menuRating.aggregate({
-        _avg: { rating: true },
-        where: {
-          created_at: dateFilter,
-        },
-      }),
-      this.prisma.menuRating.groupBy({
-        by: ['rating'],
-        _count: { id: true },
-        where: {
-          created_at: dateFilter,
-        },
-        orderBy: { rating: 'asc' },
-      }),
-      this.prisma.menuRating.count({
-        where: {
-          created_at: dateFilter,
-        },
-      }),
-      this.prisma.menu.findMany({
-        take: 10,
-        include: {
-          Translations: {
-            where: { language: 'en' },
+    const [avgRating, ratingDistribution, totalRatings, topRatedMenus] =
+      await Promise.all([
+        this.prisma.menuRating.aggregate({
+          _avg: { rating: true },
+          where: {
+            created_at: dateFilter,
           },
-          Ratings: {
-            where: {
-              created_at: dateFilter,
+        }),
+        this.prisma.menuRating.groupBy({
+          by: ['rating'],
+          _count: { id: true },
+          where: {
+            created_at: dateFilter,
+          },
+          orderBy: { rating: 'asc' },
+        }),
+        this.prisma.menuRating.count({
+          where: {
+            created_at: dateFilter,
+          },
+        }),
+        this.prisma.menu.findMany({
+          take: 10,
+          include: {
+            Subcategory: {
+              include: {
+                Translations: {
+                  where: { language: 'en' },
+                },
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: {
+                  where: { language: 'en' },
+                },
+              },
+            },
+            Ratings: {
+              where: {
+                created_at: dateFilter,
+              },
             },
           },
-        },
-      }),
-    ]);
+        }),
+      ]);
 
     const processedTopRated = topRatedMenus
-      .map(menu => ({
+      .map((menu) => ({
         ...menu,
-        avgRating: menu.Ratings.length > 0 
-          ? menu.Ratings.reduce((sum, r) => sum + r.rating, 0) / menu.Ratings.length 
-          : 0,
+        avgRating:
+          menu.Ratings.length > 0
+            ? menu.Ratings.reduce((sum, r) => sum + r.rating, 0) /
+              menu.Ratings.length
+            : 0,
         totalRatings: menu.Ratings.length,
       }))
-      .filter(menu => menu.totalRatings > 0)
+      .filter((menu) => menu.totalRatings > 0)
       .sort((a, b) => b.avgRating - a.avgRating)
       .slice(0, 10);
 
@@ -171,15 +172,23 @@ export class AdminAnalyticsService {
       ...(endDate && { lte: new Date(endDate) }),
     };
 
-    const [
-      mostFavorited,
-      mostRated,
-    ] = await Promise.all([
+    const [mostFavorited, mostRated] = await Promise.all([
       this.prisma.menu.findMany({
         take: limit,
         include: {
-          Translations: {
-            where: { language: 'en' },
+          Subcategory: {
+            include: {
+              Translations: {
+                where: { language: 'en' },
+              },
+            },
+          },
+          ProteinType: {
+            include: {
+              Translations: {
+                where: { language: 'en' },
+              },
+            },
           },
           Favorites: {
             where: {
@@ -205,8 +214,19 @@ export class AdminAnalyticsService {
       this.prisma.menu.findMany({
         take: limit,
         include: {
-          Translations: {
-            where: { language: 'en' },
+          Subcategory: {
+            include: {
+              Translations: {
+                where: { language: 'en' },
+              },
+            },
+          },
+          ProteinType: {
+            include: {
+              Translations: {
+                where: { language: 'en' },
+              },
+            },
           },
           Ratings: {
             where: {
@@ -245,36 +265,33 @@ export class AdminAnalyticsService {
       ...(endDate && { lte: new Date(endDate) }),
     };
 
-    const [
-      dailyFavorites,
-      dailyRatings,
-      dailyRegistrations,
-    ] = await Promise.all([
-      this.prisma.favoriteMenu.groupBy({
-        by: ['created_at'],
-        _count: { id: true },
-        where: {
-          created_at: dateFilter,
-        },
-        orderBy: { created_at: 'asc' },
-      }),
-      this.prisma.menuRating.groupBy({
-        by: ['created_at'],
-        _count: { id: true },
-        where: {
-          created_at: dateFilter,
-        },
-        orderBy: { created_at: 'asc' },
-      }),
-      this.prisma.userProfile.groupBy({
-        by: ['created_at'],
-        _count: { id: true },
-        where: {
-          created_at: dateFilter,
-        },
-        orderBy: { created_at: 'asc' },
-      }),
-    ]);
+    const [dailyFavorites, dailyRatings, dailyRegistrations] =
+      await Promise.all([
+        this.prisma.favoriteMenu.groupBy({
+          by: ['created_at'],
+          _count: { id: true },
+          where: {
+            created_at: dateFilter,
+          },
+          orderBy: { created_at: 'asc' },
+        }),
+        this.prisma.menuRating.groupBy({
+          by: ['created_at'],
+          _count: { id: true },
+          where: {
+            created_at: dateFilter,
+          },
+          orderBy: { created_at: 'asc' },
+        }),
+        this.prisma.userProfile.groupBy({
+          by: ['created_at'],
+          _count: { id: true },
+          where: {
+            created_at: dateFilter,
+          },
+          orderBy: { created_at: 'asc' },
+        }),
+      ]);
 
     return {
       dailyFavorites,

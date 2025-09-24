@@ -22,13 +22,15 @@ export interface SearchResult<T> {
 export class SearchService {
   constructor(
     private prisma: PrismaService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
   ) {}
 
   /**
    * Perform full-text search on menu translations
    */
-  async searchMenus(options: FullTextSearchOptions): Promise<SearchResult<any>> {
+  async searchMenus(
+    options: FullTextSearchOptions,
+  ): Promise<SearchResult<any>> {
     const startTime = Date.now();
     const {
       query,
@@ -36,7 +38,7 @@ export class SearchService {
       fuzzySearch = true,
       minRelevance = 0.1,
       limit = 20,
-      offset = 0
+      offset = 0,
     } = options;
 
     const preferredLanguage = this.languageService.validateLanguage(language);
@@ -88,8 +90,20 @@ export class SearchService {
 
     try {
       const [results, countResult] = await Promise.all([
-        this.prisma.$queryRawUnsafe(baseQuery, searchQuery, preferredLanguage, minRelevance, limit, offset),
-        this.prisma.$queryRawUnsafe(countQuery, searchQuery, preferredLanguage, minRelevance)
+        this.prisma.$queryRawUnsafe(
+          baseQuery,
+          searchQuery,
+          preferredLanguage,
+          minRelevance,
+          limit,
+          offset,
+        ),
+        this.prisma.$queryRawUnsafe(
+          countQuery,
+          searchQuery,
+          preferredLanguage,
+          minRelevance,
+        ),
       ]);
 
       const endTime = Date.now();
@@ -99,11 +113,14 @@ export class SearchService {
         data: results as any[],
         total: (countResult as any[])[0]?.total || 0,
         relevanceScores: (results as any[]).map((r: any) => r.relevance_score),
-        searchTime
+        searchTime,
       };
     } catch (error) {
       // Fallback to basic LIKE search if full-text search fails
-      console.warn('Full-text search failed, falling back to LIKE search:', error.message);
+      console.warn(
+        'Full-text search failed, falling back to LIKE search:',
+        error.message,
+      );
       return this.fallbackSearch(options);
     }
   }
@@ -111,14 +128,11 @@ export class SearchService {
   /**
    * Fallback search using basic LIKE operations
    */
-  private async fallbackSearch(options: FullTextSearchOptions): Promise<SearchResult<any>> {
+  private async fallbackSearch(
+    options: FullTextSearchOptions,
+  ): Promise<SearchResult<any>> {
     const startTime = Date.now();
-    const {
-      query,
-      language = 'th',
-      limit = 20,
-      offset = 0
-    } = options;
+    const { query, language = 'th', limit = 20, offset = 0 } = options;
 
     const preferredLanguage = this.languageService.validateLanguage(language);
     const searchTerm = `%${query}%`;
@@ -127,57 +141,99 @@ export class SearchService {
       this.prisma.menu.findMany({
         where: {
           is_active: true,
-          Translations: {
-            some: {
-              language: preferredLanguage,
-              OR: [
-                { name: { contains: query, mode: 'insensitive' } },
-                { description: { contains: query, mode: 'insensitive' } }
-              ]
-            }
-          }
+          OR: [
+            {
+              Subcategory: {
+                Translations: {
+                  some: {
+                    language: preferredLanguage,
+                    name: { contains: query, mode: 'insensitive' },
+                  },
+                },
+              },
+            },
+            {
+              ProteinType: {
+                Translations: {
+                  some: {
+                    language: preferredLanguage,
+                    name: { contains: query, mode: 'insensitive' },
+                  },
+                },
+              },
+            },
+          ],
         },
         include: {
-          Translations: {
-            where: { language: preferredLanguage }
-          }
+          Subcategory: {
+            include: {
+              Translations: {
+                where: { language: preferredLanguage },
+              },
+            },
+          },
+          ProteinType: {
+            include: {
+              Translations: {
+                where: { language: preferredLanguage },
+              },
+            },
+          },
         },
         orderBy: { created_at: 'desc' },
         take: limit,
-        skip: offset
+        skip: offset,
       }),
       this.prisma.menu.count({
         where: {
           is_active: true,
-          Translations: {
-            some: {
-              language: preferredLanguage,
-              OR: [
-                { name: { contains: query, mode: 'insensitive' } },
-                { description: { contains: query, mode: 'insensitive' } }
-              ]
-            }
-          }
-        }
-      })
+          OR: [
+            {
+              Subcategory: {
+                Translations: {
+                  some: {
+                    language: preferredLanguage,
+                    name: { contains: query, mode: 'insensitive' },
+                  },
+                },
+              },
+            },
+            {
+              ProteinType: {
+                Translations: {
+                  some: {
+                    language: preferredLanguage,
+                    name: { contains: query, mode: 'insensitive' },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      }),
     ]);
 
     const endTime = Date.now();
-    
+
     return {
       data: menus,
       total,
-      searchTime: endTime - startTime
+      searchTime: endTime - startTime,
     };
   }
 
   /**
    * Get search suggestions based on partial input
    */
-  async getSearchSuggestions(partialQuery: string, language = 'th', limit = 5): Promise<string[]> {
+  async getSearchSuggestions(
+    partialQuery: string,
+    language = 'th',
+    limit = 5,
+  ): Promise<string[]> {
     const preferredLanguage = this.languageService.validateLanguage(language);
-    
-    const suggestions = await this.prisma.$queryRawUnsafe(`
+
+    const suggestions = await this.prisma.$queryRawUnsafe(
+      `
       SELECT DISTINCT mt.name
       FROM menu_translations mt
       INNER JOIN menus m ON mt.menu_id = m.id
@@ -186,9 +242,14 @@ export class SearchService {
         AND mt.name ILIKE $2
       ORDER BY similarity(mt.name, $3) DESC, LENGTH(mt.name)
       LIMIT $4
-    `, preferredLanguage, `${partialQuery}%`, partialQuery, limit);
+    `,
+      preferredLanguage,
+      `${partialQuery}%`,
+      partialQuery,
+      limit,
+    );
 
-    return (suggestions as any[]).map(s => s.name);
+    return (suggestions as any[]).map((s) => s.name);
   }
 
   /**
@@ -198,8 +259,16 @@ export class SearchService {
     // This would typically come from search logs
     // For now, return common food terms
     return [
-      'ข้าว', 'ผัด', 'แกง', 'ส้ม', 'ย่าง',
-      'rice', 'curry', 'soup', 'spicy', 'sweet'
+      'ข้าว',
+      'ผัด',
+      'แกง',
+      'ส้ม',
+      'ย่าง',
+      'rice',
+      'curry',
+      'soup',
+      'spicy',
+      'sweet',
     ].slice(0, limit);
   }
 
@@ -219,7 +288,7 @@ export class SearchService {
    */
   buildSearchFilters(searchDto: any) {
     const filters: any = {
-      is_active: true
+      is_active: true,
     };
 
     if (searchDto.meal_time) {
@@ -236,7 +305,7 @@ export class SearchService {
 
     if (searchDto.category_ids?.length) {
       filters.Subcategory = {
-        category_id: { in: searchDto.category_ids }
+        category_id: { in: searchDto.category_ids },
       };
     }
 
@@ -244,8 +313,8 @@ export class SearchService {
       filters.Subcategory = {
         ...filters.Subcategory,
         Category: {
-          food_type_id: { in: searchDto.food_type_ids }
-        }
+          food_type_id: { in: searchDto.food_type_ids },
+        },
       };
     }
 

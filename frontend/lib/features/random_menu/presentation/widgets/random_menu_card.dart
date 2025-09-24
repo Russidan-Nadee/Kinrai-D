@@ -9,11 +9,7 @@ class RandomMenuCard extends StatefulWidget {
   final MenuModel menu;
   final VoidCallback? onDisliked;
 
-  const RandomMenuCard({
-    super.key,
-    required this.menu,
-    this.onDisliked,
-  });
+  const RandomMenuCard({super.key, required this.menu, this.onDisliked});
 
   @override
   State<RandomMenuCard> createState() => _RandomMenuCardState();
@@ -110,152 +106,93 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
+    final menuName = widget.menu.getName(
+      language: languageProvider.currentLanguageCode,
+    );
+    final mealTime = widget.menu.mealTime;
+    final contains = widget.menu.contains?.length ?? 0;
 
     return Center(
       child: SizedBox(
         width: 320,
         child: Card(
-          elevation: 8,
-          shadowColor: const Color(0xFFFF6B35).withValues(alpha: 0.2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Colors.orange[50]!],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFFF6B35).withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Menu Image
-                  if (widget.menu.imageUrl != null) ...[
-                    Hero(
-                      tag: 'menu-${widget.menu.key}',
-                      child: Container(
-                        width: 250,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFF6B35).withValues(alpha: 0.2),
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(
-                            widget.menu.imageUrl!,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [Colors.grey[200]!, Colors.grey[300]!],
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.restaurant,
-                                  size: 80,
-                                  color: Colors.grey,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+          elevation: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Menu Name
+                Text(
+                  menuName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+
+                // Meal Time
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getMealTimeColor(mealTime),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    _getMealTimeText(
+                      mealTime,
+                      languageProvider.currentLanguageCode,
+                    ),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Status - Always active for random menus
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'Active',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 8),
                   ],
+                ),
 
-                  // Menu Name
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      widget.menu.getName(language: languageProvider.currentLanguageCode),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFFF6B35),
-                        letterSpacing: 0.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                const SizedBox(height: 12),
+
+                // Contains count
+                if (contains > 0)
+                  Text(
+                    '$contains ingredients',
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
 
-                  // Meal time indicator
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.orange[100],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _getMealTimeIcon(widget.menu.mealTime),
-                          size: 16,
-                          color: const Color(0xFFFF6B35),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          _getMealTimeText(
-                            widget.menu.mealTime,
-                            languageProvider.currentLanguageCode,
-                          ),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFFFF6B35),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                const SizedBox(height: 12),
 
-                  // Dislike button
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
+                // Dislike button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
                     onPressed: _isLoading ? null : _toggleDislike,
                     icon: _isLoading
                         ? const SizedBox(
@@ -267,17 +204,19 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
                             ),
                           )
                         : Icon(
-                            _isDisliked ? Icons.thumb_down : Icons.thumb_down_outlined,
+                            _isDisliked
+                                ? Icons.thumb_down
+                                : Icons.thumb_down_outlined,
                             size: 18,
                           ),
                     label: Text(
                       _isDisliked
                           ? (languageProvider.currentLanguageCode == 'en'
-                              ? 'Disliked'
-                              : 'ไม่ชอบแล้ว')
+                                ? 'Disliked'
+                                : 'ไม่ชอบแล้ว')
                           : (languageProvider.currentLanguageCode == 'en'
-                              ? 'Dislike'
-                              : 'ไม่ชอบ'),
+                                ? 'Dislike'
+                                : 'ไม่ชอบ'),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -288,21 +227,18 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
                           ? Colors.grey[600]
                           : Colors.red[400],
                       foregroundColor: Colors.white,
-                      elevation: _isDisliked ? 2 : 4,
-                      shadowColor: _isDisliked
-                          ? Colors.grey.withValues(alpha: 0.3)
-                          : Colors.red.withValues(alpha: 0.3),
+                      elevation: 2,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
+                        horizontal: 16,
+                        vertical: 8,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -310,65 +246,56 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
     );
   }
 
-  IconData _getMealTimeIcon(String? mealTime) {
-    switch (mealTime?.toLowerCase()) {
-      case 'breakfast':
-        return Icons.wb_sunny;
-      case 'lunch':
-        return Icons.wb_sunny_outlined;
-      case 'dinner':
-        return Icons.nights_stay;
+  Color _getMealTimeColor(String mealTime) {
+    switch (mealTime.toUpperCase()) {
+      case 'BREAKFAST':
+        return Colors.orange;
+      case 'LUNCH':
+        return Colors.blue;
+      case 'DINNER':
+        return Colors.purple;
       default:
-        return Icons.restaurant;
+        return Colors.grey;
     }
   }
 
-  String _getMealTimeText(String? mealTime, String languageCode) {
-    switch (mealTime?.toLowerCase()) {
-      case 'breakfast':
+  String _getMealTimeText(String mealTime, String languageCode) {
+    switch (mealTime.toUpperCase()) {
+      case 'BREAKFAST':
         switch (languageCode) {
           case 'en':
-            return 'Breakfast';
+            return 'BREAKFAST';
           case 'ja':
             return '朝食';
           case 'zh':
             return '早餐';
           default:
-            return 'มื้อเช้า';
+            return 'BREAKFAST';
         }
-      case 'lunch':
+      case 'LUNCH':
         switch (languageCode) {
           case 'en':
-            return 'Lunch';
+            return 'LUNCH';
           case 'ja':
             return '昼食';
           case 'zh':
             return '午餐';
           default:
-            return 'มื้อกลางวัน';
+            return 'LUNCH';
         }
-      case 'dinner':
+      case 'DINNER':
         switch (languageCode) {
           case 'en':
-            return 'Dinner';
+            return 'DINNER';
           case 'ja':
             return '夕食';
           case 'zh':
             return '晚餐';
           default:
-            return 'มื้อเย็น';
+            return 'DINNER';
         }
       default:
-        switch (languageCode) {
-          case 'en':
-            return 'Any time';
-          case 'ja':
-            return 'いつでも';
-          case 'zh':
-            return '随时';
-          default:
-            return 'ทุกเวลา';
-        }
+        return mealTime;
     }
   }
 }

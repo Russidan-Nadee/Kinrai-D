@@ -385,33 +385,6 @@ export const subcategorySeedData = [
       },
     ],
   },
-  {
-    category_key: 'salad',
-    key: 'yam_wun_sen',
-    is_active: true,
-    translations: [
-      {
-        language: 'en',
-        name: 'Yam Wun Sen',
-        description: 'Glass noodle salad',
-      },
-      {
-        language: 'th',
-        name: 'ยำวุ้นเส้น',
-        description: 'ยำวุ้นเส้นกุ้ง หมูยอ',
-      },
-      {
-        language: 'jp',
-        name: 'ヤムウンセン',
-        description: '春雨サラダ',
-      },
-      {
-        language: 'zh',
-        name: '粉丝沙拉',
-        description: '泰式粉丝沙拉',
-      },
-    ],
-  },
 
   // Subcategories for stir_fry (ผัด)
   {

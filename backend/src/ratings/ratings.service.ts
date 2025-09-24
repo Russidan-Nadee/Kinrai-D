@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { UpdateRatingDto } from './dto/update-rating.dto';
@@ -34,7 +38,16 @@ export class RatingsService {
         include: {
           Menu: {
             include: {
-              Translations: true,
+              Subcategory: {
+                include: {
+                  Translations: true,
+                },
+              },
+              ProteinType: {
+                include: {
+                  Translations: true,
+                },
+              },
             },
           },
           UserProfile: {
@@ -63,8 +76,19 @@ export class RatingsService {
       include: {
         Menu: {
           include: {
-            Translations: {
-              where: { language },
+            Subcategory: {
+              include: {
+                Translations: {
+                  where: { language },
+                },
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: {
+                  where: { language },
+                },
+              },
             },
           },
         },
@@ -85,7 +109,16 @@ export class RatingsService {
       include: {
         Menu: {
           include: {
-            Translations: true,
+            Subcategory: {
+              include: {
+                Translations: true,
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: true,
+              },
+            },
           },
         },
         UserProfile: {
@@ -113,7 +146,16 @@ export class RatingsService {
       include: {
         Menu: {
           include: {
-            Translations: true,
+            Subcategory: {
+              include: {
+                Translations: true,
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: true,
+              },
+            },
           },
         },
       },
@@ -126,7 +168,11 @@ export class RatingsService {
     return rating;
   }
 
-  async update(userId: string, menuId: number, updateRatingDto: UpdateRatingDto) {
+  async update(
+    userId: string,
+    menuId: number,
+    updateRatingDto: UpdateRatingDto,
+  ) {
     const rating = await this.prisma.menuRating.findFirst({
       where: {
         user_profile_id: userId,
@@ -144,7 +190,16 @@ export class RatingsService {
       include: {
         Menu: {
           include: {
-            Translations: true,
+            Subcategory: {
+              include: {
+                Translations: true,
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: true,
+              },
+            },
           },
         },
       },
@@ -183,16 +238,17 @@ export class RatingsService {
     });
 
     const totalRatings = ratings.length;
-    const averageRating = totalRatings > 0 
-      ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings 
-      : 0;
+    const averageRating =
+      totalRatings > 0
+        ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings
+        : 0;
 
     const ratingDistribution = {
-      1: ratings.filter(r => r.rating === 1).length,
-      2: ratings.filter(r => r.rating === 2).length,
-      3: ratings.filter(r => r.rating === 3).length,
-      4: ratings.filter(r => r.rating === 4).length,
-      5: ratings.filter(r => r.rating === 5).length,
+      1: ratings.filter((r) => r.rating === 1).length,
+      2: ratings.filter((r) => r.rating === 2).length,
+      3: ratings.filter((r) => r.rating === 3).length,
+      4: ratings.filter((r) => r.rating === 4).length,
+      5: ratings.filter((r) => r.rating === 5).length,
     };
 
     return {
@@ -209,8 +265,19 @@ export class RatingsService {
       include: {
         Menu: {
           include: {
-            Translations: {
-              where: { language },
+            Subcategory: {
+              include: {
+                Translations: {
+                  where: { language },
+                },
+              },
+            },
+            ProteinType: {
+              include: {
+                Translations: {
+                  where: { language },
+                },
+              },
             },
           },
         },
@@ -243,17 +310,14 @@ export class RatingsService {
       take: limit,
     });
 
-    const menuIds = topRated.map(item => item.menu_id);
-    
+    const menuIds = topRated.map((item) => item.menu_id);
+
     const menus = await this.prisma.menu.findMany({
       where: {
         id: { in: menuIds },
         is_active: true,
       },
       include: {
-        Translations: {
-          where: { language },
-        },
         Subcategory: {
           include: {
             Translations: {
@@ -271,13 +335,15 @@ export class RatingsService {
       },
     });
 
-    return menus.map(menu => {
-      const ratingData = topRated.find(item => item.menu_id === menu.id);
-      return {
-        ...menu,
-        average_rating: ratingData?._avg.rating || 0,
-        total_ratings: ratingData?._count.rating || 0,
-      };
-    }).sort((a, b) => b.average_rating - a.average_rating);
+    return menus
+      .map((menu) => {
+        const ratingData = topRated.find((item) => item.menu_id === menu.id);
+        return {
+          ...menu,
+          average_rating: ratingData?._avg.rating || 0,
+          total_ratings: ratingData?._count.rating || 0,
+        };
+      })
+      .sort((a, b) => b.average_rating - a.average_rating);
   }
 }

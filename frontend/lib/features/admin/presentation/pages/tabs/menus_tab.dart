@@ -1,83 +1,89 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/admin_menu_entity.dart';
-import '../../widgets/menu_grid_item.dart';
-import '../../widgets/add_menu_dialog.dart';
-import '../../../services/admin_service.dart';
+import '../../../../../core/api/api_client.dart';
 import '../../../../../core/utils/logger.dart';
 
-class MenusTab extends StatelessWidget {
-  final AdminMenuListEntity? adminInfo;
-  final bool isLoading;
-  final String? errorMessage;
-  final VoidCallback onRefresh;
+class MenusTab extends StatefulWidget {
+  const MenusTab({super.key});
 
-  const MenusTab({
-    super.key,
-    this.adminInfo,
-    required this.isLoading,
-    this.errorMessage,
-    required this.onRefresh,
-  });
+  @override
+  State<MenusTab> createState() => _MenusTabState();
+}
 
-  void _showAddMenuDialog(BuildContext context) async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => const AddMenuDialog(),
-    );
+class _MenusTabState extends State<MenusTab> {
+  List<dynamic> menus = [];
+  bool isLoading = false;
+  String? errorMessage;
+  int currentPage = 1;
+  int totalPages = 1;
+  int totalMenus = 0;
 
-    if (result != null && context.mounted) {
-      await _createMenu(context, result);
+  @override
+  void initState() {
+    super.initState();
+    _loadMenus();
+  }
+
+  Future<void> _loadMenus() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final apiClient = ApiClient();
+      apiClient.initialize();
+      final response = await apiClient.get('/menus?page=$currentPage&limit=20');
+
+      setState(() {
+        menus = response.data['data'] ?? [];
+        final pagination = response.data['pagination'];
+        if (pagination != null) {
+          totalPages = pagination['total_pages'] ?? 1;
+          totalMenus = pagination['total'] ?? 0;
+        }
+        isLoading = false;
+      });
+    } catch (e) {
+      AppLogger.error('Error loading menus', e);
+      setState(() {
+        errorMessage = 'Failed to load menus: ${e.toString()}';
+        isLoading = false;
+      });
     }
   }
 
-  Future<void> _createMenu(BuildContext context, Map<String, dynamic> menuData) async {
-    // Store scaffoldMessenger before async operations
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    try {
-      // Show loading
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              SizedBox(width: 16),
-              Text('Creating menu...'),
-            ],
-          ),
-          duration: Duration(seconds: 2),
-        ),
+  String _getMenuDisplayName(dynamic menu) {
+    // Get subcategory name in Thai
+    String menuName = 'Unknown Menu';
+    final subcategory = menu['Subcategory'];
+    if (subcategory != null && subcategory['Translations'] != null) {
+      final translations = subcategory['Translations'] as List;
+      final thTranslation = translations.firstWhere(
+        (t) => t['language'] == 'th',
+        orElse: () => translations.isNotEmpty ? translations[0] : null,
       );
-
-      // Call API (without auth for now)
-      final adminService = AdminService();
-      final success = await adminService.createMenu(menuData);
-
-      if (success) {
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Menu created successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        // Refresh the list
-        onRefresh();
-      } else {
-        throw Exception('Failed to create menu');
+      if (thTranslation != null) {
+        menuName = thTranslation['name'] ?? 'Unknown Menu';
       }
-    } catch (e) {
-      AppLogger.error('Error creating menu', e);
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text('Failed to create menu: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
+
+    // Get protein name in Thai if available
+    final proteinType = menu['ProteinType'];
+    if (proteinType != null && proteinType['Translations'] != null) {
+      final translations = proteinType['Translations'] as List;
+      final thTranslation = translations.firstWhere(
+        (t) => t['language'] == 'th',
+        orElse: () => translations.isNotEmpty ? translations[0] : null,
+      );
+      if (thTranslation != null) {
+        final proteinName = thTranslation['name'];
+        if (proteinName != null && proteinName.isNotEmpty) {
+          return '$menuName$proteinName';
+        }
+      }
+    }
+
+    return menuName;
   }
 
   @override
@@ -121,7 +127,7 @@ class MenusTab extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: onRefresh,
+              onPressed: _loadMenus,
               child: const Text('Retry'),
             ),
           ],
@@ -129,108 +135,207 @@ class MenusTab extends StatelessWidget {
       );
     }
 
-    if (adminInfo == null) {
-      return const Center(
-        child: Text('No data available'),
-      );
-    }
-
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: RefreshIndicator(
+        onRefresh: _loadMenus,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Card
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.restaurant_menu,
+                        size: 40,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Menu Management',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Total: $totalMenus menus',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Menus Section
+              const Text(
+                'All Menus',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Menu Grid
+              if (menus.isNotEmpty)
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: _getCrossAxisCount(context),
+                    crossAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
+                    mainAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
+                    childAspectRatio: _getChildAspectRatio(context),
+                  ),
+                  itemCount: menus.length,
+                  itemBuilder: (context, index) {
+                    final menu = menus[index];
+                    return _buildMenuCard(menu);
+                  },
+                )
+              else
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Text(
+                      'No menus found',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Pagination Info
+              if (totalPages > 1)
+                Card(
+                  margin: const EdgeInsets.only(top: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'Showing ${menus.length} of $totalMenus menus (Page $currentPage/$totalPages)',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuCard(dynamic menu) {
+    final displayName = _getMenuDisplayName(menu);
+    final mealTime = menu['meal_time'] ?? 'UNKNOWN';
+    final isActive = menu['is_active'] ?? false;
+    final contains = menu['contains'] as List? ?? [];
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.admin_panel_settings,
-                      size: 40,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Admin Dashboard',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Total: ${adminInfo!.pagination.total} menus',
-                            style: const TextStyle(
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+            // Menu Name
+            Text(
+              displayName,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+
+            // Meal Time
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: _getMealTimeColor(mealTime),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                mealTime,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            
-            // Menus Section
-            const Text(
-              'Recent Menus',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
             const SizedBox(height: 8),
-            
-            // Menu Grid
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: _getCrossAxisCount(context),
-                crossAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
-                mainAxisSpacing: _getCrossAxisCount(context) == 2 ? 12 : 16,
-                childAspectRatio: _getChildAspectRatio(context),
-              ),
-              itemCount: adminInfo!.menus.length,
-              itemBuilder: (context, index) {
-                final menu = adminInfo!.menus[index];
-                return MenuGridItem(menu: menu);
-              },
-            ),
-            
-            // Pagination Info
-            if (adminInfo!.pagination.totalPages > 1)
-              Card(
-                margin: const EdgeInsets.only(top: 16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Showing ${adminInfo!.menus.length} of ${adminInfo!.pagination.total} menus (Page ${adminInfo!.pagination.page}/${adminInfo!.pagination.totalPages})',
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
+
+            // Status
+            Row(
+              children: [
+                Icon(
+                  isActive ? Icons.check_circle : Icons.cancel,
+                  color: isActive ? Colors.green : Colors.red,
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isActive ? 'Active' : 'Inactive',
+                  style: TextStyle(
+                    color: isActive ? Colors.green : Colors.red,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
+                ),
+              ],
+            ),
+
+            const Spacer(),
+
+            // Contains count
+            if (contains.isNotEmpty)
+              Text(
+                '${contains.length} ingredients',
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
                 ),
               ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddMenuDialog(context),
-        backgroundColor: Colors.orange,
-        child: const Icon(Icons.add),
-      ),
     );
+  }
+
+  Color _getMealTimeColor(String mealTime) {
+    switch (mealTime.toUpperCase()) {
+      case 'BREAKFAST':
+        return Colors.orange;
+      case 'LUNCH':
+        return Colors.blue;
+      case 'DINNER':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
   }
 
   int _getCrossAxisCount(BuildContext context) {

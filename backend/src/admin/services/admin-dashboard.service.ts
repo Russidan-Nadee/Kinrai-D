@@ -61,9 +61,21 @@ export class AdminDashboardService {
           },
           Menu: {
             include: {
-              Translations: {
-                where: { language: 'en' },
-                select: { name: true },
+              Subcategory: {
+                include: {
+                  Translations: {
+                    where: { language: 'en' },
+                    select: { name: true },
+                  },
+                },
+              },
+              ProteinType: {
+                include: {
+                  Translations: {
+                    where: { language: 'en' },
+                    select: { name: true },
+                  },
+                },
               },
             },
           },
@@ -78,9 +90,21 @@ export class AdminDashboardService {
           },
           Menu: {
             include: {
-              Translations: {
-                where: { language: 'en' },
-                select: { name: true },
+              Subcategory: {
+                include: {
+                  Translations: {
+                    where: { language: 'en' },
+                    select: { name: true },
+                  },
+                },
+              },
+              ProteinType: {
+                include: {
+                  Translations: {
+                    where: { language: 'en' },
+                    select: { name: true },
+                  },
+                },
               },
             },
           },

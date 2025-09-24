@@ -1,27 +1,40 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateSubcategoryDto, SubcategoryTranslationDto } from './create-subcategory.dto';
-import { IsOptional, IsBoolean, IsArray, ValidateNested, IsInt, IsPositive, IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import {
+  CreateSubcategoryDto,
+  SubcategoryTranslationDto,
+} from './create-subcategory.dto';
+import {
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  ValidateNested,
+  IsInt,
+  IsPositive,
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateSubcategoryDto extends PartialType(CreateSubcategoryDto) {
-   @IsOptional()
-   @IsString()
-   @IsNotEmpty()
-   @MaxLength(100)
-   key?: string;
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  key?: string;
 
-   @IsOptional()
-   @IsInt()
-   @IsPositive()
-   category_id?: number;
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  category_id?: number;
 
-   @IsOptional()
-   @IsBoolean()
-   is_active?: boolean;
+  @IsOptional()
+  @IsBoolean()
+  is_active?: boolean;
 
-   @IsOptional()
-   @IsArray()
-   @ValidateNested({ each: true })
-   @Type(() => SubcategoryTranslationDto)
-   translations?: SubcategoryTranslationDto[];
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SubcategoryTranslationDto)
+  translations?: SubcategoryTranslationDto[];
 }

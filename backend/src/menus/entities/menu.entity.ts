@@ -4,7 +4,6 @@ export class Menu {
   id: number;
   subcategory_id: number;
   protein_type_id?: number;
-  key: string;
   image_url?: string;
   contains: any; // JSON object
   meal_time: MealTime;
@@ -13,16 +12,7 @@ export class Menu {
   updated_at: Date;
 }
 
-export class MenuTranslation {
-  id: number;
-  menu_id: number;
-  language: string;
-  name: string;
-  description?: string;
-}
-
 export class MenuWithTranslations extends Menu {
-  translations: MenuTranslation[];
   subcategory?: {
     id: number;
     name: string;
@@ -41,4 +31,5 @@ export class MenuWithTranslations extends Menu {
   };
   average_rating?: number;
   total_ratings?: number;
+  name?: string;
 }

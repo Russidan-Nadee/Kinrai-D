@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddFavoriteDto } from './dto/add-favorite.dto';
 import { RemoveFavoriteDto } from './dto/remove-favorite.dto';
@@ -33,7 +37,6 @@ export class FavoritesService {
         include: {
           Menu: {
             include: {
-              Translations: true,
               Subcategory: {
                 include: {
                   Translations: true,
@@ -89,9 +92,6 @@ export class FavoritesService {
       include: {
         Menu: {
           include: {
-            Translations: {
-              where: { language },
-            },
             Subcategory: {
               include: {
                 Translations: {
@@ -138,7 +138,11 @@ export class FavoritesService {
     return !!favorite;
   }
 
-  async getFavoritesByMealTime(userId: string, mealTime: string, language = 'en') {
+  async getFavoritesByMealTime(
+    userId: string,
+    mealTime: string,
+    language = 'en',
+  ) {
     return await this.prisma.favoriteMenu.findMany({
       where: {
         user_profile_id: userId,
@@ -149,9 +153,6 @@ export class FavoritesService {
       include: {
         Menu: {
           include: {
-            Translations: {
-              where: { language },
-            },
             Subcategory: {
               include: {
                 Translations: {

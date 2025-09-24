@@ -55,17 +55,23 @@ export class UserProfilesController {
 
   @Post('me/dislikes')
   addDislike(@Body() createDislikeDto: CreateDislikeDto, @Request() req) {
-    return this.userProfilesService.addDislike(req.user.id, createDislikeDto);
+    return this.userProfilesService.addDislike(req.user.id, createDislikeDto, req.user.email);
   }
 
   @Delete('me/dislikes')
   removeDislike(@Body() removeDislikeDto: RemoveDislikeDto, @Request() req) {
-    return this.userProfilesService.removeDislike(req.user.id, removeDislikeDto);
+    return this.userProfilesService.removeDislike(
+      req.user.id,
+      removeDislikeDto,
+    );
   }
 
   @Delete('me/dislikes/bulk')
   removeBulkDislikes(@Body() body: { menu_ids: number[] }, @Request() req) {
-    return this.userProfilesService.removeBulkDislikes(req.user.id, body.menu_ids);
+    return this.userProfilesService.removeBulkDislikes(
+      req.user.id,
+      body.menu_ids,
+    );
   }
 
   @Get('me/dislikes')

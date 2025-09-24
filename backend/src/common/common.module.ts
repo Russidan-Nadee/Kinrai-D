@@ -10,7 +10,21 @@ import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule, ConfigModule],
-  providers: [LanguageService, SearchService, CacheService, LoggingService, CacheInterceptor, LoggingInterceptor],
-  exports: [LanguageService, SearchService, CacheService, LoggingService, CacheInterceptor, LoggingInterceptor],
+  providers: [
+    LanguageService,
+    SearchService,
+    CacheService,
+    LoggingService,
+    CacheInterceptor,
+    LoggingInterceptor,
+  ],
+  exports: [
+    LanguageService,
+    SearchService,
+    CacheService,
+    LoggingService,
+    CacheInterceptor,
+    LoggingInterceptor,
+  ],
 })
 export class CommonModule {}

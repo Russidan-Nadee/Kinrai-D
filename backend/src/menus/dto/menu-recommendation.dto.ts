@@ -1,14 +1,14 @@
-import { 
-  IsOptional, 
-  IsArray, 
-  IsInt, 
-  IsPositive, 
-  IsString, 
-  IsEnum, 
+import {
+  IsOptional,
+  IsArray,
+  IsInt,
+  IsPositive,
+  IsString,
+  IsEnum,
   IsNumber,
   Min,
   Max,
-  IsObject
+  IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MealTime } from './create-menu.dto';
@@ -72,15 +72,13 @@ export class MenuRecommendationQueryDto {
 
   @IsOptional()
   @IsString()
-  recommendation_type?: 'popular' | 'personalized' | 'similar' | 'random' = 'personalized';
+  recommendation_type?: 'popular' | 'personalized' | 'similar' | 'random' =
+    'personalized';
 }
 
 export class MenuRecommendationDto {
   @IsNumber()
   id: number;
-
-  @IsString()
-  key: string;
 
   @IsString()
   name: string;

@@ -19,7 +19,9 @@ export class JwtAuthGuard implements CanActivate {
     const supabaseKey = this.configService.get<string>('SUPABASE_ANON_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
-      this.logger.error('Supabase configuration missing. Set SUPABASE_URL and SUPABASE_ANON_KEY in environment variables.');
+      this.logger.error(
+        'Supabase configuration missing. Set SUPABASE_URL and SUPABASE_ANON_KEY in environment variables.',
+      );
     } else {
       this.supabase = createClient(supabaseUrl, supabaseKey);
     }
@@ -36,7 +38,10 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       // Verify token with Supabase
-      const { data: { user }, error } = await this.supabase.auth.getUser(token);
+      const {
+        data: { user },
+        error,
+      } = await this.supabase.auth.getUser(token);
 
       if (error || !user) {
         this.logger.warn(`Token verification failed: ${error?.message}`);

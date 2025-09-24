@@ -1,12 +1,12 @@
-import { 
-  IsEmail, 
-  IsString, 
-  MinLength, 
-  IsOptional, 
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsOptional,
   MaxLength,
   IsPhoneNumber,
   IsEnum,
-  IsDateString
+  IsDateString,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -95,21 +95,21 @@ export class UpdateProfileDto {
   @IsDateString()
   date_of_birth?: string;
 
-  @ApiPropertyOptional({ 
-    example: { 
-      notifications: true, 
+  @ApiPropertyOptional({
+    example: {
+      notifications: true,
       marketing_emails: false,
-      theme: 'light'
-    } 
+      theme: 'light',
+    },
   })
   @IsOptional()
   preferences?: Record<string, any>;
 }
 
 export class SocialSignInDto {
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'google',
-    enum: ['google', 'facebook', 'github', 'apple']
+    enum: ['google', 'facebook', 'github', 'apple'],
   })
   @IsEnum(['google', 'facebook', 'github', 'apple'])
   provider: 'google' | 'facebook' | 'github' | 'apple';

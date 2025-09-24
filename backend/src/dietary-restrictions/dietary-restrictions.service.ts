@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDietaryRestrictionDto } from './dto/create-dietary-restriction.dto';
 import { UpdateDietaryRestrictionDto } from './dto/update-dietary-restriction.dto';
@@ -51,7 +55,10 @@ export class DietaryRestrictionsService {
     return restriction;
   }
 
-  async update(id: number, updateDietaryRestrictionDto: UpdateDietaryRestrictionDto) {
+  async update(
+    id: number,
+    updateDietaryRestrictionDto: UpdateDietaryRestrictionDto,
+  ) {
     const restriction = await this.prisma.dietaryRestriction.findUnique({
       where: { id },
     });
@@ -81,7 +88,10 @@ export class DietaryRestrictionsService {
     });
   }
 
-  async assignToUser(userId: string, assignRestrictionDto: AssignRestrictionDto) {
+  async assignToUser(
+    userId: string,
+    assignRestrictionDto: AssignRestrictionDto,
+  ) {
     const restriction = await this.prisma.dietaryRestriction.findUnique({
       where: { id: assignRestrictionDto.dietary_restriction_id },
     });
@@ -114,13 +124,18 @@ export class DietaryRestrictionsService {
       });
     } catch (error) {
       if (error.code === 'P2002') {
-        throw new ConflictException('Dietary restriction already assigned to user');
+        throw new ConflictException(
+          'Dietary restriction already assigned to user',
+        );
       }
       throw error;
     }
   }
 
-  async removeFromUser(userId: string, removeRestrictionDto: RemoveRestrictionDto) {
+  async removeFromUser(
+    userId: string,
+    removeRestrictionDto: RemoveRestrictionDto,
+  ) {
     const userRestriction = await this.prisma.userDietaryRestriction.findFirst({
       where: {
         user_profile_id: userId,

@@ -16,9 +16,20 @@ export interface CacheDecoratorOptions {
  */
 export const Cacheable = (options: CacheDecoratorOptions = {}) => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-    SetMetadata(CACHE_KEY_METADATA, options.key || `${target.constructor.name}:${propertyKey}`)(target, propertyKey, descriptor);
-    SetMetadata(CACHE_TTL_METADATA, options.ttl || 3600)(target, propertyKey, descriptor);
-    SetMetadata(CACHE_TAGS_METADATA, options.tags || [])(target, propertyKey, descriptor);
+    SetMetadata(
+      CACHE_KEY_METADATA,
+      options.key || `${target.constructor.name}:${propertyKey}`,
+    )(target, propertyKey, descriptor);
+    SetMetadata(CACHE_TTL_METADATA, options.ttl || 3600)(
+      target,
+      propertyKey,
+      descriptor,
+    );
+    SetMetadata(CACHE_TAGS_METADATA, options.tags || [])(
+      target,
+      propertyKey,
+      descriptor,
+    );
   };
 };
 
@@ -27,7 +38,10 @@ export const Cacheable = (options: CacheDecoratorOptions = {}) => {
  * @param patterns Cache key patterns to invalidate
  */
 export const CacheEvict = (patterns: string | string[]) => {
-  return SetMetadata('cache:evict', Array.isArray(patterns) ? patterns : [patterns]);
+  return SetMetadata(
+    'cache:evict',
+    Array.isArray(patterns) ? patterns : [patterns],
+  );
 };
 
 /**

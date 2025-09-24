@@ -21,7 +21,9 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('dietary-restrictions')
 export class DietaryRestrictionsController {
-  constructor(private readonly dietaryRestrictionsService: DietaryRestrictionsService) {}
+  constructor(
+    private readonly dietaryRestrictionsService: DietaryRestrictionsService,
+  ) {}
 
   @Post()
   @UseGuards(RolesGuard)
@@ -36,12 +38,18 @@ export class DietaryRestrictionsController {
   }
 
   @Get('me')
-    getUserRestrictions(@Request() req, @Query('language') language = 'en') {
-    return this.dietaryRestrictionsService.getUserRestrictions(req.user.id, language);
+  getUserRestrictions(@Request() req, @Query('language') language = 'en') {
+    return this.dietaryRestrictionsService.getUserRestrictions(
+      req.user.id,
+      language,
+    );
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number, @Query('language') language = 'en') {
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('language') language = 'en',
+  ) {
     return this.dietaryRestrictionsService.findOne(id, language);
   }
 
@@ -52,7 +60,10 @@ export class DietaryRestrictionsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDietaryRestrictionDto: UpdateDietaryRestrictionDto,
   ) {
-    return this.dietaryRestrictionsService.update(id, updateDietaryRestrictionDto);
+    return this.dietaryRestrictionsService.update(
+      id,
+      updateDietaryRestrictionDto,
+    );
   }
 
   @Delete(':id')
@@ -63,12 +74,24 @@ export class DietaryRestrictionsController {
   }
 
   @Post('me/assign')
-    assignToMe(@Body() assignRestrictionDto: AssignRestrictionDto, @Request() req) {
-    return this.dietaryRestrictionsService.assignToUser(req.user.id, assignRestrictionDto);
+  assignToMe(
+    @Body() assignRestrictionDto: AssignRestrictionDto,
+    @Request() req,
+  ) {
+    return this.dietaryRestrictionsService.assignToUser(
+      req.user.id,
+      assignRestrictionDto,
+    );
   }
 
   @Delete('me/remove')
-    removeFromMe(@Body() removeRestrictionDto: RemoveRestrictionDto, @Request() req) {
-    return this.dietaryRestrictionsService.removeFromUser(req.user.id, removeRestrictionDto);
+  removeFromMe(
+    @Body() removeRestrictionDto: RemoveRestrictionDto,
+    @Request() req,
+  ) {
+    return this.dietaryRestrictionsService.removeFromUser(
+      req.user.id,
+      removeRestrictionDto,
+    );
   }
 }

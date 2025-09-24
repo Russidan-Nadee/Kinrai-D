@@ -3,7 +3,7 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger
+  Logger,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
@@ -42,8 +42,8 @@ export class LoggingInterceptor implements NestInterceptor {
       metadata: {
         body: this.sanitizeRequestBody(body),
         headers: this.sanitizeHeaders(headers),
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
 
     return next.handle().pipe(
@@ -63,13 +63,15 @@ export class LoggingInterceptor implements NestInterceptor {
           userId,
           metadata: {
             responseSize: JSON.stringify(responseData).length,
-            cacheHit: response.getHeader('X-Cache-Status') === 'HIT'
-          }
+            cacheHit: response.getHeader('X-Cache-Status') === 'HIT',
+          },
         });
 
         // Log slow requests
         if (responseTime > 1000) {
-          this.logger.warn(`Slow request detected: ${method} ${url} took ${responseTime}ms`);
+          this.logger.warn(
+            `Slow request detected: ${method} ${url} took ${responseTime}ms`,
+          );
         }
 
         // Log user activity based on the endpoint
@@ -94,8 +96,8 @@ export class LoggingInterceptor implements NestInterceptor {
           error,
           metadata: {
             errorType: error.constructor.name,
-            errorMessage: error.message
-          }
+            errorMessage: error.message,
+          },
         });
 
         // Log error for monitoring
@@ -105,22 +107,26 @@ export class LoggingInterceptor implements NestInterceptor {
           url,
           userId,
           ip,
-          userAgent
+          userAgent,
         });
 
         return throwError(error);
-      })
+      }),
     );
   }
 
   private extractClientIP(request: any): string {
-    return request.ip || 
-           request.connection.remoteAddress ||
-           request.socket.remoteAddress ||
-           (request.connection.socket ? request.connection.socket.remoteAddress : null) ||
-           request.headers['x-forwarded-for']?.split(',')[0] ||
-           request.headers['x-real-ip'] ||
-           'unknown';
+    return (
+      request.ip ||
+      request.connection.remoteAddress ||
+      request.socket.remoteAddress ||
+      (request.connection.socket
+        ? request.connection.socket.remoteAddress
+        : null) ||
+      request.headers['x-forwarded-for']?.split(',')[0] ||
+      request.headers['x-real-ip'] ||
+      'unknown'
+    );
   }
 
   private extractUserId(request: any): string | undefined {
@@ -134,7 +140,7 @@ export class LoggingInterceptor implements NestInterceptor {
     // Remove sensitive information
     const sanitized = { ...body };
     const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth'];
-    
+
     for (const field of sensitiveFields) {
       if (sanitized[field]) {
         sanitized[field] = '[REDACTED]';
@@ -147,7 +153,7 @@ export class LoggingInterceptor implements NestInterceptor {
   private sanitizeHeaders(headers: any): any {
     const sanitized = { ...headers };
     const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
-    
+
     for (const header of sensitiveHeaders) {
       if (sanitized[header]) {
         sanitized[header] = '[REDACTED]';
@@ -157,7 +163,12 @@ export class LoggingInterceptor implements NestInterceptor {
     return sanitized;
   }
 
-  private logUserActivity(method: string, url: string, userId: string, responseData?: any): void {
+  private logUserActivity(
+    method: string,
+    url: string,
+    userId: string,
+    responseData?: any,
+  ): void {
     let action = 'unknown';
     let resource = 'unknown';
     let resourceId: string | undefined;
@@ -217,8 +228,10 @@ export class LoggingInterceptor implements NestInterceptor {
         metadata: {
           url,
           method,
-          responseSize: responseData ? JSON.stringify(responseData).length : undefined
-        }
+          responseSize: responseData
+            ? JSON.stringify(responseData).length
+            : undefined,
+        },
       });
     }
   }
