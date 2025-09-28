@@ -95,5 +95,30 @@
   "addedOn": "Added on",
   "@addedOn": {
     "description": "Date when dislike was added"
+  },
+
+  "proteinPreferences": "Protein Preferences",
+  "@proteinPreferences": {
+    "description": "Protein preferences section title"
+  },
+
+  "noProteinRestrictions": "No protein restrictions",
+  "@noProteinRestrictions": {
+    "description": "Message when user eats all proteins"
+  },
+
+  "manageProteinPreferences": "Choose which proteins you don't want to eat",
+  "@manageProteinPreferences": {
+    "description": "Protein preferences section subtitle"
+  },
+
+  "proteinPreferenceUpdated": "Protein preference updated",
+  "@proteinPreferenceUpdated": {
+    "description": "Success message when updating preference"
+  },
+
+  "dontEatProteins": "Don't eat:",
+  "@dontEatProteins": {
+    "description": "Label for proteins user doesn't want"
   }
 }

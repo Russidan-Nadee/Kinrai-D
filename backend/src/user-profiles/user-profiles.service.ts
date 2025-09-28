@@ -48,9 +48,9 @@ export class UserProfilesService {
             },
           },
         },
-        UserDietaryRestrictions: {
+        UserProteinPreferences: {
           include: {
-            DietaryRestriction: {
+            ProteinType: {
               include: {
                 Translations: true,
               },
@@ -234,7 +234,7 @@ export class UserProfilesService {
         where: { user_profile_id: userId },
         _avg: { rating: true },
       }),
-      this.prisma.userDietaryRestriction.count({
+      this.prisma.userProteinPreference.count({
         where: { user_profile_id: userId },
       }),
     ]);

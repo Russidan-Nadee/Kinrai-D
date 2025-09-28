@@ -89,13 +89,14 @@ model SubcategoryTranslation {
 }
 
 model ProteinType {
-  id           Int                      @id @default(autoincrement())
-  key          String                   @unique
-  is_active    Boolean                  @default(true)
-  created_at   DateTime                 @default(now())
-  updated_at   DateTime                 @updatedAt
-  Menus        Menu[]
-  Translations ProteinTypeTranslation[]
+  id                     Int                      @id @default(autoincrement())
+  key                    String                   @unique
+  is_active              Boolean                  @default(true)
+  created_at             DateTime                 @default(now())
+  updated_at             DateTime                 @updatedAt
+  Menus                  Menu[]
+  Translations           ProteinTypeTranslation[]
+  UserProteinPreferences UserProteinPreference[]
 
   @@map("protein_types")
 }
@@ -113,19 +114,19 @@ model ProteinTypeTranslation {
 }
 
 model Menu {
-  id              Int               @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   subcategory_id  Int
   protein_type_id Int?
   image_url       String?
   contains        Json
   meal_time       MealTime
-  is_active       Boolean           @default(true)
-  created_at      DateTime          @default(now())
-  updated_at      DateTime          @updatedAt
+  is_active       Boolean        @default(true)
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
   Favorites       FavoriteMenu[]
   Ratings         MenuRating[]
-  ProteinType     ProteinType?      @relation(fields: [protein_type_id], references: [id])
-  Subcategory     Subcategory       @relation(fields: [subcategory_id], references: [id])
+  ProteinType     ProteinType?   @relation(fields: [protein_type_id], references: [id])
+  Subcategory     Subcategory    @relation(fields: [subcategory_id], references: [id])
   UserDislikes    UserDislike[]
 
   @@unique([subcategory_id, protein_type_id])
@@ -135,58 +136,35 @@ model Menu {
   @@map("menus")
 }
 
+model UserProteinPreference {
+  id              Int         @id @default(autoincrement())
+  user_profile_id String      @db.Uuid
+  protein_type_id Int
+  exclude         Boolean     @default(true) // true = user doesn't want this protein
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  ProteinType     ProteinType @relation(fields: [protein_type_id], references: [id])
+  UserProfile     UserProfile @relation(fields: [user_profile_id], references: [id])
 
-model DietaryRestriction {
-  id                      Int                             @id @default(autoincrement())
-  key                     String                          @unique
-  is_active               Boolean                         @default(true)
-  created_at              DateTime                        @default(now())
-  updated_at              DateTime                        @updatedAt
-  Translations            DietaryRestrictionTranslation[]
-  UserDietaryRestrictions UserDietaryRestriction[]
-
-  @@map("dietary_restrictions")
-}
-
-model DietaryRestrictionTranslation {
-  id                     Int                @id @default(autoincrement())
-  dietary_restriction_id Int
-  language               String
-  name                   String
-  description            String?
-  DietaryRestriction     DietaryRestriction @relation(fields: [dietary_restriction_id], references: [id])
-
-  @@unique([dietary_restriction_id, language])
-  @@index([language])
-  @@map("dietary_restriction_translations")
-}
-
-model UserDietaryRestriction {
-  id                     Int                @id @default(autoincrement())
-  user_profile_id        String             @db.Uuid
-  dietary_restriction_id Int
-  DietaryRestriction     DietaryRestriction @relation(fields: [dietary_restriction_id], references: [id])
-  UserProfile            UserProfile        @relation(fields: [user_profile_id], references: [id])
-
-  @@unique([user_profile_id, dietary_restriction_id])
+  @@unique([user_profile_id, protein_type_id])
   @@index([user_profile_id])
-  @@index([dietary_restriction_id])
-  @@map("user_dietary_restrictions")
+  @@index([protein_type_id])
+  @@map("user_protein_preferences")
 }
 
 model UserProfile {
-  id                      String                   @id @db.Uuid
-  email                   String                   @unique
-  name                    String?
-  phone                   String?
-  role                    UserRole                 @default(USER)
-  is_active               Boolean                  @default(true)
-  created_at              DateTime                 @default(now())
-  updated_at              DateTime                 @updatedAt
-  Favorites               FavoriteMenu[]
-  Ratings                 MenuRating[]
-  UserDietaryRestrictions UserDietaryRestriction[]
-  UserDislikes            UserDislike[]
+  id                     String                  @id @db.Uuid
+  email                  String                  @unique
+  name                   String?
+  phone                  String?
+  role                   UserRole                @default(USER)
+  is_active              Boolean                 @default(true)
+  created_at             DateTime                @default(now())
+  updated_at             DateTime                @updatedAt
+  Favorites              FavoriteMenu[]
+  Ratings                MenuRating[]
+  UserDislikes           UserDislike[]
+  UserProteinPreferences UserProteinPreference[]
 
   @@index([email])
   @@index([role])

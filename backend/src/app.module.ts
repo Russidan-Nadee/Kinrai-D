@@ -6,11 +6,11 @@ import { MenusModule } from './menus/menus.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { UserProfilesModule } from './user-profiles/user-profiles.module';
-import { DietaryRestrictionsModule } from './dietary-restrictions/dietary-restrictions.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AdminModule } from './admin/admin.module';
+import { ProteinPreferencesModule } from './protein-preferences/protein-preferences.module';
 
 @Module({
   imports: [
@@ -24,11 +24,11 @@ import { AdminModule } from './admin/admin.module';
     FoodManagementModule,
     MenusModule,
     UserProfilesModule,
-    DietaryRestrictionsModule,
     FavoritesModule,
     RatingsModule,
     AnalyticsModule,
     AdminModule,
+    ProteinPreferencesModule,
   ],
   controllers: [],
   providers: [],

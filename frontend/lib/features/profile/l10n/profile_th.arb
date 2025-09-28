@@ -35,5 +35,15 @@
 
   "reason": "เหตุผล",
 
-  "addedOn": "เพิ่มเมื่อ"
+  "addedOn": "เพิ่มเมื่อ",
+
+  "proteinPreferences": "ไม่อยากกินเนื้อสัตว์",
+
+  "noProteinRestrictions": "กินเนื้อสัตว์ได้ทุกชนิด",
+
+  "manageProteinPreferences": "เลือกเนื้อสัตว์ที่ไม่อยากกิน",
+
+  "proteinPreferenceUpdated": "อัพเดตความชอบเนื้อสัตว์แล้ว",
+
+  "dontEatProteins": "ไม่กิน:"
 }

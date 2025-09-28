@@ -87,9 +87,9 @@ export class UsersService {
             },
           },
         },
-        UserDietaryRestrictions: {
+        UserProteinPreferences: {
           include: {
-            DietaryRestriction: {
+            ProteinType: {
               include: {
                 Translations: true,
               },

@@ -105,4 +105,89 @@ class UserService {
       rethrow;
     }
   }
+
+  // === PROTEIN PREFERENCES METHODS ===
+
+  /// ดึงรายการ protein types ทั้งหมด
+  Future<List<Map<String, dynamic>>> getAvailableProteinTypes({
+    String language = 'th',
+  }) async {
+    try {
+      AppLogger.info('[UserService] Fetching available protein types');
+
+      final response = await _apiClient.get(
+        '/protein-preferences/available',
+        queryParameters: {'language': language},
+      );
+
+      AppLogger.info('[UserService] Available protein types fetched successfully');
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      AppLogger.error('[UserService] Failed to fetch available protein types', e);
+      rethrow;
+    }
+  }
+
+  /// ดึงรายการ protein preferences ของ user (อันที่ไม่กิน)
+  Future<List<Map<String, dynamic>>> getUserProteinPreferences({
+    String language = 'th',
+  }) async {
+    try {
+      AppLogger.info('[UserService] Fetching user protein preferences');
+
+      final response = await _apiClient.get(
+        '/protein-preferences/me',
+        queryParameters: {'language': language},
+      );
+
+      AppLogger.info('[UserService] User protein preferences fetched successfully');
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      AppLogger.error('[UserService] Failed to fetch user protein preferences', e);
+      rethrow;
+    }
+  }
+
+  /// ตั้งค่าไม่กิน protein type นี้
+  Future<Map<String, dynamic>> setProteinPreference({
+    required int proteinTypeId,
+    bool exclude = true,
+  }) async {
+    try {
+      AppLogger.info('[UserService] Setting protein preference: $proteinTypeId, exclude: $exclude');
+
+      final response = await _apiClient.post(
+        '/protein-preferences/me',
+        data: {
+          'protein_type_id': proteinTypeId,
+          'exclude': exclude,
+        },
+      );
+
+      AppLogger.info('[UserService] Protein preference set successfully');
+      return response.data;
+    } catch (e) {
+      AppLogger.error('[UserService] Failed to set protein preference', e);
+      rethrow;
+    }
+  }
+
+  /// ลบ protein preference (กลับไปกินได้)
+  Future<void> removeProteinPreference({
+    required int proteinTypeId,
+  }) async {
+    try {
+      AppLogger.info('[UserService] Removing protein preference: $proteinTypeId');
+
+      await _apiClient.delete(
+        '/protein-preferences/me',
+        data: {'protein_type_id': proteinTypeId},
+      );
+
+      AppLogger.info('[UserService] Protein preference removed successfully');
+    } catch (e) {
+      AppLogger.error('[UserService] Failed to remove protein preference', e);
+      rethrow;
+    }
+  }
 }

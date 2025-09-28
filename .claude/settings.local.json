@@ -27,7 +27,9 @@
       "Bash(findstr:*)",
       "Bash(nc:*)",
       "Bash(cmd /c:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(nest generate:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

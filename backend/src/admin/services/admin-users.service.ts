@@ -65,9 +65,9 @@ export class AdminUsersService {
     const user = await this.prisma.userProfile.findUnique({
       where: { id },
       include: {
-        UserDietaryRestrictions: {
+        UserProteinPreferences: {
           include: {
-            DietaryRestriction: {
+            ProteinType: {
               include: {
                 Translations: {
                   where: { language: 'en' },

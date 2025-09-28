@@ -35,7 +35,7 @@ export class AnalyticsService {
         where: { user_profile_id: userId },
         _avg: { rating: true },
       }),
-      this.prisma.userDietaryRestriction.count({
+      this.prisma.userProteinPreference.count({
         where: { user_profile_id: userId },
       }),
     ]);
@@ -117,7 +117,7 @@ export class AnalyticsService {
         Favorites: { take: 1, orderBy: { created_at: 'desc' } },
         Ratings: { take: 1, orderBy: { created_at: 'desc' } },
         UserDislikes: { take: 1, orderBy: { created_at: 'desc' } },
-        UserDietaryRestrictions: true,
+        UserProteinPreferences: true,
       },
     });
 
@@ -140,7 +140,7 @@ export class AnalyticsService {
     let completion = 0;
     if (userProfile.name) completion += 25;
     if (userProfile.phone) completion += 25;
-    if (userProfile.UserDietaryRestrictions.length > 0) completion += 25;
+    if (userProfile.UserProteinPreferences.length > 0) completion += 25;
     if (favoritesCount > 0) completion += 25;
 
     // Get last activity
@@ -160,7 +160,7 @@ export class AnalyticsService {
       total_ratings: ratingsCount,
       average_rating_given:
         Math.round((avgRating._avg.rating || 0) * 100) / 100,
-      dietary_restrictions_count: userProfile.UserDietaryRestrictions.length,
+      protein_preferences_count: userProfile.UserProteinPreferences.length,
       profile_completion_percentage: completion,
       join_date: userProfile.created_at,
       last_activity: lastActivity,
