@@ -9,7 +9,7 @@ class AppColors {
   static const Color primaryVariant = Color(0xFFE55A2B);
 
   // Secondary Colors
-  static const Color secondary = Color(0xFFFDB462); // Yellow from header
+  static const Color secondary = Color(0xFFF4CB57); // Yellow from header
   static const Color secondaryVariant = Color(0xFFF5A623);
 
   // Background Colors

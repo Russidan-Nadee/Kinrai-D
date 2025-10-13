@@ -57,36 +57,74 @@ class _MainNavigationState extends State<MainNavigation>
         final isMobile = constraints.maxWidth < 600;
 
         return Scaffold(
-          endDrawer: isMobile && _isCollapsed
-              ? Drawer(child: _buildMobileDrawer(context))
-              : null,
-          body: Stack(
+          body: Row(
             children: [
-              Row(
-                children: [
-                  if (!(constraints.maxWidth < 600 && _isCollapsed))
-                    _buildLeftSidebar(context, constraints),
-                  Expanded(child: _pages[_currentIndex]),
-                ],
-              ),
-              if (isMobile && _isCollapsed)
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 8,
-                  right: 16,
-                  child: Builder(
-                    builder: (BuildContext context) {
-                      return FloatingActionButton.small(
-                        onPressed: () {
-                          Scaffold.of(context).openEndDrawer();
-                        },
-                        backgroundColor: const Color(0xFFFF6B35),
-                        child: const Icon(Icons.menu, color: Colors.white),
-                      );
-                    },
-                  ),
-                ),
+              // Desktop: Show sidebar
+              if (!isMobile)
+                _buildLeftSidebar(context, constraints),
+              // Content area
+              Expanded(child: _pages[_currentIndex]),
             ],
           ),
+          // Mobile: Bottom Navigation Bar
+          bottomNavigationBar: isMobile
+              ? SafeArea(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B35),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      child: BottomNavigationBar(
+                        currentIndex: _currentIndex,
+                        onTap: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                          });
+                        },
+                        selectedItemColor: Colors.white,
+                        unselectedItemColor: Colors.white.withValues(alpha: 0.6),
+                        showSelectedLabels: false,
+                        showUnselectedLabels: false,
+                        type: BottomNavigationBarType.fixed,
+                        backgroundColor: const Color(0xFFFF6B35),
+                        elevation: 0,
+                        items: const [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.home_outlined),
+                            activeIcon: Icon(Icons.home),
+                            label: '',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.person_outline),
+                            activeIcon: Icon(Icons.person),
+                            label: '',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.admin_panel_settings_outlined),
+                            activeIcon: Icon(Icons.admin_panel_settings),
+                            label: '',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              : null,
         );
       },
     );
@@ -339,143 +377,6 @@ class _MainNavigationState extends State<MainNavigation>
     }
   }
 
-  Widget _buildMobileDrawer(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFFF8A50), Color(0xFFFF6B35)],
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 16,
-              left: 16,
-              right: 16,
-              bottom: 16,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Kinrai D',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              children: [
-                const SizedBox(height: 16),
-                _buildMobileNavItem(
-                  context: context,
-                  icon: Icons.home_outlined,
-                  selectedIcon: Icons.home,
-                  label: 'Main',
-                  index: 0,
-                ),
-                _buildMobileNavItem(
-                  context: context,
-                  icon: Icons.person_outline,
-                  selectedIcon: Icons.person,
-                  label: 'Profile',
-                  index: 1,
-                ),
-                _buildMobileNavItem(
-                  context: context,
-                  icon: Icons.admin_panel_settings_outlined,
-                  selectedIcon: Icons.admin_panel_settings,
-                  label: 'Admin',
-                  index: 2,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMobileNavItem({
-    required BuildContext context,
-    required IconData icon,
-    required IconData selectedIcon,
-    required String label,
-    required int index,
-  }) {
-    final isSelected = _currentIndex == index;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            setState(() {
-              _currentIndex = index;
-            });
-            Navigator.of(context).pop(); // ปิด drawer
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: isSelected
-                  ? Colors.white.withValues(alpha: 0.9)
-                  : Colors.white.withValues(alpha: 0.1),
-              border: isSelected
-                  ? Border.all(color: Colors.white, width: 1)
-                  : null,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  isSelected ? selectedIcon : icon,
-                  color: isSelected ? const Color(0xFFFF6B35) : Colors.white,
-                  size: 24,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    _getNavLabel(context, index),
-                    style: TextStyle(
-                      color: isSelected
-                          ? const Color(0xFFFF6B35)
-                          : Colors.white,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class HomePage extends StatelessWidget {
