@@ -3,9 +3,8 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
+# Copy all source files first
+COPY . .
 
 # Install dependencies
 RUN npm ci --only=production && \
@@ -13,9 +12,6 @@ RUN npm ci --only=production && \
 
 # Generate Prisma Client
 RUN npx prisma generate
-
-# Copy source code
-COPY . .
 
 # Build application
 RUN npm run build
