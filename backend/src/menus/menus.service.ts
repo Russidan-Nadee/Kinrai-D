@@ -961,15 +961,18 @@ export class MenusService {
     const dislikedMenuIds = userDislikes.map((dislike) => dislike.menu_id);
 
     // Get user's protein preferences (proteins they DON'T want)
-    const userProteinPreferences = await this.prisma.userProteinPreference.findMany({
-      where: {
-        user_profile_id: userId,
-        exclude: true, // true = user doesn't want this protein
-      },
-      select: { protein_type_id: true },
-    });
+    const userProteinPreferences =
+      await this.prisma.userProteinPreference.findMany({
+        where: {
+          user_profile_id: userId,
+          exclude: true, // true = user doesn't want this protein
+        },
+        select: { protein_type_id: true },
+      });
 
-    const excludedProteinIds = userProteinPreferences.map((pref) => pref.protein_type_id);
+    const excludedProteinIds = userProteinPreferences.map(
+      (pref) => pref.protein_type_id,
+    );
 
     // Get active menus excluding user dislikes AND excluded proteins
     const activeMenus = await this.prisma.menu.findMany({
