@@ -21,8 +21,8 @@ FROM node:22-alpine AS production
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from builder
+COPY --from=builder /app/package*.json ./
 
 # Install production dependencies only
 RUN npm install --production && \
