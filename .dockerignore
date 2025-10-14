@@ -1,0 +1,16 @@
+.git
+.claude
+.vscode
+README.md
+DEPLOYMENT.md
+railway.toml
+frontend/
+docs/
+coverage/
+tmp/
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+*.log
+*.log.*
