@@ -3,8 +3,15 @@
   # Base directory where the project is located
   base = "frontend"
 
-  # Build command
-  command = "flutter build web --release --web-renderer canvaskit"
+  # Build command with Flutter installation
+  command = """
+    curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.24.5-stable.tar.xz -o flutter.tar.xz && \
+    tar xf flutter.tar.xz && \
+    export PATH="$PATH:`pwd`/flutter/bin" && \
+    flutter config --no-analytics && \
+    flutter doctor && \
+    flutter build web --release --web-renderer canvaskit
+  """
 
   # Output directory (relative to base)
   publish = "build/web"
