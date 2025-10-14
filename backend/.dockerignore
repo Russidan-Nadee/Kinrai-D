@@ -1,0 +1,11 @@
+.git
+node_modules
+dist
+coverage
+.env
+.env.*
+tmp
+Dockerfile
+README.md
+SEED_INSTRUCTIONS.md
+LINT_FIX_SUMMARY.md

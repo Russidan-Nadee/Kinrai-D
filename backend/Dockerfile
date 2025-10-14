@@ -6,15 +6,12 @@ WORKDIR /app
 # Copy package files first
 COPY package*.json ./
 
-# Install ALL dependencies (including dev) for building
-RUN npm install && \
+# Install dependencies deterministically
+RUN npm ci --ignore-scripts && \
     npm cache clean --force
 
-# Copy source files after install
-COPY src ./src
-COPY prisma ./prisma
-COPY nest-cli.json ./nest-cli.json
-COPY tsconfig*.json ./
+# Copy the rest of the backend source
+COPY . .
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -31,7 +28,8 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 
 # Install production dependencies only
-RUN npm install --production && \
+ENV NODE_ENV=production
+RUN npm ci --omit=dev --ignore-scripts && \
     npm cache clean --force
 
 # Copy built application from builder
