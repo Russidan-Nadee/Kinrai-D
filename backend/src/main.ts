@@ -5,8 +5,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS Configuration - allow all localhost ports for development
+  // CORS Configuration
   const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [
+    // Production frontend (TODO: Update with your actual Netlify URL)
+    'https://kinrai-d.netlify.app',
+    // Development
     'http://localhost:3000',
     'http://localhost:5000',
     'http://localhost:8080',
@@ -16,10 +19,33 @@ async function bootstrap() {
   ];
 
   app.enableCors({
-    origin: true, // Allow all origins in development
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, curl)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Check if origin is in allowed list
+      if (corsOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
+      }
+
+      // In production, reject unknown origins
+      if (process.env.NODE_ENV === 'production') {
+        console.warn(`❌ CORS: Rejected origin: ${origin}`);
+        return callback(
+          new Error('Not allowed by CORS policy'),
+          false,
+        );
+      }
+
+      // In development, allow all with warning
+      console.warn(`⚠️  CORS: Allowing untrusted origin in dev: ${origin}`);
+      return callback(null, true);
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
   // Global validation pipe for DTOs
