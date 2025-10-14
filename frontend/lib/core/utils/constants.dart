@@ -5,14 +5,16 @@ class AppConstants {
 
   // API Configuration
   // In production: Use Railway URL from environment or const
-  // TODO: Replace with your actual Railway URL after deployment
-  static const String _productionBaseUrl =
-    String.fromEnvironment('API_URL',
-      defaultValue: 'https://kinrai-d-backend-production.up.railway.app');
+
+  static const String _productionBaseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://kinrai-d-backend-production.up.railway.app',
+  );
 
   static const String _developmentBaseUrl = 'http://localhost:8000';
 
-  static String get baseUrl => kReleaseMode ? _productionBaseUrl : _developmentBaseUrl;
+  static String get baseUrl =>
+      kReleaseMode ? _productionBaseUrl : _developmentBaseUrl;
 
   static const String apiVersion = '/api/v1'; // Backend API version
 
