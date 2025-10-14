@@ -3,12 +3,18 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy all source files first
-COPY . .
+# Copy package files first
+COPY package*.json ./
 
 # Install ALL dependencies (including dev) for building
 RUN npm install && \
     npm cache clean --force
+
+# Copy source files after install
+COPY src ./src
+COPY prisma ./prisma
+COPY nest-cli.json ./nest-cli.json
+COPY tsconfig*.json ./
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -51,4 +57,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:'+process.env.PORT+'/api/v1', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start application
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]

@@ -4,7 +4,7 @@ dockerfilePath = "backend/Dockerfile"
 buildContext = "backend"
 
 [deploy]
-startCommand = "node dist/main"
+startCommand = "node dist/src/main"
 healthcheckPath = "/api/v1"
 healthcheckTimeout = 10
 restartPolicyType = "ON_FAILURE"

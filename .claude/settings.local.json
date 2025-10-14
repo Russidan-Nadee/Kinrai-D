@@ -42,7 +42,10 @@
       "Bash(git push:*)",
       "Bash(git rm:*)",
       "Bash(timeout 300 docker build -t kinrai-backend-test .)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(test:*)",
+      "Bash(timeout 300 docker build -t kinrai-backend-test backend/)",
+      "Bash(timeout 10 docker run --rm -e PORT=8000 -e DATABASE_URL=\"postgresql://test:test@localhost:5432/test\" kinrai-final-test)"
     ],
     "deny": []
   }
