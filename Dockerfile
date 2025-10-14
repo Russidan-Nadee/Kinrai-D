@@ -9,6 +9,9 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Install system dependencies (CA certs for outbound TLS, etc.)
+RUN apk add --no-cache ca-certificates openssl
+
 # Copy manifest files from the backend directory
 ARG APP_DIR
 COPY ${APP_DIR}/package*.json ./
@@ -30,6 +33,9 @@ RUN npx prisma generate \
 FROM node:22-alpine AS production
 
 WORKDIR /app
+
+# Install runtime system dependencies (TLS certs, etc.)
+RUN apk add --no-cache ca-certificates openssl
 
 ARG APP_DIR
 ENV NODE_ENV=production
