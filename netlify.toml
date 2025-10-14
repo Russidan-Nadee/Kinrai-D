@@ -4,14 +4,7 @@
   base = "frontend"
 
   # Build command with Flutter installation
-  command = """
-    curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.24.5-stable.tar.xz -o flutter.tar.xz && \
-    tar xf flutter.tar.xz && \
-    export PATH="$PATH:`pwd`/flutter/bin" && \
-    flutter config --no-analytics && \
-    flutter doctor && \
-    flutter build web --release --web-renderer canvaskit
-  """
+  command = "chmod +x build.sh && ./build.sh"
 
   # Output directory (relative to base)
   publish = "build/web"
