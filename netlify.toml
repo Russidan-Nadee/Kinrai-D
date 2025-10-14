@@ -13,6 +13,8 @@
   [build.environment]
     # Set Flutter to use stable channel
     FLUTTER_CHANNEL = "stable"
+    # Backend API URL (Railway)
+    API_URL = "https://kinrai-d-backend.up.railway.app"
 
 # Redirect rules for Flutter SPA routing
 [[redirects]]
