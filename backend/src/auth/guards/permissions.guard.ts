@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, CanActivate, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { LoggingService } from '../../common/services/logging.service';
 
@@ -17,7 +11,7 @@ export class PermissionsGuard implements CanActivate {
     private readonly loggingService: LoggingService,
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(): boolean {
     // TODO: Implement proper permission checking with your new auth system
     // For now, allow all access
     this.logger.warn(

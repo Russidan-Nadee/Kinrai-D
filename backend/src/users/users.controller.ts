@@ -48,7 +48,7 @@ export class UsersController {
         {
           success: false,
           message: 'Failed to sync user',
-          error: error.message,
+          error: (error as Error).message,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );

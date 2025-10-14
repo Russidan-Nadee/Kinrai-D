@@ -1,9 +1,5 @@
 import {
-  IsString,
-  IsNotEmpty,
   MaxLength,
-  IsArray,
-  ValidateNested,
   IsInt,
   IsPositive,
   IsOptional,
@@ -11,7 +7,6 @@ import {
   IsObject,
   IsEnum,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export enum MealTime {
   BREAKFAST = 'BREAKFAST',

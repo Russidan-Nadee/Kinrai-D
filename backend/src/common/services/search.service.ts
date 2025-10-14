@@ -119,7 +119,7 @@ export class SearchService {
       // Fallback to basic LIKE search if full-text search fails
       console.warn(
         'Full-text search failed, falling back to LIKE search:',
-        error.message,
+        (error as Error).message,
       );
       return this.fallbackSearch(options);
     }
@@ -135,7 +135,6 @@ export class SearchService {
     const { query, language = 'th', limit = 20, offset = 0 } = options;
 
     const preferredLanguage = this.languageService.validateLanguage(language);
-    const searchTerm = `%${query}%`;
 
     const [menus, total] = await Promise.all([
       this.prisma.menu.findMany({
@@ -255,7 +254,7 @@ export class SearchService {
   /**
    * Get popular search terms
    */
-  async getPopularSearchTerms(language = 'th', limit = 10): Promise<string[]> {
+  async getPopularSearchTerms(limit = 10): Promise<string[]> {
     // This would typically come from search logs
     // For now, return common food terms
     return [

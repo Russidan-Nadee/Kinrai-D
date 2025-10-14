@@ -86,9 +86,11 @@ export class AnalyticsService {
 
     // Get most liked category and meal time
     const mostLikedCategory = topCategories[0]?.category || null;
-    const mostLikedMealTime = Object.entries(mealTimeStats).reduce((a, b) =>
-      mealTimeStats[a[0]] > mealTimeStats[b[0]] ? a : b,
-    )[0];
+    const mealTimeEntries = Object.entries(mealTimeStats);
+    const mostLikedMealTime =
+      mealTimeEntries.length > 0
+        ? mealTimeEntries.reduce((a, b) => (a[1] > b[1] ? a : b))[0]
+        : 'breakfast';
 
     return {
       user_stats: {
@@ -98,13 +100,18 @@ export class AnalyticsService {
         average_rating_given:
           Math.round((avgRating._avg.rating || 0) * 100) / 100,
         dietary_restrictions_count: dietaryRestrictionsCount,
-        most_liked_category: mostLikedCategory,
+        most_liked_category: mostLikedCategory ?? undefined,
         most_liked_meal_time: mostLikedMealTime,
       },
       activity_timeline: activityTimeline,
       preferences_insight: {
         top_categories: topCategories,
-        meal_time_distribution: mealTimeStats,
+        meal_time_distribution: {
+          breakfast: mealTimeStats.breakfast ?? 0,
+          lunch: mealTimeStats.lunch ?? 0,
+          dinner: mealTimeStats.dinner ?? 0,
+          snack: mealTimeStats.snack ?? 0,
+        },
         protein_preferences: proteinPreferences,
       },
     };
@@ -226,7 +233,7 @@ export class AnalyticsService {
     };
   }
 
-  async getPersonalizedInsights(userId: string, language = 'en') {
+  async getPersonalizedInsights(userId: string) {
     const userProfile = await this.prisma.userProfile.findUnique({
       where: { id: userId },
     });
@@ -236,13 +243,12 @@ export class AnalyticsService {
     }
 
     // Get insights based on user behavior
-    const [favoritePatterns, ratingPatterns, similarUsers, recommendations] =
-      await Promise.all([
-        this.getFavoritePatterns(userId, language),
-        this.getRatingPatterns(userId, language),
-        this.findSimilarUsers(userId),
-        this.getPersonalizedRecommendations(userId, language),
-      ]);
+    const [favoritePatterns, ratingPatterns, similarUsers, recommendations] = [
+      this.getFavoritePatterns(),
+      this.getRatingPatterns(),
+      this.findSimilarUsers(),
+      this.getPersonalizedRecommendations(),
+    ];
 
     return {
       favorite_patterns: favoritePatterns,
@@ -253,16 +259,29 @@ export class AnalyticsService {
   }
 
   private processActivityTimeline(
-    favorites: any[],
-    ratings: any[],
-    dislikes: any[],
-  ) {
-    const timeline = new Map();
+    favorites: Array<{ created_at: Date }>,
+    ratings: Array<{ created_at: Date }>,
+    dislikes: Array<{ created_at: Date }>,
+  ): Array<{
+    date: string;
+    favorites_added: number;
+    ratings_given: number;
+    dislikes_added: number;
+  }> {
+    const timeline = new Map<
+      string,
+      {
+        date: string;
+        favorites_added: number;
+        ratings_given: number;
+        dislikes_added: number;
+      }
+    >();
 
     // Process each activity type
     [...favorites, ...ratings, ...dislikes].forEach((activity) => {
       const date = activity.created_at.toISOString().split('T')[0];
-      if (!timeline.has(date)) {
+      if (date && !timeline.has(date)) {
         timeline.set(date, {
           date,
           favorites_added: 0,
@@ -274,22 +293,25 @@ export class AnalyticsService {
 
     favorites.forEach((fav) => {
       const date = fav.created_at.toISOString().split('T')[0];
-      if (timeline.has(date)) {
-        timeline.get(date).favorites_added++;
+      const entry = timeline.get(date);
+      if (date && entry) {
+        entry.favorites_added++;
       }
     });
 
     ratings.forEach((rating) => {
       const date = rating.created_at.toISOString().split('T')[0];
-      if (timeline.has(date)) {
-        timeline.get(date).ratings_given++;
+      const entry = timeline.get(date);
+      if (date && entry) {
+        entry.ratings_given++;
       }
     });
 
     dislikes.forEach((dislike) => {
       const date = dislike.created_at.toISOString().split('T')[0];
-      if (timeline.has(date)) {
-        timeline.get(date).dislikes_added++;
+      const entry = timeline.get(date);
+      if (date && entry) {
+        entry.dislikes_added++;
       }
     });
 
@@ -318,7 +340,7 @@ export class AnalyticsService {
       },
     });
 
-    const categoryCount = new Map();
+    const categoryCount = new Map<string, number>();
     favorites.forEach((fav) => {
       const categoryName =
         fav.Menu.Subcategory.Category.Translations[0]?.name ||
@@ -330,21 +352,31 @@ export class AnalyticsService {
     });
 
     return Array.from(categoryCount.entries())
-      .map(([category, count]) => ({ category, interaction_count: count }))
+      .map(([category, count]) => ({
+        category,
+        interaction_count: count,
+      }))
       .sort((a, b) => b.interaction_count - a.interaction_count)
       .slice(0, 5);
   }
 
-  private async getMealTimeDistribution(userId: string) {
+  private async getMealTimeDistribution(
+    userId: string,
+  ): Promise<Record<string, number>> {
     const favorites = await this.prisma.favoriteMenu.findMany({
       where: { user_profile_id: userId },
       include: { Menu: { select: { meal_time: true } } },
     });
 
-    const distribution = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
+    const distribution: Record<string, number> = {
+      breakfast: 0,
+      lunch: 0,
+      dinner: 0,
+      snack: 0,
+    };
     favorites.forEach((fav) => {
       const mealTime = fav.Menu.meal_time.toLowerCase();
-      if (distribution.hasOwnProperty(mealTime)) {
+      if (Object.prototype.hasOwnProperty.call(distribution, mealTime)) {
         distribution[mealTime]++;
       }
     });
@@ -368,7 +400,7 @@ export class AnalyticsService {
       },
     });
 
-    const proteinCount = new Map();
+    const proteinCount = new Map<string, number>();
     favorites.forEach((fav) => {
       if (fav.Menu.ProteinType) {
         const proteinName =
@@ -387,25 +419,22 @@ export class AnalyticsService {
       .slice(0, 3);
   }
 
-  private async getFavoritePatterns(userId: string, language: string) {
+  private getFavoritePatterns(): { message: string } {
     // Implementation for analyzing favorite patterns
     return { message: 'Favorite patterns analysis' };
   }
 
-  private async getRatingPatterns(userId: string, language: string) {
+  private getRatingPatterns(): { message: string } {
     // Implementation for analyzing rating patterns
     return { message: 'Rating patterns analysis' };
   }
 
-  private async findSimilarUsers(userId: string) {
+  private findSimilarUsers(): unknown[] {
     // Implementation for finding similar users
     return [];
   }
 
-  private async getPersonalizedRecommendations(
-    userId: string,
-    language: string,
-  ) {
+  private getPersonalizedRecommendations(): unknown[] {
     // Implementation for personalized recommendations
     return [];
   }

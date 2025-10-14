@@ -20,7 +20,6 @@ import { SearchMenuDto } from './dto/search-menu.dto';
 import { MenuRecommendationQueryDto } from './dto/menu-recommendation.dto';
 import {
   AdminOnly,
-  CurrentUser,
   OptionalAuth,
   UserId,
 } from '../auth/decorators/auth.decorators';
@@ -41,7 +40,7 @@ export class MenusController {
     status: 409,
     description: 'Conflict - Menu key already exists.',
   })
-  create(@Body() createMenuDto: CreateMenuDto, @CurrentUser() user: any) {
+  create(@Body() createMenuDto: CreateMenuDto) {
     return this.menusService.create(createMenuDto);
   }
 
@@ -201,7 +200,6 @@ export class MenusController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateMenuDto: UpdateMenuDto,
-    @CurrentUser() user: any,
   ) {
     return this.menusService.update(id, updateMenuDto);
   }
@@ -215,7 +213,7 @@ export class MenusController {
     description: 'Menu item deactivated successfully.',
   })
   @ApiResponse({ status: 404, description: 'Menu item not found.' })
-  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.menusService.remove(id);
   }
 

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SetProteinPreferenceDto } from './dto/set-protein-preference.dto';
 import { RemoveProteinPreferenceDto } from './dto/remove-protein-preference.dto';
@@ -66,33 +62,29 @@ export class ProteinPreferencesService {
       throw new NotFoundException('Protein type not found');
     }
 
-    try {
-      return await this.prisma.userProteinPreference.upsert({
-        where: {
-          user_profile_id_protein_type_id: {
-            user_profile_id: userId,
-            protein_type_id: setProteinPreferenceDto.protein_type_id,
-          },
-        },
-        update: {
-          exclude: setProteinPreferenceDto.exclude ?? true,
-        },
-        create: {
+    return await this.prisma.userProteinPreference.upsert({
+      where: {
+        user_profile_id_protein_type_id: {
           user_profile_id: userId,
           protein_type_id: setProteinPreferenceDto.protein_type_id,
-          exclude: setProteinPreferenceDto.exclude ?? true,
         },
-        include: {
-          ProteinType: {
-            include: {
-              Translations: true,
-            },
+      },
+      update: {
+        exclude: setProteinPreferenceDto.exclude ?? true,
+      },
+      create: {
+        user_profile_id: userId,
+        protein_type_id: setProteinPreferenceDto.protein_type_id,
+        exclude: setProteinPreferenceDto.exclude ?? true,
+      },
+      include: {
+        ProteinType: {
+          include: {
+            Translations: true,
           },
         },
-      });
-    } catch (error) {
-      throw error;
-    }
+      },
+    });
   }
 
   async removeProteinPreference(

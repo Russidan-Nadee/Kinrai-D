@@ -59,7 +59,7 @@ export class RatingsService {
         },
       });
     } catch (error) {
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Rating for this menu already exists');
       }
       throw error;

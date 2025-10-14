@@ -43,7 +43,7 @@ export class CategoriesService {
       });
       return category;
     } catch (error) {
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Category key already exists');
       }
       throw error;
@@ -189,10 +189,10 @@ export class CategoriesService {
 
       return category;
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as { code?: string })?.code === 'P2025') {
         throw new NotFoundException(`Category with ID ${id} not found`);
       }
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Category key already exists');
       }
       throw error;
@@ -218,7 +218,7 @@ export class CategoriesService {
       });
       return category;
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as { code?: string })?.code === 'P2025') {
         throw new NotFoundException(`Category with ID ${id} not found`);
       }
       throw error;

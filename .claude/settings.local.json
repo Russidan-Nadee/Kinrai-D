@@ -29,7 +29,15 @@
       "Bash(cmd /c:*)",
       "Bash(sqlite3:*)",
       "Bash(nest generate:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(tree:*)",
+      "Bash(docker:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git log:*)",
+      "Bash(npm test)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

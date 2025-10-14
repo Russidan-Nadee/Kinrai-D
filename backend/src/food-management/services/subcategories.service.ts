@@ -48,7 +48,7 @@ export class SubcategoriesService {
       });
       return subcategory;
     } catch (error) {
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Subcategory key already exists');
       }
       throw error;
@@ -235,10 +235,10 @@ export class SubcategoriesService {
 
       return subcategory;
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as { code?: string })?.code === 'P2025') {
         throw new NotFoundException(`Subcategory with ID ${id} not found`);
       }
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Subcategory key already exists');
       }
       throw error;
@@ -269,7 +269,7 @@ export class SubcategoriesService {
       });
       return subcategory;
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as { code?: string })?.code === 'P2025') {
         throw new NotFoundException(`Subcategory with ID ${id} not found`);
       }
       throw error;

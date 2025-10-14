@@ -301,7 +301,7 @@ export class LoggingService {
   /**
    * Get aggregated error rates
    */
-  async getErrorMetrics(hours: number = 24): Promise<{
+  async getErrorMetrics(): Promise<{
     totalErrors: number;
     errorRate: number;
     topErrors: { error: string; count: number }[];
@@ -318,7 +318,7 @@ export class LoggingService {
   /**
    * Get performance metrics
    */
-  async getPerformanceMetrics(hours: number = 24): Promise<{
+  async getPerformanceMetrics(): Promise<{
     averageResponseTime: number;
     slowestOperations: { operation: string; averageTime: number }[];
     requestsPerHour: number;
@@ -375,11 +375,11 @@ export class LoggingService {
 
     // In production, also send to external monitoring services
     if (this.isProduction) {
-      this.sendToMonitoringService(logData);
+      this.sendToMonitoringService();
     }
   }
 
-  private async sendToMonitoringService(logData: any): Promise<void> {
+  private async sendToMonitoringService(): Promise<void> {
     // This would integrate with external monitoring services
     // like DataDog, New Relic, Sentry, etc.
     try {

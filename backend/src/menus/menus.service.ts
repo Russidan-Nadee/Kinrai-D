@@ -9,13 +9,12 @@ import { LanguageService } from '../common/services/language.service';
 import { CacheService } from '../common/services/cache.service';
 import { LoggingService } from '../common/services/logging.service';
 import { DEFAULT_LANGUAGE } from '../common/constants/languages';
-import {
-  Cacheable,
-  CacheEvict,
-  CacheEvictByTags,
-} from '../common/decorators/cache.decorator';
 import { CacheInterceptor } from '../common/interceptors/cache.interceptor';
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
+import {
+  Cacheable,
+  CacheEvictByTags,
+} from '../common/decorators/cache.decorator';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { FilterMenuDto } from './dto/filter-menu.dto';
@@ -23,7 +22,6 @@ import { SearchMenuDto, SearchMenuResultDto } from './dto/search-menu.dto';
 import {
   MenuRecommendationQueryDto,
   MenuRecommendationResultDto,
-  MenuRecommendationDto,
 } from './dto/menu-recommendation.dto';
 import { MenuWithTranslations } from './entities/menu.entity';
 import { RecommendationService } from './services/recommendation.service';
@@ -113,7 +111,7 @@ export class MenusService {
       });
       return menu;
     } catch (error) {
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException(
           'Menu with this subcategory and protein type combination already exists',
         );
@@ -136,7 +134,6 @@ export class MenusService {
       meal_time,
       language = DEFAULT_LANGUAGE,
       search,
-      dietary_restrictions,
       page = 1,
       limit = 10,
       sort_by = 'created_at',
@@ -441,10 +438,10 @@ export class MenusService {
 
       return menu;
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as { code?: string })?.code === 'P2025') {
         throw new NotFoundException(`Menu with ID ${id} not found`);
       }
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Menu key already exists');
       }
       throw error;
@@ -481,7 +478,7 @@ export class MenusService {
       });
       return menu;
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as { code?: string })?.code === 'P2025') {
         throw new NotFoundException(`Menu with ID ${id} not found`);
       }
       throw error;
@@ -607,7 +604,7 @@ export class MenusService {
       tracker.finish(true, { results: result.recommendations.length });
       return result;
     } catch (error) {
-      tracker.finish(false, { error: error.message });
+      tracker.finish(false, { error: (error as Error).message });
       throw error;
     }
   }
@@ -618,8 +615,6 @@ export class MenusService {
     const {
       search,
       language = 'th',
-      tags,
-      ingredients,
       meal_time,
       page = 1,
       limit = 20,
@@ -817,323 +812,295 @@ export class MenusService {
   async getRandomMenu(
     language: string = DEFAULT_LANGUAGE,
   ): Promise<MenuWithTranslations> {
-    try {
-      // ดึงข้อมูลเมนูทั้งหมดที่ active พร้อม keys ที่สำคัญ
-      const activeMenus = await this.prisma.menu.findMany({
-        where: { is_active: true },
-        select: {
-          id: true,
-          subcategory_id: true,
-          protein_type_id: true,
-          meal_time: true,
-        },
-      });
+    // ดึงข้อมูลเมนูทั้งหมดที่ active พร้อม keys ที่สำคัญ
+    const activeMenus = await this.prisma.menu.findMany({
+      where: { is_active: true },
+      select: {
+        id: true,
+        subcategory_id: true,
+        protein_type_id: true,
+        meal_time: true,
+      },
+    });
 
-      if (activeMenus.length === 0) {
-        throw new NotFoundException('No active menus found');
-      }
+    if (activeMenus.length === 0) {
+      throw new NotFoundException('No active menus found');
+    }
 
-      // สุ่มเลือก 1 เมนูจาก list
-      const randomIndex = Math.floor(Math.random() * activeMenus.length);
-      const selectedMenuBasic = activeMenus[randomIndex];
+    // สุ่มเลือก 1 เมนูจาก list
+    const randomIndex = Math.floor(Math.random() * activeMenus.length);
+    const selectedMenuBasic = activeMenus[randomIndex];
 
-      // ใช้ key (unique) เพื่อให้แน่ใจว่าได้เมนูเดียวเท่านั้น
-      // พร้อม validate ด้วย combination ของ keys อื่นเพื่อความแน่ใจ
-      const menu = await this.prisma.menu.findFirst({
-        where: {
-          id: selectedMenuBasic.id, // unique key
-          subcategory_id: selectedMenuBasic.subcategory_id,
-          protein_type_id: selectedMenuBasic.protein_type_id,
-          meal_time: selectedMenuBasic.meal_time,
-          is_active: true,
-        },
-        include: {
-          Subcategory: {
-            include: {
-              Translations: {
-                where: { language: language },
-              },
-              Category: {
-                include: {
-                  Translations: {
-                    where: { language: language },
-                  },
-                  FoodType: {
-                    include: {
-                      Translations: {
-                        where: { language: language },
-                      },
+    // ใช้ key (unique) เพื่อให้แน่ใจว่าได้เมนูเดียวเท่านั้น
+    // พร้อม validate ด้วย combination ของ keys อื่นเพื่อความแน่ใจ
+    const menu = await this.prisma.menu.findFirst({
+      where: {
+        id: selectedMenuBasic.id, // unique key
+        subcategory_id: selectedMenuBasic.subcategory_id,
+        protein_type_id: selectedMenuBasic.protein_type_id,
+        meal_time: selectedMenuBasic.meal_time,
+        is_active: true,
+      },
+      include: {
+        Subcategory: {
+          include: {
+            Translations: {
+              where: { language: language },
+            },
+            Category: {
+              include: {
+                Translations: {
+                  where: { language: language },
+                },
+                FoodType: {
+                  include: {
+                    Translations: {
+                      where: { language: language },
                     },
                   },
                 },
               },
             },
           },
-          ProteinType: {
-            include: {
-              Translations: {
-                where: { language: language },
-              },
+        },
+        ProteinType: {
+          include: {
+            Translations: {
+              where: { language: language },
             },
           },
         },
-      });
+      },
+    });
 
-      if (!menu) {
-        throw new NotFoundException('No menu found');
-      }
-
-      // คำนวณ average rating
-      const ratings = await this.prisma.menuRating.aggregate({
-        where: { menu_id: menu.id },
-        _avg: { rating: true },
-        _count: { rating: true },
-      });
-
-      // Generate dynamic menu name
-      const subcategoryName =
-        menu.Subcategory?.Translations?.[0]?.name ||
-        menu.Subcategory?.key ||
-        `subcategory_${menu.Subcategory?.id}`;
-      const proteinName = menu.ProteinType?.Translations?.[0]?.name;
-      const menuName = proteinName
-        ? `${subcategoryName}${proteinName}`
-        : subcategoryName;
-
-      const translations = [
-        {
-          id: menu.id,
-          menu_id: menu.id,
-          language: language,
-          name: menuName,
-          description: undefined,
-        },
-      ];
-
-      // Map subcategory if exists
-      const subcategory = menu.Subcategory
-        ? {
-            id: menu.Subcategory.id,
-            name:
-              menu.Subcategory.Translations?.[0]?.name ||
-              `subcategory_${menu.Subcategory.id}`,
-            category: menu.Subcategory.Category
-              ? {
-                  id: menu.Subcategory.Category.id,
-                  name:
-                    menu.Subcategory.Category.Translations?.[0]?.name ||
-                    `category_${menu.Subcategory.Category.id}`,
-                  food_type: menu.Subcategory.Category.FoodType
-                    ? {
-                        id: menu.Subcategory.Category.FoodType.id,
-                        name:
-                          menu.Subcategory.Category.FoodType.Translations?.[0]
-                            ?.name ||
-                          `foodtype_${menu.Subcategory.Category.FoodType.id}`,
-                      }
-                    : undefined,
-                }
-              : undefined,
-          }
-        : undefined;
-
-      // Map protein type if exists
-      const protein_type = menu.ProteinType
-        ? {
-            id: menu.ProteinType.id,
-            name:
-              menu.ProteinType.Translations?.[0]?.name ||
-              `protein_${menu.ProteinType.id}`,
-          }
-        : undefined;
-
-      const menuWithRating: MenuWithTranslations = {
-        ...menu,
-        protein_type_id: menu.protein_type_id || undefined,
-        image_url: menu.image_url || undefined,
-        meal_time: menu.meal_time as MealTime,
-        name: menuName,
-        subcategory,
-        protein_type,
-        average_rating: ratings._avg.rating
-          ? Number(ratings._avg.rating.toFixed(1))
-          : undefined,
-        total_ratings: ratings._count.rating,
-      };
-
-      return menuWithRating;
-    } catch (error) {
-      throw error;
+    if (!menu) {
+      throw new NotFoundException('No menu found');
     }
+
+    // คำนวณ average rating
+    const ratings = await this.prisma.menuRating.aggregate({
+      where: { menu_id: menu.id },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+
+    // Generate dynamic menu name
+    const subcategoryName =
+      menu.Subcategory?.Translations?.[0]?.name ||
+      menu.Subcategory?.key ||
+      `subcategory_${menu.Subcategory?.id}`;
+    const proteinName = menu.ProteinType?.Translations?.[0]?.name;
+    const menuName = proteinName
+      ? `${subcategoryName}${proteinName}`
+      : subcategoryName;
+
+    // Map subcategory if exists
+    const subcategory = menu.Subcategory
+      ? {
+          id: menu.Subcategory.id,
+          name:
+            menu.Subcategory.Translations?.[0]?.name ||
+            `subcategory_${menu.Subcategory.id}`,
+          category: menu.Subcategory.Category
+            ? {
+                id: menu.Subcategory.Category.id,
+                name:
+                  menu.Subcategory.Category.Translations?.[0]?.name ||
+                  `category_${menu.Subcategory.Category.id}`,
+                food_type: menu.Subcategory.Category.FoodType
+                  ? {
+                      id: menu.Subcategory.Category.FoodType.id,
+                      name:
+                        menu.Subcategory.Category.FoodType.Translations?.[0]
+                          ?.name ||
+                        `foodtype_${menu.Subcategory.Category.FoodType.id}`,
+                    }
+                  : undefined,
+              }
+            : undefined,
+        }
+      : undefined;
+
+    // Map protein type if exists
+    const protein_type = menu.ProteinType
+      ? {
+          id: menu.ProteinType.id,
+          name:
+            menu.ProteinType.Translations?.[0]?.name ||
+            `protein_${menu.ProteinType.id}`,
+        }
+      : undefined;
+
+    const menuWithRating: MenuWithTranslations = {
+      ...menu,
+      protein_type_id: menu.protein_type_id || undefined,
+      image_url: menu.image_url || undefined,
+      meal_time: menu.meal_time as MealTime,
+      name: menuName,
+      subcategory,
+      protein_type,
+      average_rating: ratings._avg.rating
+        ? Number(ratings._avg.rating.toFixed(1))
+        : undefined,
+      total_ratings: ratings._count.rating,
+    };
+
+    return menuWithRating;
   }
 
   async getPersonalizedRandomMenu(
     language: string = DEFAULT_LANGUAGE,
     userId: string,
   ): Promise<MenuWithTranslations> {
-    try {
-      // Get user's disliked menu IDs
-      const userDislikes = await this.prisma.userDislike.findMany({
-        where: { user_profile_id: userId },
-        select: { menu_id: true },
-      });
+    // Get user's disliked menu IDs
+    const userDislikes = await this.prisma.userDislike.findMany({
+      where: { user_profile_id: userId },
+      select: { menu_id: true },
+    });
 
-      const dislikedMenuIds = userDislikes.map((dislike) => dislike.menu_id);
+    const dislikedMenuIds = userDislikes.map((dislike) => dislike.menu_id);
 
-      // Get active menus excluding user dislikes
-      const activeMenus = await this.prisma.menu.findMany({
-        where: {
-          is_active: true,
-          ...(dislikedMenuIds.length > 0 && {
-            id: {
-              notIn: dislikedMenuIds,
+    // Get active menus excluding user dislikes
+    const activeMenus = await this.prisma.menu.findMany({
+      where: {
+        is_active: true,
+        ...(dislikedMenuIds.length > 0 && {
+          id: {
+            notIn: dislikedMenuIds,
+          },
+        }),
+      },
+      select: {
+        id: true,
+        subcategory_id: true,
+        protein_type_id: true,
+        meal_time: true,
+      },
+    });
+
+    if (activeMenus.length === 0) {
+      throw new NotFoundException(
+        'No active menus found that match your preferences',
+      );
+    }
+
+    // Randomly select one menu from the filtered list
+    const randomIndex = Math.floor(Math.random() * activeMenus.length);
+    const selectedMenuBasic = activeMenus[randomIndex];
+
+    // Get full menu details with translations
+    const menu = await this.prisma.menu.findFirst({
+      where: {
+        id: selectedMenuBasic.id,
+        subcategory_id: selectedMenuBasic.subcategory_id,
+        protein_type_id: selectedMenuBasic.protein_type_id,
+        meal_time: selectedMenuBasic.meal_time,
+        is_active: true,
+      },
+      include: {
+        Subcategory: {
+          include: {
+            Translations: {
+              where: { language: language },
             },
-          }),
-        },
-        select: {
-          id: true,
-          subcategory_id: true,
-          protein_type_id: true,
-          meal_time: true,
-        },
-      });
-
-      if (activeMenus.length === 0) {
-        throw new NotFoundException(
-          'No active menus found that match your preferences',
-        );
-      }
-
-      // Randomly select one menu from the filtered list
-      const randomIndex = Math.floor(Math.random() * activeMenus.length);
-      const selectedMenuBasic = activeMenus[randomIndex];
-
-      // Get full menu details with translations
-      const menu = await this.prisma.menu.findFirst({
-        where: {
-          id: selectedMenuBasic.id,
-          subcategory_id: selectedMenuBasic.subcategory_id,
-          protein_type_id: selectedMenuBasic.protein_type_id,
-          meal_time: selectedMenuBasic.meal_time,
-          is_active: true,
-        },
-        include: {
-          Subcategory: {
-            include: {
-              Translations: {
-                where: { language: language },
-              },
-              Category: {
-                include: {
-                  Translations: {
-                    where: { language: language },
-                  },
-                  FoodType: {
-                    include: {
-                      Translations: {
-                        where: { language: language },
-                      },
+            Category: {
+              include: {
+                Translations: {
+                  where: { language: language },
+                },
+                FoodType: {
+                  include: {
+                    Translations: {
+                      where: { language: language },
                     },
                   },
                 },
               },
             },
           },
-          ProteinType: {
-            include: {
-              Translations: {
-                where: { language: language },
-              },
+        },
+        ProteinType: {
+          include: {
+            Translations: {
+              where: { language: language },
             },
           },
         },
-      });
+      },
+    });
 
-      if (!menu) {
-        throw new NotFoundException('No menu found');
-      }
-
-      // Calculate average rating
-      const ratings = await this.prisma.menuRating.aggregate({
-        where: { menu_id: menu.id },
-        _avg: { rating: true },
-        _count: { rating: true },
-      });
-
-      // Generate dynamic menu name
-      const subcategoryName =
-        menu.Subcategory?.Translations?.[0]?.name ||
-        menu.Subcategory?.key ||
-        `subcategory_${menu.Subcategory?.id}`;
-      const proteinName = menu.ProteinType?.Translations?.[0]?.name;
-      const menuName = proteinName
-        ? `${subcategoryName}${proteinName}`
-        : subcategoryName;
-
-      const translations = [
-        {
-          id: menu.id,
-          menu_id: menu.id,
-          language: language,
-          name: menuName,
-          description: undefined,
-        },
-      ];
-
-      // Map subcategory if exists
-      const subcategory = menu.Subcategory
-        ? {
-            id: menu.Subcategory.id,
-            name:
-              menu.Subcategory.Translations?.[0]?.name ||
-              `subcategory_${menu.Subcategory.id}`,
-            category: menu.Subcategory.Category
-              ? {
-                  id: menu.Subcategory.Category.id,
-                  name:
-                    menu.Subcategory.Category.Translations?.[0]?.name ||
-                    `category_${menu.Subcategory.Category.id}`,
-                  food_type: menu.Subcategory.Category.FoodType
-                    ? {
-                        id: menu.Subcategory.Category.FoodType.id,
-                        name:
-                          menu.Subcategory.Category.FoodType.Translations?.[0]
-                            ?.name ||
-                          `foodtype_${menu.Subcategory.Category.FoodType.id}`,
-                      }
-                    : undefined,
-                }
-              : undefined,
-          }
-        : undefined;
-
-      // Map protein type if exists
-      const protein_type = menu.ProteinType
-        ? {
-            id: menu.ProteinType.id,
-            name:
-              menu.ProteinType.Translations?.[0]?.name ||
-              `protein_${menu.ProteinType.id}`,
-          }
-        : undefined;
-
-      const menuWithRating: MenuWithTranslations = {
-        ...menu,
-        protein_type_id: menu.protein_type_id || undefined,
-        image_url: menu.image_url || undefined,
-        meal_time: menu.meal_time as MealTime,
-        name: menuName,
-        subcategory,
-        protein_type,
-        average_rating: ratings._avg.rating
-          ? Number(ratings._avg.rating.toFixed(1))
-          : undefined,
-        total_ratings: ratings._count.rating,
-      };
-
-      return menuWithRating;
-    } catch (error) {
-      throw error;
+    if (!menu) {
+      throw new NotFoundException('No menu found');
     }
+
+    // Calculate average rating
+    const ratings = await this.prisma.menuRating.aggregate({
+      where: { menu_id: menu.id },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+
+    // Generate dynamic menu name
+    const subcategoryName =
+      menu.Subcategory?.Translations?.[0]?.name ||
+      menu.Subcategory?.key ||
+      `subcategory_${menu.Subcategory?.id}`;
+    const proteinName = menu.ProteinType?.Translations?.[0]?.name;
+    const menuName = proteinName
+      ? `${subcategoryName}${proteinName}`
+      : subcategoryName;
+
+    // Map subcategory if exists
+    const subcategory = menu.Subcategory
+      ? {
+          id: menu.Subcategory.id,
+          name:
+            menu.Subcategory.Translations?.[0]?.name ||
+            `subcategory_${menu.Subcategory.id}`,
+          category: menu.Subcategory.Category
+            ? {
+                id: menu.Subcategory.Category.id,
+                name:
+                  menu.Subcategory.Category.Translations?.[0]?.name ||
+                  `category_${menu.Subcategory.Category.id}`,
+                food_type: menu.Subcategory.Category.FoodType
+                  ? {
+                      id: menu.Subcategory.Category.FoodType.id,
+                      name:
+                        menu.Subcategory.Category.FoodType.Translations?.[0]
+                          ?.name ||
+                        `foodtype_${menu.Subcategory.Category.FoodType.id}`,
+                    }
+                  : undefined,
+              }
+            : undefined,
+        }
+      : undefined;
+
+    // Map protein type if exists
+    const protein_type = menu.ProteinType
+      ? {
+          id: menu.ProteinType.id,
+          name:
+            menu.ProteinType.Translations?.[0]?.name ||
+            `protein_${menu.ProteinType.id}`,
+        }
+      : undefined;
+
+    const menuWithRating: MenuWithTranslations = {
+      ...menu,
+      protein_type_id: menu.protein_type_id || undefined,
+      image_url: menu.image_url || undefined,
+      meal_time: menu.meal_time as MealTime,
+      name: menuName,
+      subcategory,
+      protein_type,
+      average_rating: ratings._avg.rating
+        ? Number(ratings._avg.rating.toFixed(1))
+        : undefined,
+      total_ratings: ratings._count.rating,
+    };
+
+    return menuWithRating;
   }
 }

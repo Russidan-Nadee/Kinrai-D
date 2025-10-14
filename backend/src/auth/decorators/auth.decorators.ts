@@ -12,6 +12,7 @@ import {
 } from '@nestjs/swagger';
 import { RolesGuard } from '../guards/roles.guard';
 import { PermissionsGuard } from '../guards/permissions.guard';
+import { AuthRequest, TokenRequest } from '../../common/types/request.types';
 
 /**
  * Set required roles for endpoint
@@ -28,11 +29,15 @@ export const Permissions = (...permissions: string[]) =>
  * Get current user from request
  */
 export const CurrentUser = createParamDecorator(
-  (data: keyof any | undefined, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
+  (data: string | undefined, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest<AuthRequest>();
     const user = request.user;
 
-    return data ? user?.[data] : user;
+    if (data) {
+      // Type assertion for property access
+      return (user as unknown as Record<string, unknown>)[data];
+    }
+    return user;
   },
 );
 
@@ -41,7 +46,7 @@ export const CurrentUser = createParamDecorator(
  */
 export const UserId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): string => {
-    const request = ctx.switchToHttp().getRequest();
+    const request = ctx.switchToHttp().getRequest<AuthRequest>();
     return request.user?.id;
   },
 );
@@ -51,7 +56,7 @@ export const UserId = createParamDecorator(
  */
 export const AuthToken = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): string => {
-    const request = ctx.switchToHttp().getRequest();
+    const request = ctx.switchToHttp().getRequest<TokenRequest>();
     return request.token;
   },
 );

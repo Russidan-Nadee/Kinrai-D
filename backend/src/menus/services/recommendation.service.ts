@@ -440,8 +440,8 @@ export class RecommendationService {
   // Strategy implementations
   private async calculatePopularityScore(menu: any): Promise<number> {
     const favoriteCount = menu.Favorites?.length || 0;
-    const viewCount = await this.getMenuViewCount(menu.id);
-    const orderCount = await this.getMenuOrderCount(menu.id);
+    const viewCount = await this.getMenuViewCount();
+    const orderCount = await this.getMenuOrderCount();
 
     const totalInteractions = favoriteCount * 3 + viewCount + orderCount * 5;
 
@@ -466,7 +466,7 @@ export class RecommendationService {
     if (!userData) return 0.5;
 
     // Find similar users based on common favorites and ratings
-    const similarUsers = await this.findSimilarUsers(userData);
+    const similarUsers = await this.findSimilarUsers();
 
     if (similarUsers.length === 0) return 0.5;
 
@@ -501,18 +501,12 @@ export class RecommendationService {
 
     // Protein type preference
     if (menu.protein_type_id && userData.favoriteMenus.length > 0) {
-      const proteinPreference = await this.calculateProteinPreference(
-        userData,
-        menu.protein_type_id,
-      );
+      const proteinPreference = await this.calculateProteinPreference();
       score += proteinPreference * 0.3;
     }
 
     // Ingredient similarity
-    const ingredientScore = await this.calculateIngredientSimilarity(
-      userData,
-      menu.contains,
-    );
+    const ingredientScore = await this.calculateIngredientSimilarity();
     score += ingredientScore * 0.3;
 
     return Math.min(score, 1);
@@ -582,33 +576,27 @@ export class RecommendationService {
     return sum / ratings.length;
   }
 
-  private async getMenuViewCount(menuId: number): Promise<number> {
+  private async getMenuViewCount(): Promise<number> {
     // This would typically come from analytics data
     return Math.floor(Math.random() * 100);
   }
 
-  private async getMenuOrderCount(menuId: number): Promise<number> {
+  private async getMenuOrderCount(): Promise<number> {
     // This would typically come from order history
     return Math.floor(Math.random() * 50);
   }
 
-  private async findSimilarUsers(userData: UserBehaviorData): Promise<any[]> {
+  private async findSimilarUsers(): Promise<any[]> {
     // This would implement collaborative filtering to find similar users
     return [];
   }
 
-  private async calculateProteinPreference(
-    userData: UserBehaviorData,
-    proteinTypeId: number,
-  ): Promise<number> {
+  private async calculateProteinPreference(): Promise<number> {
     // Calculate user's preference for this protein type based on history
     return 0.5;
   }
 
-  private async calculateIngredientSimilarity(
-    userData: UserBehaviorData,
-    contains: any,
-  ): Promise<number> {
+  private async calculateIngredientSimilarity(): Promise<number> {
     // Calculate similarity based on ingredients in user's favorite dishes
     return 0.5;
   }

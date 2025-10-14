@@ -19,7 +19,7 @@ export class UserProfilesService {
         data: createUserProfileDto,
       });
     } catch (error) {
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('User profile already exists');
       }
       throw error;
@@ -115,7 +115,11 @@ export class UserProfilesService {
     });
   }
 
-  async addDislike(userId: string, createDislikeDto: CreateDislikeDto, userEmail: string) {
+  async addDislike(
+    userId: string,
+    createDislikeDto: CreateDislikeDto,
+    userEmail: string,
+  ) {
     // Auto-create profile if it doesn't exist
     let profile = await this.prisma.userProfile.findUnique({
       where: { id: userId },
@@ -163,7 +167,7 @@ export class UserProfilesService {
         },
       });
     } catch (error) {
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Menu already in dislikes');
       }
       throw error;

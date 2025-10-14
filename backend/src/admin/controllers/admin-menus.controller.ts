@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Delete,
-  Param,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Delete, Param, Put } from '@nestjs/common';
 import { AdminMenusService } from '../services/admin-menus.service';
 
 @Controller('admin/menus')

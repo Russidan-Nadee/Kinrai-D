@@ -96,7 +96,7 @@ export class LoggingInterceptor implements NestInterceptor {
           error,
           metadata: {
             errorType: error.constructor.name,
-            errorMessage: error.message,
+            errorMessage: (error as Error).message,
           },
         });
 

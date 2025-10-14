@@ -26,7 +26,7 @@ export class FoodTypesService {
       });
       return foodType;
     } catch (error) {
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Food type key already exists');
       }
       throw error;
@@ -132,10 +132,10 @@ export class FoodTypesService {
 
       return foodType;
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as { code?: string })?.code === 'P2025') {
         throw new NotFoundException(`Food type with ID ${id} not found`);
       }
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Food type key already exists');
       }
       throw error;
@@ -156,7 +156,7 @@ export class FoodTypesService {
       });
       return foodType;
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as { code?: string })?.code === 'P2025') {
         throw new NotFoundException(`Food type with ID ${id} not found`);
       }
       throw error;

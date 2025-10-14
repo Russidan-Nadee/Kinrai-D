@@ -9,7 +9,9 @@ describe('ProteinPreferencesController', () => {
       controllers: [ProteinPreferencesController],
     }).compile();
 
-    controller = module.get<ProteinPreferencesController>(ProteinPreferencesController);
+    controller = module.get<ProteinPreferencesController>(
+      ProteinPreferencesController,
+    );
   });
 
   it('should be defined', () => {

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -14,7 +15,7 @@ export class AdminUsersService {
     const { page = 1, limit = 10, search, role, is_active } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.UserProfileWhereInput = {};
 
     if (search) {
       where.OR = [

@@ -55,7 +55,11 @@ export class UserProfilesController {
 
   @Post('me/dislikes')
   addDislike(@Body() createDislikeDto: CreateDislikeDto, @Request() req) {
-    return this.userProfilesService.addDislike(req.user.id, createDislikeDto, req.user.email);
+    return this.userProfilesService.addDislike(
+      req.user.id,
+      createDislikeDto,
+      req.user.email,
+    );
   }
 
   @Delete('me/dislikes')

@@ -26,7 +26,10 @@ export class ProteinPreferencesController {
   }
 
   @Get('me')
-  getUserProteinPreferences(@Request() req, @Query('language') language = 'en') {
+  getUserProteinPreferences(
+    @Request() req,
+    @Query('language') language = 'en',
+  ) {
     return this.proteinPreferencesService.getUserProteinPreferences(
       req.user.id,
       language,

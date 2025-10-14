@@ -62,7 +62,7 @@ export class FavoritesService {
         },
       });
     } catch (error) {
-      if (error.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictException('Menu already in favorites');
       }
       throw error;

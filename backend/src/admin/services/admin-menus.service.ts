@@ -47,9 +47,14 @@ export class AdminMenusService {
     });
 
     return menus.map((menu) => {
-      const subcategoryName = menu.Subcategory?.Translations[0]?.name || menu.Subcategory?.key || 'Unknown';
+      const subcategoryName =
+        menu.Subcategory?.Translations[0]?.name ||
+        menu.Subcategory?.key ||
+        'Unknown';
       const proteinName = menu.ProteinType?.Translations[0]?.name;
-      const displayName = proteinName ? `${subcategoryName}${proteinName}` : subcategoryName;
+      const displayName = proteinName
+        ? `${subcategoryName}${proteinName}`
+        : subcategoryName;
 
       return {
         id: menu.id,
@@ -98,9 +103,14 @@ export class AdminMenusService {
       throw new NotFoundException('Menu not found');
     }
 
-    const subcategoryName = menu.Subcategory?.Translations[0]?.name || menu.Subcategory?.key || 'Unknown';
+    const subcategoryName =
+      menu.Subcategory?.Translations[0]?.name ||
+      menu.Subcategory?.key ||
+      'Unknown';
     const proteinName = menu.ProteinType?.Translations[0]?.name;
-    const displayName = proteinName ? `${subcategoryName}${proteinName}` : subcategoryName;
+    const displayName = proteinName
+      ? `${subcategoryName}${proteinName}`
+      : subcategoryName;
 
     return {
       id: menu.id,
