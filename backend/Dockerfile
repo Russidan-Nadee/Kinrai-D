@@ -6,9 +6,9 @@ WORKDIR /app
 # Copy package files first
 COPY package*.json ./
 
-# Install dependencies deterministically
-RUN npm ci --ignore-scripts && \
-    npm cache clean --force
+# Install dependencies (prefer npm ci, fallback to npm install if lockfile missing)
+RUN if [ -f package-lock.json ]; then npm ci --ignore-scripts; else npm install --ignore-scripts; fi \
+    && npm cache clean --force
 
 # Copy the rest of the backend source
 COPY . .
@@ -29,8 +29,8 @@ COPY --from=builder /app/package*.json ./
 
 # Install production dependencies only
 ENV NODE_ENV=production
-RUN npm ci --omit=dev --ignore-scripts && \
-    npm cache clean --force
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev --ignore-scripts; else npm install --omit=dev --ignore-scripts; fi \
+    && npm cache clean --force
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
