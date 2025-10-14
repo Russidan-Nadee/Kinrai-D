@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy all source files first
 COPY . .
 
-# Install dependencies
-RUN npm install --production && \
+# Install ALL dependencies (including dev) for building
+RUN npm install && \
     npm cache clean --force
 
 # Generate Prisma Client

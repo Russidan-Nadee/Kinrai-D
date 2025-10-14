@@ -38,7 +38,11 @@
       "Bash(git log:*)",
       "Bash(npm test)",
       "Bash(npx tsc:*)",
-      "Bash(flutter:*)"
+      "Bash(flutter:*)",
+      "Bash(git push:*)",
+      "Bash(git rm:*)",
+      "Bash(timeout 300 docker build -t kinrai-backend-test .)",
+      "Bash(git restore:*)"
     ],
     "deny": []
   }
