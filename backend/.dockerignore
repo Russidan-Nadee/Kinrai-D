@@ -47,9 +47,7 @@ docs
 .github
 .gitlab-ci.yml
 
-# Prisma
-prisma/migrations/*
-!prisma/schema.prisma
+# Prisma - only ignore specific files, not the folder
 prisma/*.db
 prisma/*.db-journal
 
