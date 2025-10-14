@@ -1,9 +1,12 @@
 # Netlify Configuration for Flutter Web
 [build]
+  # Base directory where the project is located
+  base = "frontend"
+
   # Build command
   command = "flutter build web --release --web-renderer canvaskit"
 
-  # Output directory
+  # Output directory (relative to base)
   publish = "build/web"
 
   # Build environment
