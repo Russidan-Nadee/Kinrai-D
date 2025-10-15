@@ -11,6 +11,7 @@ import { RatingsModule } from './ratings/ratings.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AdminModule } from './admin/admin.module';
 import { ProteinPreferencesModule } from './protein-preferences/protein-preferences.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ProteinPreferencesModule } from './protein-preferences/protein-preferen
       envFilePath: '.env',
     }),
     PrismaModule,
+    HealthModule,
     AuthModule,
     UsersModule,
     FoodManagementModule,
