@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // CORS Configuration
-  const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [
+  const corsOrigins = (process.env.CORS_ORIGINS?.split(',') || [
     // Production frontend (TODO: Update with your actual Netlify URL)
     'https://kinrai-d.netlify.app',
     // Development
@@ -16,7 +16,7 @@ async function bootstrap() {
     'http://localhost:8081',
     'http://localhost:3001',
     'http://localhost:4000',
-  ];
+  ]).map(origin => origin.trim().replace(/\/$/, '')); // Trim whitespace and trailing slash
 
   app.enableCors({
     origin: (origin, callback) => {
