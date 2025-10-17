@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../../core/utils/logger.dart';
+import '../../../../core/utils/constants.dart';
 
 class CategoryTranslation {
   String language;
@@ -91,7 +92,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/v1/food-types?lang=en'),
+        Uri.parse('${AppConstants.baseUrl}${AppConstants.apiVersion}/food-types?lang=en'),
         headers: {'Content-Type': 'application/json'},
       );
 

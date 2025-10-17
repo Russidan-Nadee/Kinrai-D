@@ -45,7 +45,12 @@
       "Bash(git restore:*)",
       "Bash(test:*)",
       "Bash(timeout 300 docker build -t kinrai-backend-test backend/)",
-      "Bash(timeout 10 docker run --rm -e PORT=8000 -e DATABASE_URL=\"postgresql://test:test@localhost:5432/test\" kinrai-final-test)"
+      "Bash(timeout 10 docker run --rm -e PORT=8000 -e DATABASE_URL=\"postgresql://test:test@localhost:5432/test\" kinrai-final-test)",
+      "Bash(nslookup:*)",
+      "Bash(timeout 10 docker run --rm -e PORT=8000 -e DATABASE_URL=\"postgresql://postgres:first27122546@db.xjuqvzvfvmunmqhgaflr.supabase.co:5432/postgres?sslmode=require\" kinrai-backend-test)",
+      "Bash(timeout:*)",
+      "Bash(if exist build rmdir /S /Q build)",
+      "Bash(dir:*)"
     ],
     "deny": []
   }

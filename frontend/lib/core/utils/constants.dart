@@ -1,20 +1,15 @@
-import 'package:flutter/foundation.dart';
-
 class AppConstants {
   static const String appName = 'Kinrai D';
 
   // API Configuration
-  // In production: Use Railway URL from environment or const
+  // Use --dart-define=API_URL=... from run.bat
+  // Development: uses localhost by default
+  // Production: uses URL from --dart-define
 
-  static const String _productionBaseUrl = String.fromEnvironment(
+  static const String baseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://kinrai-d-backend-production.up.railway.app',
+    defaultValue: 'http://localhost:8000',
   );
-
-  static const String _developmentBaseUrl = 'http://localhost:8000';
-
-  static String get baseUrl =>
-      kReleaseMode ? _productionBaseUrl : _developmentBaseUrl;
 
   static const String apiVersion = '/api/v1'; // Backend API version
 
