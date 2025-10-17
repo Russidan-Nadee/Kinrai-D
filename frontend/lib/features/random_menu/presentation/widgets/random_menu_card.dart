@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
-import '../../../../core/services/user_service.dart';
 import '../../../../core/utils/logger.dart';
 import '../../domain/entities/menu_entity.dart';
+import '../../../dislikes/domain/usecases/add_dislike.dart';
+import '../../../dislikes/domain/usecases/remove_dislike.dart';
+import '../../../dislikes/domain/usecases/is_menu_disliked.dart';
+import '../../../dislikes/data/repositories/dislike_repository_impl.dart';
+import '../../../dislikes/data/datasources/dislike_remote_data_source.dart';
 
 class RandomMenuCard extends StatefulWidget {
   final MenuEntity menu;
@@ -16,13 +20,23 @@ class RandomMenuCard extends StatefulWidget {
 }
 
 class _RandomMenuCardState extends State<RandomMenuCard> {
-  final UserService _userService = UserService();
+  late final AddDislike _addDislike;
+  late final RemoveDislike _removeDislike;
+  late final IsMenuDisliked _isMenuDisliked;
+
   bool _isDisliked = false;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    // Initialize use cases
+    final dataSource = DislikeRemoteDataSourceImpl();
+    final repository = DislikeRepositoryImpl(remoteDataSource: dataSource);
+    _addDislike = AddDislike(repository);
+    _removeDislike = RemoveDislike(repository);
+    _isMenuDisliked = IsMenuDisliked(repository);
+
     _checkIfDisliked();
   }
 
@@ -37,7 +51,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
 
   Future<void> _checkIfDisliked() async {
     try {
-      final isDisliked = await _userService.isMenuDisliked(widget.menu.id);
+      final isDisliked = await _isMenuDisliked(widget.menu.id);
       if (mounted) {
         setState(() {
           _isDisliked = isDisliked;
@@ -57,7 +71,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
 
     try {
       if (_isDisliked) {
-        await _userService.removeDislike(menuId: widget.menu.id);
+        await _removeDislike(menuId: widget.menu.id);
         setState(() {
           _isDisliked = false;
         });
@@ -70,7 +84,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
           );
         }
       } else {
-        await _userService.addDislike(menuId: widget.menu.id);
+        await _addDislike(menuId: widget.menu.id);
         setState(() {
           _isDisliked = true;
         });

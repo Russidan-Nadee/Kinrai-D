@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
-import '../../../../core/services/user_service.dart';
+import '../../../protein_preferences/domain/entities/protein_preference_entity.dart';
+import '../../../protein_preferences/domain/usecases/get_available_protein_types.dart';
+import '../../../protein_preferences/domain/usecases/get_user_protein_preferences.dart';
+import '../../../protein_preferences/domain/usecases/set_protein_preference.dart';
+import '../../../protein_preferences/domain/usecases/remove_protein_preference.dart';
+import '../../../protein_preferences/data/repositories/protein_preference_repository_impl.dart';
+import '../../../protein_preferences/data/datasources/protein_preference_remote_data_source.dart';
 
 class ProteinPreferencesSection extends StatefulWidget {
   const ProteinPreferencesSection({super.key});
@@ -11,14 +17,26 @@ class ProteinPreferencesSection extends StatefulWidget {
 }
 
 class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
-  final UserService _userService = UserService();
-  List<Map<String, dynamic>> _availableProteinTypes = [];
-  List<Map<String, dynamic>> _userProteinPreferences = [];
+  late final GetAvailableProteinTypes _getAvailableProteinTypes;
+  late final GetUserProteinPreferences _getUserProteinPreferences;
+  late final SetProteinPreference _setProteinPreference;
+  late final RemoveProteinPreference _removeProteinPreference;
+
+  List<ProteinTypeEntity> _availableProteinTypes = [];
+  List<ProteinPreferenceEntity> _userProteinPreferences = [];
   bool _isLoadingProteins = false;
 
   @override
   void initState() {
     super.initState();
+    // Initialize use cases
+    final dataSource = ProteinPreferenceRemoteDataSourceImpl();
+    final repository = ProteinPreferenceRepositoryImpl(remoteDataSource: dataSource);
+    _getAvailableProteinTypes = GetAvailableProteinTypes(repository);
+    _getUserProteinPreferences = GetUserProteinPreferences(repository);
+    _setProteinPreference = SetProteinPreference(repository);
+    _removeProteinPreference = RemoveProteinPreference(repository);
+
     _loadProteinPreferences();
   }
 
@@ -34,10 +52,10 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
       );
 
       // Load available protein types and user preferences
-      final availableTypes = await _userService.getAvailableProteinTypes(
+      final availableTypes = await _getAvailableProteinTypes(
         language: languageProvider.currentLanguageCode,
       );
-      final userPreferences = await _userService.getUserProteinPreferences(
+      final userPreferences = await _getUserProteinPreferences(
         language: languageProvider.currentLanguageCode,
       );
 
@@ -67,13 +85,13 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
     try {
       if (exclude) {
         // Add to preferences (don't eat)
-        await _userService.setProteinPreference(
+        await _setProteinPreference(
           proteinTypeId: proteinTypeId,
           exclude: true,
         );
       } else {
         // Remove from preferences (eat normally)
-        await _userService.removeProteinPreference(
+        await _removeProteinPreference(
           proteinTypeId: proteinTypeId,
         );
       }
@@ -110,8 +128,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
 
   bool _isProteinExcluded(int proteinTypeId) {
     return _userProteinPreferences.any((pref) =>
-        pref['protein_type_id'] == proteinTypeId &&
-        (pref['exclude'] == true)
+        pref.proteinTypeId == proteinTypeId && pref.exclude
     );
   }
 
@@ -211,12 +228,6 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
                         spacing: 6,
                         runSpacing: 6,
                         children: _userProteinPreferences.map((pref) {
-                          final proteinType = pref['ProteinType'] as Map<String, dynamic>?;
-                          final translations = proteinType?['Translations'] as List<dynamic>? ?? [];
-                          final name = translations.isNotEmpty
-                              ? (translations.first as Map<String, dynamic>)['name'] as String? ?? 'Unknown'
-                              : 'Unknown';
-
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
@@ -225,7 +236,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
                               border: Border.all(color: Colors.red[300]!),
                             ),
                             child: Text(
-                              name,
+                              pref.proteinTypeName,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.red[700],
@@ -284,19 +295,14 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
     );
   }
 
-  Widget _buildProteinItem(Map<String, dynamic> proteinType, LanguageProvider languageProvider, bool isMobile) {
-    final translations = proteinType['Translations'] as List<dynamic>? ?? [];
-    final name = translations.isNotEmpty
-        ? (translations.first as Map<String, dynamic>)['name'] as String? ?? 'Unknown'
-        : 'Unknown';
-    final proteinTypeId = proteinType['id'] as int;
-    final isExcluded = _isProteinExcluded(proteinTypeId);
+  Widget _buildProteinItem(ProteinTypeEntity proteinType, LanguageProvider languageProvider, bool isMobile) {
+    final isExcluded = _isProteinExcluded(proteinType.id);
 
     return Container(
       width: isMobile ? double.infinity : null,
       margin: isMobile ? const EdgeInsets.only(bottom: 8) : EdgeInsets.zero,
       child: InkWell(
-        onTap: () => _toggleProteinPreference(proteinTypeId, !isExcluded),
+        onTap: () => _toggleProteinPreference(proteinType.id, !isExcluded),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: EdgeInsets.all(isMobile ? 16 : 12),
@@ -332,7 +338,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
               SizedBox(width: isMobile ? 16 : 8),
               Expanded(
                 child: Text(
-                  name,
+                  proteinType.name,
                   style: TextStyle(
                     fontSize: isMobile ? 16 : 14,
                     fontWeight: FontWeight.w500,
