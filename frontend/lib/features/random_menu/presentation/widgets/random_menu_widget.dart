@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/models/menu_model.dart';
-import '../../../../core/services/menu_service.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../domain/entities/menu_entity.dart';
+import '../../domain/usecases/get_personalized_random_menu.dart';
+import '../../data/repositories/menu_repository_impl.dart';
+import '../../data/datasources/menu_remote_data_source.dart';
 import 'random_menu_button.dart';
 import 'random_menu_card.dart';
 
@@ -15,10 +17,19 @@ class RandomMenuWidget extends StatefulWidget {
 }
 
 class _RandomMenuWidgetState extends State<RandomMenuWidget> {
-  final MenuService _menuService = MenuService();
-  MenuModel? _randomMenu;
+  late final GetPersonalizedRandomMenu _getPersonalizedRandomMenu;
+  MenuEntity? _randomMenu;
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize use case with repository
+    final dataSource = MenuRemoteDataSourceImpl();
+    final repository = MenuRepositoryImpl(remoteDataSource: dataSource);
+    _getPersonalizedRandomMenu = GetPersonalizedRandomMenu(repository);
+  }
 
   Future<void> _getRandomMenu() async {
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
@@ -30,7 +41,9 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
     });
 
     try {
-      final randomMenu = await _menuService.getPersonalizedRandomMenu(language: languageProvider.currentLanguageCode);
+      final randomMenu = await _getPersonalizedRandomMenu(
+        language: languageProvider.currentLanguageCode,
+      );
       setState(() {
         _randomMenu = randomMenu;
         _isLoading = false;

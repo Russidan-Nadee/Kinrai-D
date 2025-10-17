@@ -1,3 +1,6 @@
+import '../../domain/entities/menu_entity.dart';
+
+/// Menu Model - Data layer for API/Database mapping
 class MenuModel {
   final int id;
   final int subcategoryId;
@@ -9,10 +12,10 @@ class MenuModel {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String? name; // Generated menu name from backend
-  final List<MenuTranslation>? translations;
-  final MenuSubcategory? subcategory;
-  final MenuProteinType? proteinType;
+  final String? name;
+  final List<MenuTranslationModel>? translations;
+  final MenuSubcategoryModel? subcategory;
+  final MenuProteinTypeModel? proteinType;
   final double? averageRating;
   final int? totalRatings;
 
@@ -41,7 +44,6 @@ class MenuModel {
     Map<String, dynamic>? containsMap;
 
     if (containsValue is List) {
-      // Convert List to Map format for consistency
       containsMap = {'ingredients': containsValue};
     } else if (containsValue is Map<String, dynamic>) {
       containsMap = containsValue;
@@ -50,7 +52,7 @@ class MenuModel {
     return MenuModel(
       id: json['id'] ?? 0,
       subcategoryId: json['subcategory_id'] ?? 0,
-      proteinTypeId: json['protein_type_id'], // nullable
+      proteinTypeId: json['protein_type_id'],
       key: json['key'] ?? '',
       imageUrl: json['image_url'],
       contains: containsMap,
@@ -58,28 +60,21 @@ class MenuModel {
       isActive: json['is_active'] ?? true,
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
-      name: json['name'], // Generated menu name from backend
-      // Support both raw Prisma data (Translations) and cleaned data (translations)
+      name: json['name'],
       translations: json['Translations'] != null
-          ? (json['Translations'] as List)
-              .map((e) => MenuTranslation.fromJson(e))
-              .toList()
+          ? (json['Translations'] as List).map((e) => MenuTranslationModel.fromJson(e)).toList()
           : json['translations'] != null
-              ? (json['translations'] as List)
-                  .map((e) => MenuTranslation.fromJson(e))
-                  .toList()
+              ? (json['translations'] as List).map((e) => MenuTranslationModel.fromJson(e)).toList()
               : null,
-      // Support both raw Prisma data (Subcategory) and cleaned data (subcategory)
       subcategory: json['Subcategory'] != null
-          ? MenuSubcategory.fromJson(json['Subcategory'])
+          ? MenuSubcategoryModel.fromJson(json['Subcategory'])
           : json['subcategory'] != null
-              ? MenuSubcategory.fromCleanedJson(json['subcategory'])
+              ? MenuSubcategoryModel.fromCleanedJson(json['subcategory'])
               : null,
-      // Support both raw Prisma data (ProteinType) and cleaned data (protein_type)
       proteinType: json['ProteinType'] != null
-          ? MenuProteinType.fromJson(json['ProteinType'])
+          ? MenuProteinTypeModel.fromJson(json['ProteinType'])
           : json['protein_type'] != null
-              ? MenuProteinType.fromCleanedJson(json['protein_type'])
+              ? MenuProteinTypeModel.fromCleanedJson(json['protein_type'])
               : null,
       averageRating: json['average_rating']?.toDouble(),
       totalRatings: json['total_ratings'],
@@ -107,13 +102,44 @@ class MenuModel {
     };
   }
 
-  String getName({String language = 'th'}) {
-    // Use backend-generated name if available
-    if (name != null && name!.isNotEmpty) {
-      return name!;
+  /// Convert Model to Entity
+  MenuEntity toEntity({String language = 'th'}) {
+    // Get localized name
+    String localizedName = name ?? '';
+    String? localizedDescription;
+
+    if (localizedName.isEmpty && translations != null && translations!.isNotEmpty) {
+      final translation = translations!.firstWhere(
+        (t) => t.language == language,
+        orElse: () => translations!.first,
+      );
+      localizedName = translation.name;
+      localizedDescription = translation.description;
     }
 
-    // Fallback to translations
+    if (localizedName.isEmpty) {
+      localizedName = key;
+    }
+
+    return MenuEntity(
+      id: id,
+      key: key,
+      imageUrl: imageUrl,
+      mealTime: mealTime,
+      isActive: isActive,
+      name: localizedName,
+      description: localizedDescription,
+      contains: contains,
+      subcategory: subcategory?.toEntity(language: language),
+      proteinType: proteinType?.toEntity(language: language),
+      averageRating: averageRating,
+      totalRatings: totalRatings,
+    );
+  }
+
+  String getName({String language = 'th'}) {
+    if (name != null && name!.isNotEmpty) return name!;
+
     if (translations != null && translations!.isNotEmpty) {
       final translation = translations!.firstWhere(
         (t) => t.language == language,
@@ -122,7 +148,6 @@ class MenuModel {
       return translation.name;
     }
 
-    // Final fallback to key
     return key;
   }
 
@@ -138,14 +163,14 @@ class MenuModel {
   }
 }
 
-class MenuTranslation {
+class MenuTranslationModel {
   final int id;
   final int menuId;
   final String language;
   final String name;
   final String? description;
 
-  MenuTranslation({
+  MenuTranslationModel({
     required this.id,
     required this.menuId,
     required this.language,
@@ -153,8 +178,8 @@ class MenuTranslation {
     this.description,
   });
 
-  factory MenuTranslation.fromJson(Map<String, dynamic> json) {
-    return MenuTranslation(
+  factory MenuTranslationModel.fromJson(Map<String, dynamic> json) {
+    return MenuTranslationModel(
       id: json['id'] ?? 0,
       menuId: json['menu_id'] ?? 0,
       language: json['language'] ?? 'th',
@@ -174,17 +199,17 @@ class MenuTranslation {
   }
 }
 
-class MenuSubcategory {
+class MenuSubcategoryModel {
   final int id;
   final int? categoryId;
   final String key;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<MenuTranslation>? translations;
-  final MenuCategory? category;
+  final List<MenuTranslationModel>? translations;
+  final MenuCategoryModel? category;
 
-  MenuSubcategory({
+  MenuSubcategoryModel({
     required this.id,
     this.categoryId,
     required this.key,
@@ -195,8 +220,8 @@ class MenuSubcategory {
     this.category,
   });
 
-  factory MenuSubcategory.fromJson(Map<String, dynamic> json) {
-    return MenuSubcategory(
+  factory MenuSubcategoryModel.fromJson(Map<String, dynamic> json) {
+    return MenuSubcategoryModel(
       id: json['id'] ?? 0,
       categoryId: json['category_id'],
       key: json['key'] ?? '',
@@ -204,29 +229,22 @@ class MenuSubcategory {
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
       translations: json['Translations'] != null
-          ? (json['Translations'] as List)
-              .map((e) => MenuTranslation.fromJson(e))
-              .toList()
+          ? (json['Translations'] as List).map((e) => MenuTranslationModel.fromJson(e)).toList()
           : null,
-      category: json['Category'] != null
-          ? MenuCategory.fromJson(json['Category'])
-          : null,
+      category: json['Category'] != null ? MenuCategoryModel.fromJson(json['Category']) : null,
     );
   }
 
-  // For cleaned API response data
-  factory MenuSubcategory.fromCleanedJson(Map<String, dynamic> json) {
-    return MenuSubcategory(
+  factory MenuSubcategoryModel.fromCleanedJson(Map<String, dynamic> json) {
+    return MenuSubcategoryModel(
       id: json['id'] ?? 0,
       categoryId: json['category_id'],
       key: json['key'] ?? '',
       isActive: true,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
-      translations: null, // Use the name directly
-      category: json['category'] != null
-          ? MenuCategory.fromCleanedJson(json['category'])
-          : null,
+      translations: null,
+      category: json['category'] != null ? MenuCategoryModel.fromCleanedJson(json['category']) : null,
     );
   }
 
@@ -243,6 +261,24 @@ class MenuSubcategory {
     };
   }
 
+  MenuSubcategoryEntity toEntity({String language = 'th'}) {
+    String localizedName = key;
+    if (translations != null && translations!.isNotEmpty) {
+      final translation = translations!.firstWhere(
+        (t) => t.language == language,
+        orElse: () => translations!.first,
+      );
+      localizedName = translation.name;
+    }
+
+    return MenuSubcategoryEntity(
+      id: id,
+      key: key,
+      name: localizedName,
+      category: category?.toEntity(language: language),
+    );
+  }
+
   String getName({String language = 'th'}) {
     if (translations == null || translations!.isEmpty) return key;
 
@@ -253,20 +289,19 @@ class MenuSubcategory {
 
     return translation.name;
   }
-
 }
 
-class MenuCategory {
+class MenuCategoryModel {
   final int id;
   final int? foodTypeId;
   final String key;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<MenuTranslation>? translations;
-  final MenuFoodType? foodType;
+  final List<MenuTranslationModel>? translations;
+  final MenuFoodTypeModel? foodType;
 
-  MenuCategory({
+  MenuCategoryModel({
     required this.id,
     this.foodTypeId,
     required this.key,
@@ -277,8 +312,8 @@ class MenuCategory {
     this.foodType,
   });
 
-  factory MenuCategory.fromJson(Map<String, dynamic> json) {
-    return MenuCategory(
+  factory MenuCategoryModel.fromJson(Map<String, dynamic> json) {
+    return MenuCategoryModel(
       id: json['id'] ?? 0,
       foodTypeId: json['food_type_id'],
       key: json['key'] ?? '',
@@ -286,19 +321,14 @@ class MenuCategory {
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
       translations: json['Translations'] != null
-          ? (json['Translations'] as List)
-              .map((e) => MenuTranslation.fromJson(e))
-              .toList()
+          ? (json['Translations'] as List).map((e) => MenuTranslationModel.fromJson(e)).toList()
           : null,
-      foodType: json['FoodType'] != null
-          ? MenuFoodType.fromJson(json['FoodType'])
-          : null,
+      foodType: json['FoodType'] != null ? MenuFoodTypeModel.fromJson(json['FoodType']) : null,
     );
   }
 
-  // For cleaned API response data
-  factory MenuCategory.fromCleanedJson(Map<String, dynamic> json) {
-    return MenuCategory(
+  factory MenuCategoryModel.fromCleanedJson(Map<String, dynamic> json) {
+    return MenuCategoryModel(
       id: json['id'] ?? 0,
       foodTypeId: json['food_type_id'],
       key: json['key'] ?? '',
@@ -306,9 +336,7 @@ class MenuCategory {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       translations: null,
-      foodType: json['food_type'] != null
-          ? MenuFoodType.fromCleanedJson(json['food_type'])
-          : null,
+      foodType: json['food_type'] != null ? MenuFoodTypeModel.fromCleanedJson(json['food_type']) : null,
     );
   }
 
@@ -325,6 +353,23 @@ class MenuCategory {
     };
   }
 
+  MenuCategoryEntity toEntity({String language = 'th'}) {
+    String localizedName = key;
+    if (translations != null && translations!.isNotEmpty) {
+      final translation = translations!.firstWhere(
+        (t) => t.language == language,
+        orElse: () => translations!.first,
+      );
+      localizedName = translation.name;
+    }
+
+    return MenuCategoryEntity(
+      id: id,
+      key: key,
+      name: localizedName,
+    );
+  }
+
   String getName({String language = 'th'}) {
     if (translations == null || translations!.isEmpty) return key;
 
@@ -337,15 +382,15 @@ class MenuCategory {
   }
 }
 
-class MenuFoodType {
+class MenuFoodTypeModel {
   final int id;
   final String key;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<MenuTranslation>? translations;
+  final List<MenuTranslationModel>? translations;
 
-  MenuFoodType({
+  MenuFoodTypeModel({
     required this.id,
     required this.key,
     required this.isActive,
@@ -354,24 +399,21 @@ class MenuFoodType {
     this.translations,
   });
 
-  factory MenuFoodType.fromJson(Map<String, dynamic> json) {
-    return MenuFoodType(
+  factory MenuFoodTypeModel.fromJson(Map<String, dynamic> json) {
+    return MenuFoodTypeModel(
       id: json['id'] ?? 0,
       key: json['key'] ?? '',
       isActive: json['is_active'] ?? true,
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
       translations: json['Translations'] != null
-          ? (json['Translations'] as List)
-              .map((e) => MenuTranslation.fromJson(e))
-              .toList()
+          ? (json['Translations'] as List).map((e) => MenuTranslationModel.fromJson(e)).toList()
           : null,
     );
   }
 
-  // For cleaned API response data
-  factory MenuFoodType.fromCleanedJson(Map<String, dynamic> json) {
-    return MenuFoodType(
+  factory MenuFoodTypeModel.fromCleanedJson(Map<String, dynamic> json) {
+    return MenuFoodTypeModel(
       id: json['id'] ?? 0,
       key: json['key'] ?? '',
       isActive: true,
@@ -404,15 +446,15 @@ class MenuFoodType {
   }
 }
 
-class MenuProteinType {
+class MenuProteinTypeModel {
   final int id;
   final String key;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<MenuTranslation>? translations;
+  final List<MenuTranslationModel>? translations;
 
-  MenuProteinType({
+  MenuProteinTypeModel({
     required this.id,
     required this.key,
     required this.isActive,
@@ -421,24 +463,21 @@ class MenuProteinType {
     this.translations,
   });
 
-  factory MenuProteinType.fromJson(Map<String, dynamic> json) {
-    return MenuProteinType(
+  factory MenuProteinTypeModel.fromJson(Map<String, dynamic> json) {
+    return MenuProteinTypeModel(
       id: json['id'] ?? 0,
       key: json['key'] ?? '',
       isActive: json['is_active'] ?? true,
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
       translations: json['Translations'] != null
-          ? (json['Translations'] as List)
-              .map((e) => MenuTranslation.fromJson(e))
-              .toList()
+          ? (json['Translations'] as List).map((e) => MenuTranslationModel.fromJson(e)).toList()
           : null,
     );
   }
 
-  // For cleaned API response data
-  factory MenuProteinType.fromCleanedJson(Map<String, dynamic> json) {
-    return MenuProteinType(
+  factory MenuProteinTypeModel.fromCleanedJson(Map<String, dynamic> json) {
+    return MenuProteinTypeModel(
       id: json['id'] ?? 0,
       key: json['key'] ?? '',
       isActive: true,
@@ -457,6 +496,23 @@ class MenuProteinType {
       'updated_at': updatedAt.toIso8601String(),
       'translations': translations?.map((e) => e.toJson()).toList(),
     };
+  }
+
+  MenuProteinTypeEntity toEntity({String language = 'th'}) {
+    String localizedName = key;
+    if (translations != null && translations!.isNotEmpty) {
+      final translation = translations!.firstWhere(
+        (t) => t.language == language,
+        orElse: () => translations!.first,
+      );
+      localizedName = translation.name;
+    }
+
+    return MenuProteinTypeEntity(
+      id: id,
+      key: key,
+      name: localizedName,
+    );
   }
 
   String getName({String language = 'th'}) {

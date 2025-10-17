@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/models/menu_model.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/services/user_service.dart';
 import '../../../../core/utils/logger.dart';
+import '../../domain/entities/menu_entity.dart';
 
 class RandomMenuCard extends StatefulWidget {
-  final MenuModel menu;
+  final MenuEntity menu;
   final VoidCallback? onDisliked;
 
   const RandomMenuCard({super.key, required this.menu, this.onDisliked});
@@ -106,9 +106,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final menuName = widget.menu.getName(
-      language: languageProvider.currentLanguageCode,
-    );
+    final menuName = widget.menu.name;
     final mealTime = widget.menu.mealTime;
     final contains = widget.menu.contains?.length ?? 0;
 
