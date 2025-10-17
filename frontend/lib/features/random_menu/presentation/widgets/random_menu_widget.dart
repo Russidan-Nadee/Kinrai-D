@@ -47,57 +47,103 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
+    // Show button in center when no menu is displayed (and not loading from previous state)
+    if (_randomMenu == null && _errorMessage == null && !_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Title
+            Text(
+              l10n.tapToRandomMenu,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+
+            // Random Menu Button (centered)
+            RandomMenuButton(
+              isLoading: _isLoading,
+              onPressed: _getRandomMenu,
+            ),
+          ],
+        ),
+      );
+    }
+
+    // After menu is displayed (or loading from previous state), show card at top and button at bottom
     return Column(
       children: [
-        // Title
-        Text(
-          l10n.tapToRandomMenu,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 48),
-
-        // Random Menu Button
-        RandomMenuButton(
-          isLoading: _isLoading,
-          onPressed: _getRandomMenu,
-        ),
-
-        const SizedBox(height: 48),
-
-        // Display result
-        if (_errorMessage != null)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.red[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red[200]!),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.red[600]),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _errorMessage!,
-                    style: TextStyle(color: Colors.red[600]),
+        // Top section with card (1/2) - card centered in this area
+        Expanded(
+          flex: 1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_isLoading && _randomMenu == null)
+                // Show loading indicator when loading for the first time
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.tapToRandomMenu,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                  ],
+                )
+              else if (_errorMessage != null)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red[200]!),
                   ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red[600]),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red[600]),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (_randomMenu != null)
+                RandomMenuCard(
+                  key: ValueKey(_randomMenu!.id),
+                  menu: _randomMenu!,
+                  onDisliked: () {
+                    // Optional: Auto-generate new menu after dislike
+                    _getRandomMenu();
+                  },
                 ),
-              ],
-            ),
-          )
-        else if (_randomMenu != null)
-          RandomMenuCard(
-            key: ValueKey(_randomMenu!.id),
-            menu: _randomMenu!,
-            onDisliked: () {
-              // Optional: Auto-generate new menu after dislike
-              _getRandomMenu();
-            },
+            ],
           ),
+        ),
+
+        // Bottom section with button (1/2) - button centered in this area
+        Expanded(
+          flex: 1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              RandomMenuButton(
+                isLoading: _isLoading,
+                onPressed: _getRandomMenu,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

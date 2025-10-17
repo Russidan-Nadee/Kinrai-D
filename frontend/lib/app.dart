@@ -398,28 +398,25 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                l10n.welcome,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: const Color(0xFFFF6B35),
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            Text(
+              l10n.welcome,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: const Color(0xFFFF6B35),
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
 
-              // Random Menu Feature
-              const Expanded(
-                child: SingleChildScrollView(child: RandomMenuWidget()),
-              ),
-            ],
-          ),
+            // Random Menu Feature
+            const Expanded(
+              child: RandomMenuWidget(),
+            ),
+          ],
         ),
       ),
     );

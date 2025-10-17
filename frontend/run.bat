@@ -46,7 +46,7 @@ echo Building Flutter Web (Release - Prod API)
 echo ========================================
 echo.
 cd /d "%~dp0"
-flutter build web --release --dart-define=API_URL=https://kinrai-d-backend.up.railway.app
+flutter build web --release --dart-define=API_URL=https://kinrai-d-production.up.railway.app
 if %ERRORLEVEL% NEQ 0 goto build_failed
 goto build_success
 
