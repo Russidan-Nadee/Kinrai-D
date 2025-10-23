@@ -118,7 +118,7 @@ model Menu {
   subcategory_id  Int
   protein_type_id Int?
   image_url       String?
-  contains        Json
+  contains        Json?
   meal_time       MealTime
   is_active       Boolean        @default(true)
   created_at      DateTime       @default(now())

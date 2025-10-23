@@ -4,24 +4,6 @@ import 'package:http/http.dart' as http;
 import 'add_subcategory_dialog.dart';
 import '../../../../core/utils/logger.dart';
 
-class MenuTranslation {
-  String language;
-  String name;
-  String description;
-
-  MenuTranslation({
-    required this.language,
-    required this.name,
-    this.description = '',
-  });
-
-  Map<String, dynamic> toJson() => {
-    'language': language,
-    'name': name,
-    'description': description,
-  };
-}
-
 class DropdownOption {
   final int id;
   final String key;
@@ -51,28 +33,20 @@ class AddMenuDialog extends StatefulWidget {
 
 class _AddMenuDialogState extends State<AddMenuDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _keyController = TextEditingController();
   final _imageUrlController = TextEditingController();
   final _containsController = TextEditingController();
-  
+
   String _selectedMealTime = 'LUNCH';
   String? _selectedFoodTypeKey;
   String? _selectedCategoryKey;
   String? _selectedSubcategoryKey;
   String? _selectedProteinTypeKey;
-  
+
   List<DropdownOption> _foodTypes = [];
   List<DropdownOption> _categories = [];
   List<DropdownOption> _subcategories = [];
   List<DropdownOption> _proteinTypes = [];
   bool _isLoadingData = false;
-  
-  final List<MenuTranslation> _translations = [
-    MenuTranslation(language: 'en', name: ''),
-    MenuTranslation(language: 'th', name: ''),
-    MenuTranslation(language: 'jp', name: ''),
-    MenuTranslation(language: 'zh', name: ''),
-  ];
 
   final List<String> _mealTimes = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
 
@@ -84,7 +58,6 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
 
   @override
   void dispose() {
-    _keyController.dispose();
     _imageUrlController.dispose();
     _containsController.dispose();
     super.dispose();
@@ -235,13 +208,6 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
     }
   }
 
-  final Map<String, String> _languageNames = {
-    'en': 'English',
-    'th': 'Thai (ไทย)',
-    'jp': 'Japanese (日本語)',
-    'zh': 'Chinese (中文)',
-  };
-
   Future<void> _showCreateSubcategoryDialog() async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -280,63 +246,25 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
       );
     }
 
-    return {
-      'key': _keyController.text,
+    // Build the menu data according to CreateMenuDto
+    final Map<String, dynamic> menuData = {
       'subcategory_id': selectedSubcategory.id,
-      'protein_type_id': selectedProteinType?.id,
-      'image_url': _imageUrlController.text.isEmpty ? null : _imageUrlController.text,
-      'contains': _containsController.text.isEmpty
-          ? {}
-          : {'description': _containsController.text},
       'meal_time': _selectedMealTime,
-      'translations': _translations.map((t) => t.toJson()).toList(),
+      'contains': _containsController.text.isNotEmpty
+          ? {'description': _containsController.text}
+          : {}, // Send empty object instead of null for now
     };
-  }
 
-  Color _getLanguageColor(String language) {
-    switch (language) {
-      case 'en':
-        return Colors.blue;
-      case 'th':
-        return Colors.red;
-      case 'jp':
-        return Colors.purple;
-      case 'zh':
-        return Colors.green;
-      default:
-        return Colors.grey;
+    // Add optional fields only if they have values
+    if (selectedProteinType != null) {
+      menuData['protein_type_id'] = selectedProteinType.id;
     }
-  }
 
-  String _getHintText(String language, String field) {
-    if (field == 'name') {
-      switch (language) {
-        case 'en':
-          return 'e.g., Pad Thai with Chicken';
-        case 'th':
-          return 'เช่น ผัดไทยไก่';
-        case 'jp':
-          return '例：チキンパッタイ';
-        case 'zh':
-          return '例如：鸡肉炒河粉';
-        default:
-          return '';
-      }
-    } else if (field == 'description') {
-      switch (language) {
-        case 'en':
-          return 'Brief description of the dish';
-        case 'th':
-          return 'คำอธิบายสั้นๆ ของอาหาร';
-        case 'jp':
-          return '料理の簡単な説明';
-        case 'zh':
-          return '菜品简介';
-        default:
-          return '';
-      }
+    if (_imageUrlController.text.isNotEmpty) {
+      menuData['image_url'] = _imageUrlController.text;
     }
-    return '';
+
+    return menuData;
   }
 
   @override
@@ -378,30 +306,22 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
                     children: [
                       // Basic Information
                       const Text(
-                        'Basic Information',
+                        'Menu Selection',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      
-                      TextFormField(
-                        controller: _keyController,
-                        decoration: const InputDecoration(
-                          labelText: 'Menu Key*',
-                          hintText: 'e.g., pad_thai_chicken',
-                          border: OutlineInputBorder(),
+                      const Text(
+                        'Menu name will be automatically generated from Subcategory + Protein Type',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
                         ),
-                        validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return 'Menu key is required';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Food Type Dropdown
                       _isLoadingData
                           ? const Center(child: CircularProgressIndicator())
@@ -610,87 +530,6 @@ class _AddMenuDialogState extends State<AddMenuDialog> {
                         ),
                         maxLines: 3,
                       ),
-                      const SizedBox(height: 32),
-                      
-                      // Translations Section
-                      const Text(
-                        'Translations (All 4 languages required)',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // Translation Forms
-                      ...List.generate(_translations.length, (index) {
-                        final language = _translations[index].language;
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Language Header
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, 
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _getLanguageColor(language),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Text(
-                                    _languageNames[language] ?? language.toUpperCase(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                
-                                // Menu Name Field
-                                TextFormField(
-                                  initialValue: _translations[index].name,
-                                  decoration: InputDecoration(
-                                    labelText: 'Menu Name* (${language.toUpperCase()})',
-                                    border: const OutlineInputBorder(),
-                                    hintText: _getHintText(language, 'name'),
-                                  ),
-                                  validator: (value) {
-                                    if (value?.isEmpty ?? true) {
-                                      return 'Name in ${_languageNames[language]} is required';
-                                    }
-                                    return null;
-                                  },
-                                  onChanged: (value) {
-                                    _translations[index].name = value;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                
-                                // Description Field
-                                TextFormField(
-                                  initialValue: _translations[index].description,
-                                  decoration: InputDecoration(
-                                    labelText: 'Description (${language.toUpperCase()})',
-                                    border: const OutlineInputBorder(),
-                                    hintText: _getHintText(language, 'description'),
-                                  ),
-                                  maxLines: 2,
-                                  onChanged: (value) {
-                                    _translations[index].description = value;
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }),
                     ],
                   ),
                 ),

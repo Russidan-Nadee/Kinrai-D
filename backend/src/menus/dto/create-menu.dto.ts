@@ -30,8 +30,9 @@ export class CreateMenuDto {
   @MaxLength(500)
   image_url?: string;
 
+  @IsOptional()
   @IsObject()
-  contains: any; // JSON object สำหรับส่วนผสม เช่น {"vegetables": ["lettuce", "tomato"], "meat": ["chicken"]}
+  contains?: any; // JSON object สำหรับส่วนผสม เช่น {"vegetables": ["lettuce", "tomato"], "meat": ["chicken"]}
 
   @IsEnum(MealTime)
   meal_time: MealTime;

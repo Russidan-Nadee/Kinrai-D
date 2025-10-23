@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/api/api_client.dart';
 import '../../../../../core/utils/logger.dart';
+import '../../widgets/add_menu_dialog.dart';
+import '../../widgets/bulk_add_menu_dialog.dart';
 
 class MenusTab extends StatefulWidget {
   const MenusTab({super.key});
@@ -16,6 +18,10 @@ class _MenusTabState extends State<MenusTab> {
   int currentPage = 1;
   int totalPages = 1;
   int totalMenus = 0;
+
+  // Bulk delete
+  Set<int> selectedMenuIds = {};
+  bool isSelectionMode = false;
 
   @override
   void initState() {
@@ -49,6 +55,333 @@ class _MenusTabState extends State<MenusTab> {
         errorMessage = 'Failed to load menus: ${e.toString()}';
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _showAddMenuDialog() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext context) {
+        return const AddMenuDialog();
+      },
+    );
+
+    if (result != null) {
+      // Menu data returned from dialog, now create it
+      await _createMenu(result);
+    }
+  }
+
+  Future<void> _showBulkAddMenuDialog() async {
+    final result = await showDialog<List<Map<String, dynamic>>>(
+      context: context,
+      builder: (BuildContext context) {
+        return const BulkAddMenuDialog();
+      },
+    );
+
+    if (result != null && result.isNotEmpty) {
+      // Multiple menu data returned from dialog, create them all
+      await _createBulkMenus(result);
+    }
+  }
+
+  Future<void> _createMenu(Map<String, dynamic> menuData) async {
+    try {
+      final apiClient = ApiClient();
+      apiClient.initialize();
+
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Creating menu...')),
+        );
+      }
+
+      await apiClient.post('/menus', data: menuData);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Menu created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      // Reload menus
+      await _loadMenus();
+    } catch (e) {
+      AppLogger.error('Error creating menu', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create menu: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _createBulkMenus(List<Map<String, dynamic>> menusData) async {
+    try {
+      final apiClient = ApiClient();
+      apiClient.initialize();
+
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Creating ${menusData.length} menus...')),
+        );
+      }
+
+      int successCount = 0;
+      int failCount = 0;
+
+      // Create menus one by one
+      for (final menuData in menusData) {
+        try {
+          await apiClient.post('/menus', data: menuData);
+          successCount++;
+        } catch (e) {
+          failCount++;
+          AppLogger.error('Error creating menu', e);
+        }
+      }
+
+      if (mounted) {
+        if (failCount == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('All $successCount menus created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Created $successCount menus, $failCount failed'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+
+      // Reload menus
+      await _loadMenus();
+    } catch (e) {
+      AppLogger.error('Error creating bulk menus', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create menus: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showDeleteConfirmation(dynamic menu) async {
+    final menuName = _getMenuDisplayName(menu);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Menu'),
+          content: Text('Are you sure you want to delete "$menuName"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await _deleteMenu(menu['id']);
+    }
+  }
+
+  Future<void> _deleteMenu(int menuId) async {
+    try {
+      final apiClient = ApiClient();
+      apiClient.initialize();
+
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Deleting menu...')),
+        );
+      }
+
+      await apiClient.delete('/menus/$menuId');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Menu deleted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      // Reload menus
+      await _loadMenus();
+    } catch (e) {
+      AppLogger.error('Error deleting menu', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete menu: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _toggleSelectionMode() {
+    setState(() {
+      isSelectionMode = !isSelectionMode;
+      if (!isSelectionMode) {
+        selectedMenuIds.clear();
+      }
+    });
+  }
+
+  void _toggleMenuSelection(int menuId) {
+    setState(() {
+      if (selectedMenuIds.contains(menuId)) {
+        selectedMenuIds.remove(menuId);
+      } else {
+        selectedMenuIds.add(menuId);
+      }
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      selectedMenuIds.clear();
+      for (var menu in menus) {
+        selectedMenuIds.add(menu['id']);
+      }
+    });
+  }
+
+  void _deselectAll() {
+    setState(() {
+      selectedMenuIds.clear();
+    });
+  }
+
+  Future<void> _bulkDelete() async {
+    if (selectedMenuIds.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Multiple Menus'),
+          content: Text(
+            'Are you sure you want to delete ${selectedMenuIds.length} menu(s)?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Delete All'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await _deleteBulkMenus(selectedMenuIds.toList());
+    }
+  }
+
+  Future<void> _deleteBulkMenus(List<int> menuIds) async {
+    try {
+      final apiClient = ApiClient();
+      apiClient.initialize();
+
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Deleting ${menuIds.length} menus...')),
+        );
+      }
+
+      int successCount = 0;
+      int failCount = 0;
+
+      // Delete menus one by one
+      for (final menuId in menuIds) {
+        try {
+          await apiClient.delete('/menus/$menuId');
+          successCount++;
+        } catch (e) {
+          failCount++;
+          AppLogger.error('Error deleting menu $menuId', e);
+        }
+      }
+
+      if (mounted) {
+        if (failCount == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('All $successCount menus deleted successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Deleted $successCount menus, $failCount failed'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+
+      // Clear selection and exit selection mode
+      setState(() {
+        selectedMenuIds.clear();
+        isSelectionMode = false;
+      });
+
+      // Reload menus
+      await _loadMenus();
+    } catch (e) {
+      AppLogger.error('Error bulk deleting menus', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete menus: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -136,13 +469,15 @@ class _MenusTabState extends State<MenusTab> {
     }
 
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: _loadMenus,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: _loadMenus,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               // Header Card
               Card(
                 child: Padding(
@@ -238,9 +573,93 @@ class _MenusTabState extends State<MenusTab> {
                     ),
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ),
+
+        // Floating Action Buttons
+        if (isSelectionMode)
+          // Selection mode toolbar
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton.icon(
+                      onPressed: _selectAll,
+                      icon: const Icon(Icons.select_all, size: 18),
+                      label: const Text('Select All'),
+                    ),
+                    TextButton.icon(
+                      onPressed: _deselectAll,
+                      icon: const Icon(Icons.deselect, size: 18),
+                      label: const Text('Deselect'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: selectedMenuIds.isEmpty ? null : _bulkDelete,
+                      icon: const Icon(Icons.delete_sweep, size: 18),
+                      label: Text('Delete (${selectedMenuIds.length})'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _toggleSelectionMode,
+                      child: const Text('Cancel'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        else
+          // Normal mode FABs
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Bulk Delete Mode Button
+                FloatingActionButton(
+                  heroTag: 'bulk_delete',
+                  onPressed: _toggleSelectionMode,
+                  backgroundColor: Colors.red,
+                  tooltip: 'Bulk Delete Mode',
+                  child: const Icon(Icons.checklist),
+                ),
+                const SizedBox(height: 12),
+                // Bulk Add Button
+                FloatingActionButton(
+                  heroTag: 'bulk_add',
+                  onPressed: _showBulkAddMenuDialog,
+                  backgroundColor: Colors.orange.shade300,
+                  foregroundColor: Colors.white,
+                  tooltip: 'Bulk Add Menus',
+                  child: const Icon(Icons.library_add),
+                ),
+                const SizedBox(height: 12),
+                // Add Menu Button
+                FloatingActionButton(
+                  heroTag: 'add_menu',
+                  onPressed: _showAddMenuDialog,
+                  backgroundColor: Colors.orange,
+                  tooltip: 'Add Menu',
+                  child: const Icon(Icons.add),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -249,25 +668,63 @@ class _MenusTabState extends State<MenusTab> {
     final displayName = _getMenuDisplayName(menu);
     final mealTime = menu['meal_time'] ?? 'UNKNOWN';
     final isActive = menu['is_active'] ?? false;
-    final contains = menu['contains'] as List? ?? [];
+    final menuId = menu['id'] as int;
+    final isSelected = selectedMenuIds.contains(menuId);
+
+    // Handle contains - can be Map or List (legacy data)
+    String? containsText;
+    try {
+      final containsData = menu['contains'];
+      if (containsData is Map<String, dynamic>) {
+        containsText = containsData['description']?.toString();
+      } else if (containsData is List) {
+        containsText = '${containsData.length} ingredients';
+      }
+    } catch (e) {
+      containsText = null;
+    }
 
     return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Menu Name
-            Text(
-              displayName,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+      elevation: isSelected ? 4 : 2,
+      color: isSelected ? Colors.orange.shade50 : null,
+      child: InkWell(
+        onTap: isSelectionMode ? () => _toggleMenuSelection(menuId) : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with Checkbox/Menu Name and Delete Button
+              Row(
+                children: [
+                  // Checkbox in selection mode
+                  if (isSelectionMode)
+                    Checkbox(
+                      value: isSelected,
+                      onChanged: (bool? value) => _toggleMenuSelection(menuId),
+                      activeColor: Colors.orange,
+                    ),
+                  Expanded(
+                    child: Text(
+                      displayName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  // Delete button only when not in selection mode
+                  if (!isSelectionMode)
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => _showDeleteConfirmation(menu),
+                    ),
+                ],
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
             const SizedBox(height: 8),
 
             // Meal Time
@@ -310,16 +767,19 @@ class _MenusTabState extends State<MenusTab> {
 
             const Spacer(),
 
-            // Contains count
-            if (contains.isNotEmpty)
+            // Contains info
+            if (containsText != null && containsText.isNotEmpty)
               Text(
-                '${contains.length} ingredients',
+                containsText,
                 style: const TextStyle(
                   color: Colors.grey,
-                  fontSize: 12,
+                  fontSize: 11,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );
