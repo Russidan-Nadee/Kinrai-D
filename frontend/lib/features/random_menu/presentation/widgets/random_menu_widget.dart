@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/di/injection.dart';
 import '../../domain/entities/menu_entity.dart';
 import '../../domain/usecases/get_personalized_random_menu.dart';
-import '../../data/repositories/menu_repository_impl.dart';
-import '../../data/datasources/menu_remote_data_source.dart';
 import 'random_menu_button.dart';
 import 'random_menu_card.dart';
 
@@ -25,10 +24,8 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
   @override
   void initState() {
     super.initState();
-    // Initialize use case with repository
-    final dataSource = MenuRemoteDataSourceImpl();
-    final repository = MenuRepositoryImpl(remoteDataSource: dataSource);
-    _getPersonalizedRandomMenu = GetPersonalizedRandomMenu(repository);
+    // Get use case from dependency injection
+    _getPersonalizedRandomMenu = getIt.get<GetPersonalizedRandomMenu>();
   }
 
   Future<void> _getRandomMenu() async {

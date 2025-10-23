@@ -7,6 +7,7 @@ import 'core/providers/language_provider.dart';
 import 'core/providers/auth_provider.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/config/supabase_config.dart';
+import 'core/di/injection.dart';
 import 'features/auth/presentation/widgets/auth_wrapper.dart';
 
 void main() async {
@@ -17,6 +18,9 @@ void main() async {
     url: SupabaseConfig.url,
     anonKey: SupabaseConfig.anonKey,
   );
+
+  // Initialize dependency injection
+  await setupDependencies();
 
   // Initialize language provider
   final languageProvider = LanguageProvider();

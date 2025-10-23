@@ -133,6 +133,9 @@ model Menu {
   @@index([subcategory_id])
   @@index([protein_type_id])
   @@index([meal_time])
+  @@index([is_active])
+  @@index([is_active, meal_time])
+  @@index([created_at])
   @@map("menus")
 }
 
@@ -183,6 +186,8 @@ model UserDislike {
   @@unique([user_profile_id, menu_id])
   @@index([user_profile_id])
   @@index([menu_id])
+  @@index([created_at])
+  @@index([user_profile_id, created_at])
   @@map("user_dislikes")
 }
 
@@ -197,6 +202,8 @@ model FavoriteMenu {
   @@unique([user_profile_id, menu_id])
   @@index([user_profile_id])
   @@index([menu_id])
+  @@index([created_at])
+  @@index([user_profile_id, created_at])
   @@map("favorite_menus")
 }
 
@@ -214,6 +221,9 @@ model MenuRating {
   @@unique([user_profile_id, menu_id])
   @@index([user_profile_id])
   @@index([menu_id])
+  @@index([created_at])
+  @@index([user_profile_id, created_at])
+  @@index([rating])
   @@map("menu_ratings")
 }
 

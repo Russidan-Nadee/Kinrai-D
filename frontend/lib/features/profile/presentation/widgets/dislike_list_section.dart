@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
+import '../../../../core/di/injection.dart';
 import '../../../dislikes/domain/entities/dislike_entity.dart';
 import '../../../dislikes/domain/usecases/get_user_dislikes.dart';
 import '../../../dislikes/domain/usecases/remove_dislike.dart';
 import '../../../dislikes/domain/usecases/remove_bulk_dislikes.dart';
-import '../../../dislikes/data/repositories/dislike_repository_impl.dart';
-import '../../../dislikes/data/datasources/dislike_remote_data_source.dart';
 
 class DislikeListSection extends StatefulWidget {
   const DislikeListSection({super.key});
@@ -29,12 +28,10 @@ class _DislikeListSectionState extends State<DislikeListSection> {
   @override
   void initState() {
     super.initState();
-    // Initialize use cases
-    final dataSource = DislikeRemoteDataSourceImpl();
-    final repository = DislikeRepositoryImpl(remoteDataSource: dataSource);
-    _getUserDislikes = GetUserDislikes(repository);
-    _removeDislike = RemoveDislike(repository);
-    _removeBulkDislikes = RemoveBulkDislikes(repository);
+    // Get use cases from dependency injection
+    _getUserDislikes = getIt.get<GetUserDislikes>();
+    _removeDislike = getIt.get<RemoveDislike>();
+    _removeBulkDislikes = getIt.get<RemoveBulkDislikes>();
 
     _loadDislikes();
   }

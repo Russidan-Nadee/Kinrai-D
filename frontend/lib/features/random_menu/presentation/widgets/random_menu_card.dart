@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/di/injection.dart';
 import '../../domain/entities/menu_entity.dart';
 import '../../../dislikes/domain/usecases/add_dislike.dart';
 import '../../../dislikes/domain/usecases/remove_dislike.dart';
 import '../../../dislikes/domain/usecases/is_menu_disliked.dart';
-import '../../../dislikes/data/repositories/dislike_repository_impl.dart';
-import '../../../dislikes/data/datasources/dislike_remote_data_source.dart';
 
 class RandomMenuCard extends StatefulWidget {
   final MenuEntity menu;
@@ -30,12 +29,10 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
   @override
   void initState() {
     super.initState();
-    // Initialize use cases
-    final dataSource = DislikeRemoteDataSourceImpl();
-    final repository = DislikeRepositoryImpl(remoteDataSource: dataSource);
-    _addDislike = AddDislike(repository);
-    _removeDislike = RemoveDislike(repository);
-    _isMenuDisliked = IsMenuDisliked(repository);
+    // Get use cases from dependency injection
+    _addDislike = getIt.get<AddDislike>();
+    _removeDislike = getIt.get<RemoveDislike>();
+    _isMenuDisliked = getIt.get<IsMenuDisliked>();
 
     _checkIfDisliked();
   }
