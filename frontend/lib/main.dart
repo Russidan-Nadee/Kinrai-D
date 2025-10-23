@@ -8,10 +8,14 @@ import 'core/providers/auth_provider.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/config/supabase_config.dart';
 import 'core/di/injection.dart';
+import 'core/cache/cache_service.dart';
 import 'features/auth/presentation/widgets/auth_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive cache
+  await CacheService.init();
 
   // Initialize Supabase
   await Supabase.initialize(
