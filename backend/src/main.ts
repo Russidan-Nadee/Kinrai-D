@@ -1,22 +1,51 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import compression from 'compression';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Enable compression (supports both Brotli and Gzip)
+  app.use(
+    compression({
+      // Only compress responses larger than 1KB
+      threshold: 1024,
+      // Compression level (0-9): 6 is balanced between speed and compression ratio
+      level: 6,
+      // Filter: compress all compressible content types
+      filter: (req, res) => {
+        // Allow clients to opt-out of compression
+        if (req.headers['x-no-compression']) {
+          return false;
+        }
+        // Use default compression filter for content-type checking
+        const contentType = res.getHeader('Content-Type');
+        if (!contentType) {
+          return true;
+        }
+        // Compress text-based content types
+        return /json|text|javascript|xml|css|html/.test(
+          contentType.toString(),
+        );
+      },
+    }),
+  );
+
   // CORS Configuration
-  const corsOrigins = (process.env.CORS_ORIGINS?.split(',') || [
-    // Production frontend (TODO: Update with your actual Netlify URL)
-    'https://kinrai-d.netlify.app',
-    // Development
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'http://localhost:8080',
-    'http://localhost:8081',
-    'http://localhost:3001',
-    'http://localhost:4000',
-  ]).map(origin => origin.trim().replace(/\/$/, '')); // Trim whitespace and trailing slash
+  const corsOrigins = (
+    process.env.CORS_ORIGINS?.split(',') || [
+      // Production frontend
+      'https://kinrai-d.netlify.app',
+      // Development
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'http://localhost:8080',
+      'http://localhost:8081',
+      'http://localhost:3001',
+      'http://localhost:4000',
+    ]
+  ).map((origin) => origin.trim().replace(/\/$/, '')); // Trim whitespace and trailing slash
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -26,17 +55,14 @@ async function bootstrap() {
       }
 
       // Check if origin is in allowed list
-      if (corsOrigins.indexOf(origin) !== -1) {
+      if (corsOrigins.includes(origin)) {
         return callback(null, true);
       }
 
       // In production, reject unknown origins
       if (process.env.NODE_ENV === 'production') {
         console.warn(`❌ CORS: Rejected origin: ${origin}`);
-        return callback(
-          new Error('Not allowed by CORS policy'),
-          false,
-        );
+        return callback(new Error('Not allowed by CORS policy'), false);
       }
 
       // In development, allow all with warning
@@ -73,4 +99,4 @@ async function bootstrap() {
   );
 }
 
-void bootstrap();
+bootstrap();
