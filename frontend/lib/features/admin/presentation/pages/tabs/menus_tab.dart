@@ -14,22 +14,52 @@ class MenusTab extends StatefulWidget {
 class _MenusTabState extends State<MenusTab> {
   List<dynamic> menus = [];
   bool isLoading = false;
+  bool isLoadingMore = false;
   String? errorMessage;
   int currentPage = 1;
   int totalPages = 1;
   int totalMenus = 0;
+  bool hasMore = true;
 
   // Bulk delete
   Set<int> selectedMenuIds = {};
   bool isSelectionMode = false;
 
+  // Scroll controller for lazy loading
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _loadMenus();
+    _scrollController.addListener(_onScroll);
   }
 
-  Future<void> _loadMenus() async {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      // Load more when 200px from bottom
+      if (!isLoadingMore && hasMore && !isLoading) {
+        _loadMoreMenus();
+      }
+    }
+  }
+
+  Future<void> _loadMenus({bool refresh = false}) async {
+    if (refresh) {
+      setState(() {
+        currentPage = 1;
+        menus.clear();
+        hasMore = true;
+      });
+    }
+
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -46,6 +76,7 @@ class _MenusTabState extends State<MenusTab> {
         if (pagination != null) {
           totalPages = pagination['total_pages'] ?? 1;
           totalMenus = pagination['total'] ?? 0;
+          hasMore = pagination['has_next'] ?? false;
         }
         isLoading = false;
       });
@@ -54,6 +85,40 @@ class _MenusTabState extends State<MenusTab> {
       setState(() {
         errorMessage = 'Failed to load menus: ${e.toString()}';
         isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreMenus() async {
+    if (isLoadingMore || !hasMore) return;
+
+    setState(() {
+      isLoadingMore = true;
+      currentPage++;
+    });
+
+    try {
+      final apiClient = ApiClient();
+      apiClient.initialize();
+      final response = await apiClient.get('/menus?page=$currentPage&limit=20');
+
+      setState(() {
+        final newMenus = response.data['data'] ?? [];
+        menus.addAll(newMenus);
+
+        final pagination = response.data['pagination'];
+        if (pagination != null) {
+          totalPages = pagination['total_pages'] ?? 1;
+          totalMenus = pagination['total'] ?? 0;
+          hasMore = pagination['has_next'] ?? false;
+        }
+        isLoadingMore = false;
+      });
+    } catch (e) {
+      AppLogger.error('Error loading more menus', e);
+      setState(() {
+        currentPage--; // Revert page number on error
+        isLoadingMore = false;
       });
     }
   }
@@ -472,12 +537,11 @@ class _MenusTabState extends State<MenusTab> {
       body: Stack(
         children: [
           RefreshIndicator(
-            onRefresh: _loadMenus,
-            child: SingleChildScrollView(
+            onRefresh: () => _loadMenus(refresh: true),
+            child: ListView(
+              controller: _scrollController,
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              children: [
               // Header Card
               Card(
                 child: Padding(
@@ -557,24 +621,33 @@ class _MenusTabState extends State<MenusTab> {
                   ),
                 ),
 
-              // Pagination Info
-              if (totalPages > 1)
-                Card(
-                  margin: const EdgeInsets.only(top: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
+              // Loading More Indicator
+              if (isLoadingMore)
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+
+              // End of list indicator
+              if (!hasMore && menus.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Center(
                     child: Text(
-                      'Showing ${menus.length} of $totalMenus menus (Page $currentPage/$totalPages)',
+                      'All ${menus.length} menus loaded',
                       style: const TextStyle(
                         color: Colors.grey,
                         fontSize: 12,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
-              ],
-            ),
+
+              // Space for FAB
+              const SizedBox(height: 80),
+            ],
           ),
         ),
 

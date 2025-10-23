@@ -50,7 +50,8 @@
       "Bash(timeout 10 docker run --rm -e PORT=8000 -e DATABASE_URL=\"postgresql://postgres:first27122546@db.xjuqvzvfvmunmqhgaflr.supabase.co:5432/postgres?sslmode=require\" kinrai-backend-test)",
       "Bash(timeout:*)",
       "Bash(if exist build rmdir /S /Q build)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git mv:*)"
     ],
     "deny": []
   }

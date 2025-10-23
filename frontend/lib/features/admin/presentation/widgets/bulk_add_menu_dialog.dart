@@ -8,11 +8,7 @@ class DropdownOption {
   final String key;
   final String name;
 
-  DropdownOption({
-    required this.id,
-    required this.key,
-    required this.name,
-  });
+  DropdownOption({required this.id, required this.key, required this.name});
 
   factory DropdownOption.fromJson(Map<String, dynamic> json) {
     return DropdownOption(
@@ -39,7 +35,7 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
   String? _selectedFoodTypeKey;
   String? _selectedCategoryKey;
   String? _selectedSubcategoryKey;
-  List<String> _selectedProteinTypeKeys = [];
+  final List<String> _selectedProteinTypeKeys = [];
 
   List<DropdownOption> _foodTypes = [];
   List<DropdownOption> _categories = [];
@@ -68,10 +64,7 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
     });
 
     try {
-      await Future.wait([
-        _loadFoodTypes(),
-        _loadProteinTypes(),
-      ]);
+      await Future.wait([_loadFoodTypes(), _loadProteinTypes()]);
     } catch (e) {
       AppLogger.error('Error loading dropdown data', e);
     } finally {
@@ -94,13 +87,15 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
 
         setState(() {
           _foodTypes = foodTypesData
-              .map((item) => DropdownOption(
-                    id: item['id'],
-                    key: item['key'],
-                    name: item['Translations']?.isNotEmpty == true
-                        ? item['Translations'][0]['name']
-                        : item['key'],
-                  ))
+              .map(
+                (item) => DropdownOption(
+                  id: item['id'],
+                  key: item['key'],
+                  name: item['Translations']?.isNotEmpty == true
+                      ? item['Translations'][0]['name']
+                      : item['key'],
+                ),
+              )
               .toList();
         });
       }
@@ -120,7 +115,8 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
 
       final response = await http.get(
         Uri.parse(
-            'http://localhost:8000/api/v1/categories/food-type/${foodType.id}?lang=en'),
+          'http://localhost:8000/api/v1/categories/food-type/${foodType.id}?lang=en',
+        ),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -130,13 +126,15 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
 
         setState(() {
           _categories = categoriesData
-              .map((item) => DropdownOption(
-                    id: item['id'],
-                    key: item['key'],
-                    name: item['Translations']?.isNotEmpty == true
-                        ? item['Translations'][0]['name']
-                        : item['key'],
-                  ))
+              .map(
+                (item) => DropdownOption(
+                  id: item['id'],
+                  key: item['key'],
+                  name: item['Translations']?.isNotEmpty == true
+                      ? item['Translations'][0]['name']
+                      : item['key'],
+                ),
+              )
               .toList();
 
           _selectedCategoryKey = null;
@@ -160,7 +158,8 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
 
       final response = await http.get(
         Uri.parse(
-            'http://localhost:8000/api/v1/subcategories/category/${category.id}?lang=en'),
+          'http://localhost:8000/api/v1/subcategories/category/${category.id}?lang=en',
+        ),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -170,13 +169,15 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
 
         setState(() {
           _subcategories = subcategoriesData
-              .map((item) => DropdownOption(
-                    id: item['id'],
-                    key: item['key'],
-                    name: item['Translations']?.isNotEmpty == true
-                        ? item['Translations'][0]['name']
-                        : item['key'],
-                  ))
+              .map(
+                (item) => DropdownOption(
+                  id: item['id'],
+                  key: item['key'],
+                  name: item['Translations']?.isNotEmpty == true
+                      ? item['Translations'][0]['name']
+                      : item['key'],
+                ),
+              )
               .toList();
 
           _selectedSubcategoryKey = null;
@@ -200,11 +201,13 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
 
         setState(() {
           _proteinTypes = proteinTypesData
-              .map((item) => DropdownOption(
-                    id: item['id'],
-                    key: item['key'],
-                    name: item['name'],
-                  ))
+              .map(
+                (item) => DropdownOption(
+                  id: item['id'],
+                  key: item['key'],
+                  name: item['name'],
+                ),
+              )
               .toList();
         });
       }
@@ -271,10 +274,7 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                     SizedBox(height: 4),
                     Text(
                       'Create multiple menus with different proteins at once',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -313,7 +313,9 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                               items: _foodTypes.map((foodType) {
                                 return DropdownMenuItem<String>(
                                   value: foodType.key,
-                                  child: Text('${foodType.key} - ${foodType.name}'),
+                                  child: Text(
+                                    '${foodType.key} - ${foodType.name}',
+                                  ),
                                 );
                               }).toList(),
                               onChanged: (String? newValue) {
@@ -377,7 +379,9 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                         items: _subcategories.map((subcategory) {
                           return DropdownMenuItem<String>(
                             value: subcategory.key,
-                            child: Text('${subcategory.key} - ${subcategory.name}'),
+                            child: Text(
+                              '${subcategory.key} - ${subcategory.name}',
+                            ),
                           );
                         }).toList(),
                         onChanged: _selectedCategoryKey == null
@@ -400,10 +404,7 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                       ),
                       const Text(
                         'Choose multiple proteins to create menus for each',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       const SizedBox(height: 12),
                       Container(
@@ -416,7 +417,8 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                           spacing: 8,
                           runSpacing: 8,
                           children: _proteinTypes.map((protein) {
-                            final isSelected = _selectedProteinTypeKeys.contains(protein.key);
+                            final isSelected = _selectedProteinTypeKeys
+                                .contains(protein.key);
                             return FilterChip(
                               label: Text(protein.name),
                               selected: isSelected,
@@ -425,7 +427,9 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                                   if (selected) {
                                     _selectedProteinTypeKeys.add(protein.key);
                                   } else {
-                                    _selectedProteinTypeKeys.remove(protein.key);
+                                    _selectedProteinTypeKeys.remove(
+                                      protein.key,
+                                    );
                                   }
                                 });
                               },
@@ -440,10 +444,7 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                           padding: EdgeInsets.only(top: 8, left: 12),
                           child: Text(
                             'Please select at least one protein type',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 12,
-                            ),
+                            style: TextStyle(color: Colors.red, fontSize: 12),
                           ),
                         ),
                       const SizedBox(height: 24),
@@ -492,7 +493,8 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                       ),
 
                       // Preview
-                      if (_selectedProteinTypeKeys.isNotEmpty && _selectedSubcategoryKey != null)
+                      if (_selectedProteinTypeKeys.isNotEmpty &&
+                          _selectedSubcategoryKey != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 24),
                           child: Card(
@@ -504,7 +506,10 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                                 children: [
                                   const Row(
                                     children: [
-                                      Icon(Icons.info_outline, color: Colors.blue),
+                                      Icon(
+                                        Icons.info_outline,
+                                        color: Colors.blue,
+                                      ),
                                       SizedBox(width: 8),
                                       Text(
                                         'Preview',
@@ -522,12 +527,19 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                                   ),
                                   const SizedBox(height: 8),
                                   ...(_selectedProteinTypeKeys.map((key) {
-                                    final protein = _proteinTypes.firstWhere((p) => p.key == key);
-                                    final subcategory = _subcategories.firstWhere(
-                                      (s) => s.key == _selectedSubcategoryKey,
+                                    final protein = _proteinTypes.firstWhere(
+                                      (p) => p.key == key,
                                     );
+                                    final subcategory = _subcategories
+                                        .firstWhere(
+                                          (s) =>
+                                              s.key == _selectedSubcategoryKey,
+                                        );
                                     return Padding(
-                                      padding: const EdgeInsets.only(left: 16, bottom: 4),
+                                      padding: const EdgeInsets.only(
+                                        left: 16,
+                                        bottom: 4,
+                                      ),
                                       child: Text(
                                         '• ${subcategory.name}${protein.name}',
                                         style: const TextStyle(fontSize: 12),
@@ -560,7 +572,9 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                       if (_selectedProteinTypeKeys.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Please select at least one protein type'),
+                            content: Text(
+                              'Please select at least one protein type',
+                            ),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -574,7 +588,9 @@ class _BulkAddMenuDialogState extends State<BulkAddMenuDialog> {
                     backgroundColor: Colors.orange,
                     foregroundColor: Colors.white,
                   ),
-                  child: Text('Create ${_selectedProteinTypeKeys.length} Menu(s)'),
+                  child: Text(
+                    'Create ${_selectedProteinTypeKeys.length} Menu(s)',
+                  ),
                 ),
               ],
             ),

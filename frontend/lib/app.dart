@@ -24,7 +24,7 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation>
     with TickerProviderStateMixin {
   int _currentIndex = 0;
-  bool _isCollapsed = true;
+  bool _isCollapsed = false; // Default to expanded on desktop
   late AnimationController _animationController;
 
   final List<Widget> _pages = [
