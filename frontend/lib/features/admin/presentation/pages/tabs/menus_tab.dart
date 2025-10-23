@@ -52,15 +52,12 @@ class _MenusTabState extends State<MenusTab> {
   }
 
   Future<void> _loadMenus({bool refresh = false}) async {
-    if (refresh) {
-      setState(() {
+    setState(() {
+      if (refresh) {
         currentPage = 1;
         menus.clear();
         hasMore = true;
-      });
-    }
-
-    setState(() {
+      }
       isLoading = true;
       errorMessage = null;
     });
@@ -70,22 +67,26 @@ class _MenusTabState extends State<MenusTab> {
       apiClient.initialize();
       final response = await apiClient.get('/menus?page=$currentPage&limit=20');
 
-      setState(() {
-        menus = response.data['data'] ?? [];
-        final pagination = response.data['pagination'];
-        if (pagination != null) {
-          totalPages = pagination['total_pages'] ?? 1;
-          totalMenus = pagination['total'] ?? 0;
-          hasMore = pagination['has_next'] ?? false;
-        }
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          menus = response.data['data'] ?? [];
+          final pagination = response.data['pagination'];
+          if (pagination != null) {
+            totalPages = pagination['total_pages'] ?? 1;
+            totalMenus = pagination['total'] ?? 0;
+            hasMore = pagination['has_next'] ?? false;
+          }
+          isLoading = false;
+        });
+      }
     } catch (e) {
       AppLogger.error('Error loading menus', e);
-      setState(() {
-        errorMessage = 'Failed to load menus: ${e.toString()}';
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          errorMessage = 'Failed to load menus: ${e.toString()}';
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -102,24 +103,28 @@ class _MenusTabState extends State<MenusTab> {
       apiClient.initialize();
       final response = await apiClient.get('/menus?page=$currentPage&limit=20');
 
-      setState(() {
-        final newMenus = response.data['data'] ?? [];
-        menus.addAll(newMenus);
+      if (mounted) {
+        setState(() {
+          final newMenus = response.data['data'] ?? [];
+          menus.addAll(newMenus);
 
-        final pagination = response.data['pagination'];
-        if (pagination != null) {
-          totalPages = pagination['total_pages'] ?? 1;
-          totalMenus = pagination['total'] ?? 0;
-          hasMore = pagination['has_next'] ?? false;
-        }
-        isLoadingMore = false;
-      });
+          final pagination = response.data['pagination'];
+          if (pagination != null) {
+            totalPages = pagination['total_pages'] ?? 1;
+            totalMenus = pagination['total'] ?? 0;
+            hasMore = pagination['has_next'] ?? false;
+          }
+          isLoadingMore = false;
+        });
+      }
     } catch (e) {
       AppLogger.error('Error loading more menus', e);
-      setState(() {
-        currentPage--; // Revert page number on error
-        isLoadingMore = false;
-      });
+      if (mounted) {
+        setState(() {
+          currentPage--; // Revert page number on error
+          isLoadingMore = false;
+        });
+      }
     }
   }
 
@@ -592,7 +597,8 @@ class _MenusTabState extends State<MenusTab> {
                   itemCount: menus.length,
                   itemBuilder: (context, index) {
                     final menu = menus[index];
-                    return _buildMenuCard(menu);
+                    final menuId = menu['id'] as int;
+                    return _buildMenuCard(menu, key: ValueKey(menuId));
                   },
                 )
               else
@@ -725,7 +731,7 @@ class _MenusTabState extends State<MenusTab> {
     );
   }
 
-  Widget _buildMenuCard(dynamic menu) {
+  Widget _buildMenuCard(dynamic menu, {Key? key}) {
     final displayName = _getMenuDisplayName(menu);
     final mealTime = menu['meal_time'] ?? 'UNKNOWN';
     final isActive = menu['is_active'] ?? false;
@@ -746,6 +752,7 @@ class _MenusTabState extends State<MenusTab> {
     }
 
     return Card(
+      key: key,
       elevation: isSelected ? 4 : 2,
       color: isSelected ? Colors.orange.shade50 : null,
       child: InkWell(

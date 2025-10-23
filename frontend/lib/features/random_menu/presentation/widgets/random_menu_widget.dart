@@ -41,15 +41,19 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
       final randomMenu = await _getPersonalizedRandomMenu(
         language: languageProvider.currentLanguageCode,
       );
-      setState(() {
-        _randomMenu = randomMenu;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _randomMenu = randomMenu;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = l10n.cannotRandomMenu;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = l10n.cannotRandomMenu;
+          _isLoading = false;
+        });
+      }
     }
   }
 

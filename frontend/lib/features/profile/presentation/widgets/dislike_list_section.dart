@@ -51,11 +51,11 @@ class _DislikeListSectionState extends State<DislikeListSection> {
       if (mounted) {
         setState(() {
           _dislikes = dislikes;
+          _isLoadingDislikes = false;
         });
       }
     } catch (e) {
       // Handle error silently for now
-    } finally {
       if (mounted) {
         setState(() {
           _isLoadingDislikes = false;
@@ -179,7 +179,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +275,10 @@ class _DislikeListSectionState extends State<DislikeListSection> {
                   : Column(
                       children: [
                         ...(_showAllDislikes ? _dislikes : _dislikes.take(3)).map((dislike) {
-                          return _buildDislikeItem(dislike, languageProvider);
+                          return KeyedSubtree(
+                            key: ValueKey(dislike.menuId),
+                            child: _buildDislikeItem(dislike, languageProvider),
+                          );
                         }),
                         if (_dislikes.length > 3 && !_showAllDislikes) ...[
                           const SizedBox(height: 12),

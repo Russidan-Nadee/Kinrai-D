@@ -69,10 +69,11 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
     try {
       if (_isDisliked) {
         await _removeDislike(menuId: widget.menu.id);
-        setState(() {
-          _isDisliked = false;
-        });
         if (mounted) {
+          setState(() {
+            _isDisliked = false;
+            _isLoading = false;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('ลบออกจากรายการไม่ชอบแล้ว'),
@@ -82,10 +83,11 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
         }
       } else {
         await _addDislike(menuId: widget.menu.id);
-        setState(() {
-          _isDisliked = true;
-        });
         if (mounted) {
+          setState(() {
+            _isDisliked = true;
+            _isLoading = false;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('เพิ่มในรายการไม่ชอบแล้ว'),
@@ -98,6 +100,9 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
     } catch (e) {
       AppLogger.error('[RandomMenuCard] Failed to toggle dislike', e);
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
@@ -105,18 +110,12 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
           ),
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final menuName = widget.menu.name;
     final mealTime = widget.menu.mealTime;
     final contains = widget.menu.contains?.length ?? 0;
@@ -168,15 +167,15 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
                 const SizedBox(height: 8),
 
                 // Status - Always active for random menus
-                Row(
+                const Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.check_circle,
                       color: Colors.green,
                       size: 16,
                     ),
-                    const SizedBox(width: 4),
-                    const Text(
+                    SizedBox(width: 4),
+                    Text(
                       'Active',
                       style: TextStyle(
                         color: Colors.green,
