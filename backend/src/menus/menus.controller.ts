@@ -18,6 +18,8 @@ import { UpdateMenuDto } from './dto/update-menu.dto';
 import { FilterMenuDto } from './dto/filter-menu.dto';
 import { SearchMenuDto } from './dto/search-menu.dto';
 import { MenuRecommendationQueryDto } from './dto/menu-recommendation.dto';
+import { CreateBatchMenusDto } from './dto/create-batch-menus.dto';
+import { DeleteBatchMenusDto } from './dto/delete-batch-menus.dto';
 import {
   AdminOnly,
   OptionalAuth,
@@ -42,6 +44,30 @@ export class MenusController {
   })
   create(@Body() createMenuDto: CreateMenuDto) {
     return this.menusService.create(createMenuDto);
+  }
+
+  @Post('batch')
+  @AdminOnly()
+  @ApiOperation({ summary: 'Create multiple menu items at once (Admin only)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Batch menu creation completed.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  createBatch(@Body() createBatchMenusDto: CreateBatchMenusDto) {
+    return this.menusService.createBatch(createBatchMenusDto.menus);
+  }
+
+  @Delete('batch')
+  @AdminOnly()
+  @ApiOperation({ summary: 'Delete multiple menu items at once (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Batch menu deletion completed.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  deleteBatch(@Body() deleteBatchMenusDto: DeleteBatchMenusDto) {
+    return this.menusService.deleteBatch(deleteBatchMenusDto.ids);
   }
 
   @Get()

@@ -201,19 +201,13 @@ class _MenusTabState extends State<MenusTab> {
         );
       }
 
-      int successCount = 0;
-      int failCount = 0;
+      // Use batch endpoint instead of sequential calls
+      final response = await apiClient.post('/menus/batch', data: {
+        'menus': menusData,
+      });
 
-      // Create menus one by one
-      for (final menuData in menusData) {
-        try {
-          await apiClient.post('/menus', data: menuData);
-          successCount++;
-        } catch (e) {
-          failCount++;
-          AppLogger.error('Error creating menu', e);
-        }
-      }
+      final successCount = response.data['created'] ?? 0;
+      final failCount = response.data['failed'] ?? 0;
 
       if (mounted) {
         if (failCount == 0) {
@@ -397,19 +391,13 @@ class _MenusTabState extends State<MenusTab> {
         );
       }
 
-      int successCount = 0;
-      int failCount = 0;
+      // Use batch endpoint instead of sequential calls
+      final response = await apiClient.delete('/menus/batch', data: {
+        'ids': menuIds,
+      });
 
-      // Delete menus one by one
-      for (final menuId in menuIds) {
-        try {
-          await apiClient.delete('/menus/$menuId');
-          successCount++;
-        } catch (e) {
-          failCount++;
-          AppLogger.error('Error deleting menu $menuId', e);
-        }
-      }
+      final successCount = response.data['deleted'] ?? 0;
+      final failCount = response.data['failed'] ?? 0;
 
       if (mounted) {
         if (failCount == 0) {

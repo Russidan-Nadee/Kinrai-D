@@ -1127,4 +1127,146 @@ export class MenusService {
 
     return menuWithRating;
   }
+
+  // Batch Operations
+  @CacheEvictByTags(['menus', 'menu_list'])
+  async createBatch(menusData: CreateMenuDto[]) {
+    const results: any[] = [];
+    const errors: any[] = [];
+
+    // Use transaction for atomic operation
+    try {
+      await this.prisma.$transaction(async (prisma) => {
+        for (const menuData of menusData) {
+          try {
+            // Validate subcategory
+            const subcategory = await prisma.subcategory.findUnique({
+              where: { id: menuData.subcategory_id },
+            });
+
+            if (!subcategory) {
+              errors.push({
+                menu: menuData,
+                error: `Subcategory ${menuData.subcategory_id} not found`,
+              });
+              continue;
+            }
+
+            // Validate protein type if provided
+            if (menuData.protein_type_id) {
+              const proteinType = await prisma.proteinType.findUnique({
+                where: { id: menuData.protein_type_id },
+              });
+              if (!proteinType) {
+                errors.push({
+                  menu: menuData,
+                  error: `Protein type ${menuData.protein_type_id} not found`,
+                });
+                continue;
+              }
+            }
+
+            // Check for duplicates
+            const existing = await prisma.menu.findFirst({
+              where: {
+                subcategory_id: menuData.subcategory_id,
+                protein_type_id: menuData.protein_type_id,
+              },
+            });
+
+            if (existing) {
+              errors.push({
+                menu: menuData,
+                error: 'Menu already exists',
+              });
+              continue;
+            }
+
+            // Create menu
+            const created = await prisma.menu.create({
+              data: {
+                subcategory_id: menuData.subcategory_id,
+                protein_type_id: menuData.protein_type_id,
+                image_url: menuData.image_url,
+                contains: menuData.contains,
+                meal_time: menuData.meal_time,
+              },
+              include: {
+                Subcategory: {
+                  include: { Translations: true },
+                },
+                ProteinType: {
+                  include: { Translations: true },
+                },
+              },
+            });
+
+            results.push(created);
+          } catch (error) {
+            errors.push({
+              menu: menuData,
+              error: error.message || 'Unknown error',
+            });
+          }
+        }
+      });
+
+      return {
+        success: true,
+        total: menusData.length,
+        created: results.length,
+        failed: errors.length,
+        results,
+        errors: errors.length > 0 ? errors : undefined,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @CacheEvictByTags(['menus', 'menu_list'])
+  async deleteBatch(ids: number[]) {
+    const results: any[] = [];
+    const errors: any[] = [];
+
+    try {
+      for (const id of ids) {
+        try {
+          const menu = await this.prisma.menu.findUnique({
+            where: { id },
+          });
+
+          if (!menu) {
+            errors.push({
+              id,
+              error: 'Menu not found',
+            });
+            continue;
+          }
+
+          await this.prisma.menu.delete({
+            where: { id },
+          });
+
+          results.push({ id, deleted: true });
+        } catch (error) {
+          errors.push({
+            id,
+            error: error.message || 'Unknown error',
+          });
+        }
+      }
+
+      return {
+        success: true,
+        total: ids.length,
+        deleted: results.length,
+        failed: errors.length,
+        results,
+        errors: errors.length > 0 ? errors : undefined,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
