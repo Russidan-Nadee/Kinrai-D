@@ -6,6 +6,7 @@ class CacheService {
   static const String _favoritesBox = 'favorites';
   static const String _dislikesBox = 'dislikes';
   static const String _categoriesBox = 'categories';
+  static const String _proteinPreferencesBox = 'protein_preferences';
   static const String _metadataBox = 'metadata';
 
   /// Initialize Hive and open all boxes
@@ -17,6 +18,7 @@ class CacheService {
     await Hive.openBox(_favoritesBox);
     await Hive.openBox(_dislikesBox);
     await Hive.openBox(_categoriesBox);
+    await Hive.openBox(_proteinPreferencesBox);
     await Hive.openBox(_metadataBox);
   }
 
@@ -304,6 +306,79 @@ class CacheService {
     }
   }
 
+  // ==================== PROTEIN PREFERENCES ====================
+
+  /// Get cached available protein types
+  static Future<List<Map<String, dynamic>>?> getAvailableProteinTypes() async {
+    try {
+      final box = Hive.box(_proteinPreferencesBox);
+      final data = box.get('available_protein_types');
+
+      if (data == null) return null;
+
+      // Check if expired (10 minutes - master data doesn't change often)
+      if (_isExpired('available_protein_types', const Duration(minutes: 10))) {
+        return null;
+      }
+
+      if (data is List) {
+        return data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Cache available protein types
+  static Future<void> saveAvailableProteinTypes(List<Map<String, dynamic>> proteinTypes) async {
+    final box = Hive.box(_proteinPreferencesBox);
+    await box.put('available_protein_types', proteinTypes);
+    await _updateTimestamp('available_protein_types');
+  }
+
+  /// Get cached user protein preferences
+  static Future<List<Map<String, dynamic>>?> getUserProteinPreferences() async {
+    try {
+      final box = Hive.box(_proteinPreferencesBox);
+      final data = box.get('user_protein_preferences');
+
+      if (data == null) return null;
+
+      // Check if expired (5 minutes - user preferences change more often)
+      if (_isExpired('user_protein_preferences', const Duration(minutes: 5))) {
+        return null;
+      }
+
+      if (data is List) {
+        return data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Cache user protein preferences
+  static Future<void> saveUserProteinPreferences(List<Map<String, dynamic>> preferences) async {
+    final box = Hive.box(_proteinPreferencesBox);
+    await box.put('user_protein_preferences', preferences);
+    await _updateTimestamp('user_protein_preferences');
+  }
+
+  /// Clear all protein preferences cache
+  static Future<void> clearProteinPreferences() async {
+    final box = Hive.box(_proteinPreferencesBox);
+    final metaBox = Hive.box(_metadataBox);
+
+    await box.delete('available_protein_types');
+    await box.delete('user_protein_preferences');
+    await metaBox.delete('available_protein_types_timestamp');
+    await metaBox.delete('user_protein_preferences_timestamp');
+  }
+
   // ==================== DISLIKES ====================
 
   /// Get cached dislikes
@@ -348,6 +423,7 @@ class CacheService {
     await clearFavorites();
     await clearAdminMenus();
     await clearCategories();
+    await clearProteinPreferences();
     await clearDislikes();
   }
 
