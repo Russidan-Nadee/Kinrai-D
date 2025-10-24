@@ -16,7 +16,8 @@ class ProteinPreferencesSection extends StatefulWidget {
   State<ProteinPreferencesSection> createState() => _ProteinPreferencesSectionState();
 }
 
-class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
+class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
+    with AutomaticKeepAliveClientMixin {
   late final GetAvailableProteinTypes _getAvailableProteinTypes;
   late final GetUserProteinPreferences _getUserProteinPreferences;
   late final SetProteinPreference _setProteinPreference;
@@ -25,6 +26,9 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
   List<ProteinTypeEntity> _availableProteinTypes = [];
   List<ProteinPreferenceEntity> _userProteinPreferences = [];
   bool _isLoadingProteins = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -41,9 +45,12 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
   }
 
   Future<void> _loadProteinPreferences() async {
-    setState(() {
-      _isLoadingProteins = true;
-    });
+    // Only show loading if we don't have data yet
+    if (_availableProteinTypes.isEmpty) {
+      setState(() {
+        _isLoadingProteins = true;
+      });
+    }
 
     try {
       final languageProvider = Provider.of<LanguageProvider>(
@@ -63,11 +70,11 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
         setState(() {
           _availableProteinTypes = availableTypes;
           _userProteinPreferences = userPreferences;
+          _isLoadingProteins = false;
         });
       }
     } catch (e) {
       // Handle error silently for now
-    } finally {
       if (mounted) {
         setState(() {
           _isLoadingProteins = false;
@@ -134,6 +141,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final languageProvider = Provider.of<LanguageProvider>(context);
 
     return Column(
@@ -184,7 +192,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
               ),
             ],
           ),
-          child: _isLoadingProteins
+          child: _isLoadingProteins && _availableProteinTypes.isEmpty
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
@@ -193,7 +201,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
                     ),
                   ),
                 )
-              : _availableProteinTypes.isEmpty
+              : _availableProteinTypes.isEmpty && !_isLoadingProteins
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20),

@@ -14,7 +14,8 @@ class DislikeListSection extends StatefulWidget {
   State<DislikeListSection> createState() => _DislikeListSectionState();
 }
 
-class _DislikeListSectionState extends State<DislikeListSection> {
+class _DislikeListSectionState extends State<DislikeListSection>
+    with AutomaticKeepAliveClientMixin {
   late final GetUserDislikes _getUserDislikes;
   late final RemoveDislike _removeDislike;
   late final RemoveBulkDislikes _removeBulkDislikes;
@@ -24,6 +25,9 @@ class _DislikeListSectionState extends State<DislikeListSection> {
   bool _isBulkMode = false;
   Set<int> _selectedMenuIds = {};
   bool _showAllDislikes = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -37,9 +41,12 @@ class _DislikeListSectionState extends State<DislikeListSection> {
   }
 
   Future<void> _loadDislikes() async {
-    setState(() {
-      _isLoadingDislikes = true;
-    });
+    // Only show loading if we don't have data yet
+    if (_dislikes.isEmpty) {
+      setState(() {
+        _isLoadingDislikes = true;
+      });
+    }
 
     try {
       final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
@@ -179,6 +186,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
     return Column(
@@ -247,14 +255,14 @@ class _DislikeListSectionState extends State<DislikeListSection> {
               ),
             ],
           ),
-          child: _isLoadingDislikes
+          child: _isLoadingDislikes && _dislikes.isEmpty
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: CircularProgressIndicator(color: Color(0xFFFF6B35)),
                   ),
                 )
-              : _dislikes.isEmpty
+              : _dislikes.isEmpty && !_isLoadingDislikes
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(20),
