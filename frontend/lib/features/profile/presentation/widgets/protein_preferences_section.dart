@@ -2,147 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../protein_preferences/domain/entities/protein_preference_entity.dart';
-import '../../../protein_preferences/domain/usecases/get_available_protein_types.dart';
-import '../../../protein_preferences/domain/usecases/get_user_protein_preferences.dart';
-import '../../../protein_preferences/domain/usecases/set_protein_preference.dart';
-import '../../../protein_preferences/domain/usecases/remove_protein_preference.dart';
-import '../../../protein_preferences/data/repositories/protein_preference_repository_impl.dart';
-import '../../../protein_preferences/data/datasources/protein_preference_remote_data_source.dart';
+import '../providers/profile_provider.dart';
 
-class ProteinPreferencesSection extends StatefulWidget {
+class ProteinPreferencesSection extends StatelessWidget {
   const ProteinPreferencesSection({super.key});
 
-  @override
-  State<ProteinPreferencesSection> createState() => _ProteinPreferencesSectionState();
-}
+  Future<void> _toggleProteinPreference(
+    BuildContext context,
+    int proteinTypeId,
+    bool exclude,
+  ) async {
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
-class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
-    with AutomaticKeepAliveClientMixin {
-  late final GetAvailableProteinTypes _getAvailableProteinTypes;
-  late final GetUserProteinPreferences _getUserProteinPreferences;
-  late final SetProteinPreference _setProteinPreference;
-  late final RemoveProteinPreference _removeProteinPreference;
+    final success = await profileProvider.toggleProteinPreference(
+      proteinTypeId,
+      exclude,
+      languageProvider.currentLanguageCode,
+    );
 
-  List<ProteinTypeEntity> _availableProteinTypes = [];
-  List<ProteinPreferenceEntity> _userProteinPreferences = [];
-  bool _isLoadingProteins = false;
-
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize use cases
-    final dataSource = ProteinPreferenceRemoteDataSourceImpl();
-    final repository = ProteinPreferenceRepositoryImpl(remoteDataSource: dataSource);
-    _getAvailableProteinTypes = GetAvailableProteinTypes(repository);
-    _getUserProteinPreferences = GetUserProteinPreferences(repository);
-    _setProteinPreference = SetProteinPreference(repository);
-    _removeProteinPreference = RemoveProteinPreference(repository);
-
-    _loadProteinPreferences();
-  }
-
-  Future<void> _loadProteinPreferences() async {
-    // Only show loading if we don't have data yet
-    if (_availableProteinTypes.isEmpty) {
-      setState(() {
-        _isLoadingProteins = true;
-      });
-    }
-
-    try {
-      final languageProvider = Provider.of<LanguageProvider>(
-        context,
-        listen: false,
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? (languageProvider.currentLanguageCode == 'en'
+                    ? 'Protein preference updated'
+                    : 'อัพเดตความชอบเนื้อสัตว์แล้ว')
+                : (languageProvider.currentLanguageCode == 'en'
+                    ? 'An error occurred. Please try again'
+                    : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
       );
-
-      // Load both in parallel for better performance
-      final results = await Future.wait([
-        _getAvailableProteinTypes(language: languageProvider.currentLanguageCode),
-        _getUserProteinPreferences(language: languageProvider.currentLanguageCode),
-      ]);
-
-      final availableTypes = results[0] as List<ProteinTypeEntity>;
-      final userPreferences = results[1] as List<ProteinPreferenceEntity>;
-
-      if (mounted) {
-        setState(() {
-          _availableProteinTypes = availableTypes;
-          _userProteinPreferences = userPreferences;
-          _isLoadingProteins = false;
-        });
-      }
-    } catch (e) {
-      // Handle error silently for now
-      if (mounted) {
-        setState(() {
-          _isLoadingProteins = false;
-        });
-      }
     }
-  }
-
-  Future<void> _toggleProteinPreference(int proteinTypeId, bool exclude) async {
-    final languageProvider = Provider.of<LanguageProvider>(
-      context,
-      listen: false,
-    );
-
-    try {
-      if (exclude) {
-        // Add to preferences (don't eat)
-        await _setProteinPreference(
-          proteinTypeId: proteinTypeId,
-          exclude: true,
-        );
-      } else {
-        // Remove from preferences (eat normally)
-        await _removeProteinPreference(
-          proteinTypeId: proteinTypeId,
-        );
-      }
-
-      await _loadProteinPreferences(); // Reload the list
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              languageProvider.currentLanguageCode == 'en'
-                  ? 'Protein preference updated'
-                  : 'อัพเดตความชอบเนื้อสัตว์แล้ว',
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              languageProvider.currentLanguageCode == 'en'
-                  ? 'An error occurred. Please try again'
-                  : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  bool _isProteinExcluded(int proteinTypeId) {
-    return _userProteinPreferences.any((pref) =>
-        pref.proteinTypeId == proteinTypeId && pref.exclude
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    final profileProvider = Provider.of<ProfileProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
 
     return Column(
@@ -193,7 +92,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
               ),
             ],
           ),
-          child: _isLoadingProteins && _availableProteinTypes.isEmpty
+          child: profileProvider.isLoadingProteins && profileProvider.availableProteinTypes.isEmpty
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
@@ -202,7 +101,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
                     ),
                   ),
                 )
-              : _availableProteinTypes.isEmpty && !_isLoadingProteins
+              : profileProvider.availableProteinTypes.isEmpty && !profileProvider.isLoadingProteins
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -221,7 +120,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Show current restrictions if any
-                    if (_userProteinPreferences.isNotEmpty) ...[
+                    if (profileProvider.userProteinPreferences.isNotEmpty) ...[
                       Text(
                         languageProvider.currentLanguageCode == 'en'
                             ? 'Don\'t eat:'
@@ -236,7 +135,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
                       Wrap(
                         spacing: 6,
                         runSpacing: 6,
-                        children: _userProteinPreferences.map((pref) {
+                        children: profileProvider.userProteinPreferences.map((pref) {
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
@@ -260,7 +159,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
                       const SizedBox(height: 16),
                     ],
                     // All protein types with responsive grid
-                    _buildProteinGrid(languageProvider),
+                    _buildProteinGrid(context, languageProvider),
                   ],
                 ),
         ),
@@ -268,9 +167,11 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
     );
   }
 
-  Widget _buildProteinGrid(LanguageProvider languageProvider) {
+  Widget _buildProteinGrid(BuildContext context, LanguageProvider languageProvider) {
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+
     return LayoutBuilder(
-      builder: (context, constraints) {
+      builder: (builderContext, constraints) {
         // Calculate how many columns can fit
         double itemWidth = 280; // Minimum width for each item
         int crossAxisCount = (constraints.maxWidth / itemWidth).floor();
@@ -279,8 +180,8 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
         // If screen is very narrow (mobile), use single column
         if (constraints.maxWidth < 500) {
           return Column(
-            children: _availableProteinTypes.map((proteinType) {
-              return _buildProteinItem(proteinType, languageProvider, true);
+            children: profileProvider.availableProteinTypes.map((proteinType) {
+              return _buildProteinItem(context, proteinType, languageProvider, true);
             }).toList(),
           );
         }
@@ -295,23 +196,24 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
             mainAxisSpacing: 12,
             childAspectRatio: 4.5,
           ),
-          itemCount: _availableProteinTypes.length,
-          itemBuilder: (context, index) {
-            return _buildProteinItem(_availableProteinTypes[index], languageProvider, false);
+          itemCount: profileProvider.availableProteinTypes.length,
+          itemBuilder: (gridContext, index) {
+            return _buildProteinItem(context, profileProvider.availableProteinTypes[index], languageProvider, false);
           },
         );
       },
     );
   }
 
-  Widget _buildProteinItem(ProteinTypeEntity proteinType, LanguageProvider languageProvider, bool isMobile) {
-    final isExcluded = _isProteinExcluded(proteinType.id);
+  Widget _buildProteinItem(BuildContext context, ProteinTypeEntity proteinType, LanguageProvider languageProvider, bool isMobile) {
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    final isExcluded = profileProvider.isProteinExcluded(proteinType.id);
 
     return Container(
       width: isMobile ? double.infinity : null,
       margin: isMobile ? const EdgeInsets.only(bottom: 8) : EdgeInsets.zero,
       child: InkWell(
-        onTap: () => _toggleProteinPreference(proteinType.id, !isExcluded),
+        onTap: () => _toggleProteinPreference(context, proteinType.id, !isExcluded),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: EdgeInsets.all(isMobile ? 16 : 12),

@@ -34,9 +34,7 @@ class DislikeRepositoryImpl implements DislikeRepository {
 
       if (cachedData != null && cachedData.isNotEmpty) {
         AppLogger.info('🎯 [CACHE HIT] Dislikes loaded from cache (${cachedData.length} items)');
-        // Background refresh
-        _refreshDislikesInBackground(language: language);
-
+        // Return cached data immediately - no background refresh
         return cachedData
             .map((json) => DislikeEntity.fromJson(json as Map<String, dynamic>))
             .toList();
@@ -61,18 +59,6 @@ class DislikeRepositoryImpl implements DislikeRepository {
     }
 
     return entities;
-  }
-
-  /// Background refresh dislikes
-  Future<void> _refreshDislikesInBackground({String language = 'th'}) async {
-    try {
-      final models = await remoteDataSource.getUserDislikes(language: language);
-      final entities = models.map((model) => model.toEntity(language: language)).toList();
-      final jsonList = entities.map((entity) => entity.toJson()).toList();
-      await CacheService.saveDislikes(jsonList);
-    } catch (e) {
-      // Background refresh failed: ignore
-    }
   }
 
   @override

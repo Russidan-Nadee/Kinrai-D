@@ -20,9 +20,7 @@ class ProteinPreferenceRepositoryImpl implements ProteinPreferenceRepository {
 
       if (cachedData != null && cachedData.isNotEmpty) {
         AppLogger.info('🎯 [CACHE HIT] Available protein types loaded from cache (${cachedData.length} items)');
-        // Background sync: Refresh cache in background
-        _refreshProteinTypesInBackground(language: language);
-
+        // Return cached data immediately - no background refresh to avoid UI flicker
         return cachedData.map((json) {
           return ProteinTypeEntity(
             id: json['id'] as int,
@@ -57,31 +55,13 @@ class ProteinPreferenceRepositoryImpl implements ProteinPreferenceRepository {
     return entities;
   }
 
-  /// Background refresh: Update cache without blocking UI
-  Future<void> _refreshProteinTypesInBackground({required String language}) async {
-    try {
-      final models = await remoteDataSource.getAvailableProteinTypes(language: language);
-      final entities = models.map((model) => model.toEntity(language: language)).toList();
-      final jsonList = entities.map((entity) => {
-        'id': entity.id,
-        'key': entity.key,
-        'name': entity.name,
-      }).toList();
-      await CacheService.saveAvailableProteinTypes(jsonList);
-    } catch (e) {
-      // Background refresh failed: ignore, cached data still valid
-    }
-  }
-
   @override
   Future<List<ProteinPreferenceEntity>> getUserProteinPreferences({String language = 'th'}) async {
     // Cache-first strategy
     try {
       final cachedData = await CacheService.getUserProteinPreferences();
       if (cachedData != null && cachedData.isNotEmpty) {
-        // Background sync
-        _refreshUserPreferencesInBackground(language: language);
-
+        // Return cached data immediately - no background refresh
         return cachedData.map((json) {
           return ProteinPreferenceEntity(
             proteinTypeId: json['protein_type_id'] as int,
@@ -111,22 +91,6 @@ class ProteinPreferenceRepositoryImpl implements ProteinPreferenceRepository {
     }
 
     return entities;
-  }
-
-  /// Background refresh for user preferences
-  Future<void> _refreshUserPreferencesInBackground({required String language}) async {
-    try {
-      final models = await remoteDataSource.getUserProteinPreferences(language: language);
-      final entities = models.map((model) => model.toEntity(language: language)).toList();
-      final jsonList = entities.map((entity) => {
-        'protein_type_id': entity.proteinTypeId,
-        'protein_type_name': entity.proteinTypeName,
-        'exclude': entity.exclude,
-      }).toList();
-      await CacheService.saveUserProteinPreferences(jsonList);
-    } catch (e) {
-      // Background refresh failed: ignore
-    }
   }
 
   @override

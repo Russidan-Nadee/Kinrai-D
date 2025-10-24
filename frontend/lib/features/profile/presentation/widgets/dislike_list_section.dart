@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
-import '../../../../core/di/injection.dart';
 import '../../../dislikes/domain/entities/dislike_entity.dart';
-import '../../../dislikes/domain/usecases/get_user_dislikes.dart';
-import '../../../dislikes/domain/usecases/remove_dislike.dart';
-import '../../../dislikes/domain/usecases/remove_bulk_dislikes.dart';
+import '../providers/profile_provider.dart';
 
 class DislikeListSection extends StatefulWidget {
   const DislikeListSection({super.key});
@@ -14,95 +11,32 @@ class DislikeListSection extends StatefulWidget {
   State<DislikeListSection> createState() => _DislikeListSectionState();
 }
 
-class _DislikeListSectionState extends State<DislikeListSection>
-    with AutomaticKeepAliveClientMixin {
-  late final GetUserDislikes _getUserDislikes;
-  late final RemoveDislike _removeDislike;
-  late final RemoveBulkDislikes _removeBulkDislikes;
-
-  List<DislikeEntity> _dislikes = [];
-  bool _isLoadingDislikes = false;
+class _DislikeListSectionState extends State<DislikeListSection> {
   bool _isBulkMode = false;
   Set<int> _selectedMenuIds = {};
   bool _showAllDislikes = false;
 
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-    // Get use cases from dependency injection
-    _getUserDislikes = getIt.get<GetUserDislikes>();
-    _removeDislike = getIt.get<RemoveDislike>();
-    _removeBulkDislikes = getIt.get<RemoveBulkDislikes>();
-
-    _loadDislikes();
-  }
-
-  Future<void> _loadDislikes() async {
-    // Only show loading if we don't have data yet
-    if (_dislikes.isEmpty) {
-      setState(() {
-        _isLoadingDislikes = true;
-      });
-    }
-
-    try {
-      final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-      final dislikes = await _getUserDislikes(language: languageProvider.currentLanguageCode);
-
-      // Sort dislikes alphabetically by menu name
-      dislikes.sort((a, b) => a.menuName.toLowerCase().compareTo(b.menuName.toLowerCase()));
-
-      if (mounted) {
-        setState(() {
-          _dislikes = dislikes;
-          _isLoadingDislikes = false;
-        });
-      }
-    } catch (e) {
-      // Handle error silently for now
-      if (mounted) {
-        setState(() {
-          _isLoadingDislikes = false;
-        });
-      }
-    }
-  }
-
   Future<void> _handleRemoveDislike(int menuId) async {
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
-    try {
-      await _removeDislike(menuId: menuId);
-      await _loadDislikes();
+    final success = await profileProvider.removeDislike(menuId, languageProvider.currentLanguageCode);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              languageProvider.currentLanguageCode == 'en'
-                  ? 'Removed from dislike list'
-                  : 'ลบออกจากรายการไม่ชอบแล้ว',
-            ),
-            backgroundColor: Colors.green,
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? (languageProvider.currentLanguageCode == 'en'
+                    ? 'Removed from dislike list'
+                    : 'ลบออกจากรายการไม่ชอบแล้ว')
+                : (languageProvider.currentLanguageCode == 'en'
+                    ? 'An error occurred. Please try again'
+                    : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
           ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              languageProvider.currentLanguageCode == 'en'
-                  ? 'An error occurred. Please try again'
-                  : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
     }
   }
 
@@ -126,8 +60,9 @@ class _DislikeListSectionState extends State<DislikeListSection>
   }
 
   void _selectAll() {
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
     setState(() {
-      _selectedMenuIds = _dislikes.map((d) => d.menuId).toSet();
+      _selectedMenuIds = profileProvider.dislikes.map((d) => d.menuId).toSet();
     });
   }
 
@@ -140,43 +75,37 @@ class _DislikeListSectionState extends State<DislikeListSection>
   Future<void> _handleRemoveBulkDislikes() async {
     if (_selectedMenuIds.isEmpty) return;
 
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final removedCount = _selectedMenuIds.length;
 
-    try {
-      await _removeBulkDislikes(menuIds: _selectedMenuIds.toList());
-      await _loadDislikes();
+    final success = await profileProvider.removeBulkDislikes(
+      _selectedMenuIds.toList(),
+      languageProvider.currentLanguageCode,
+    );
 
+    if (success) {
       setState(() {
         _selectedMenuIds.clear();
         _isBulkMode = false;
       });
+    }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              languageProvider.currentLanguageCode == 'en'
-                  ? 'Removed $removedCount items from dislike list'
-                  : 'ลบรายการที่ไม่ชอบ $removedCount รายการแล้ว',
-            ),
-            backgroundColor: Colors.green,
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? (languageProvider.currentLanguageCode == 'en'
+                    ? 'Removed $removedCount items from dislike list'
+                    : 'ลบรายการที่ไม่ชอบ $removedCount รายการแล้ว')
+                : (languageProvider.currentLanguageCode == 'en'
+                    ? 'An error occurred. Please try again'
+                    : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
           ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              languageProvider.currentLanguageCode == 'en'
-                  ? 'An error occurred. Please try again'
-                  : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
     }
   }
 
@@ -186,8 +115,10 @@ class _DislikeListSectionState extends State<DislikeListSection>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    final profileProvider = Provider.of<ProfileProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final dislikes = profileProvider.dislikes;
+    final isLoadingDislikes = profileProvider.isLoadingDislikes;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +138,7 @@ class _DislikeListSectionState extends State<DislikeListSection>
               ),
             ),
             const Spacer(),
-            if (_dislikes.isNotEmpty) ...[
+            if (dislikes.isNotEmpty) ...[
               if (!_isBulkMode)
                 TextButton.icon(
                   onPressed: _toggleBulkMode,
@@ -255,14 +186,14 @@ class _DislikeListSectionState extends State<DislikeListSection>
               ),
             ],
           ),
-          child: _isLoadingDislikes && _dislikes.isEmpty
+          child: isLoadingDislikes && dislikes.isEmpty
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: CircularProgressIndicator(color: Color(0xFFFF6B35)),
                   ),
                 )
-              : _dislikes.isEmpty && !_isLoadingDislikes
+              : dislikes.isEmpty && !isLoadingDislikes
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(20),
@@ -282,13 +213,13 @@ class _DislikeListSectionState extends State<DislikeListSection>
                     )
                   : Column(
                       children: [
-                        ...(_showAllDislikes ? _dislikes : _dislikes.take(3)).map((dislike) {
+                        ...(_showAllDislikes ? dislikes : dislikes.take(3)).map((dislike) {
                           return KeyedSubtree(
                             key: ValueKey(dislike.menuId),
                             child: _buildDislikeItem(dislike, languageProvider),
                           );
                         }),
-                        if (_dislikes.length > 3 && !_showAllDislikes) ...[
+                        if (dislikes.length > 3 && !_showAllDislikes) ...[
                           const SizedBox(height: 12),
                           Center(
                             child: TextButton.icon(
@@ -296,14 +227,14 @@ class _DislikeListSectionState extends State<DislikeListSection>
                               icon: const Icon(Icons.expand_more, size: 18),
                               label: Text(
                                 languageProvider.currentLanguageCode == 'en'
-                                    ? 'Show All (${_dislikes.length})'
-                                    : 'ดูทั้งหมด (${_dislikes.length})',
+                                    ? 'Show All (${dislikes.length})'
+                                    : 'ดูทั้งหมด (${dislikes.length})',
                               ),
                               style: TextButton.styleFrom(foregroundColor: Colors.blue[600]),
                             ),
                           ),
                         ],
-                        if (_dislikes.length > 3 && _showAllDislikes) ...[
+                        if (dislikes.length > 3 && _showAllDislikes) ...[
                           const SizedBox(height: 12),
                           Center(
                             child: TextButton.icon(
@@ -318,7 +249,7 @@ class _DislikeListSectionState extends State<DislikeListSection>
                             ),
                           ),
                         ],
-                        if (_isBulkMode && _dislikes.isNotEmpty) ...[
+                        if (_isBulkMode && dislikes.isNotEmpty) ...[
                           const SizedBox(height: 16),
                           Row(
                             children: [
