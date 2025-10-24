@@ -58,13 +58,14 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection>
         listen: false,
       );
 
-      // Load available protein types and user preferences
-      final availableTypes = await _getAvailableProteinTypes(
-        language: languageProvider.currentLanguageCode,
-      );
-      final userPreferences = await _getUserProteinPreferences(
-        language: languageProvider.currentLanguageCode,
-      );
+      // Load both in parallel for better performance
+      final results = await Future.wait([
+        _getAvailableProteinTypes(language: languageProvider.currentLanguageCode),
+        _getUserProteinPreferences(language: languageProvider.currentLanguageCode),
+      ]);
+
+      final availableTypes = results[0] as List<ProteinTypeEntity>;
+      final userPreferences = results[1] as List<ProteinPreferenceEntity>;
 
       if (mounted) {
         setState(() {

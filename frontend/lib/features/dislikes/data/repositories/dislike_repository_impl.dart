@@ -1,4 +1,5 @@
 import '../../../../core/cache/cache_service.dart';
+import '../../../../core/utils/logger.dart';
 import '../../domain/entities/dislike_entity.dart';
 import '../../domain/repositories/dislike_repository.dart';
 import '../datasources/dislike_remote_data_source.dart';
@@ -24,10 +25,15 @@ class DislikeRepositoryImpl implements DislikeRepository {
 
   @override
   Future<List<DislikeEntity>> getUserDislikes({String language = 'th'}) async {
+    AppLogger.info('🔍 [DislikeRepo] Checking cache for user dislikes...');
+
     // Cache-first strategy
     try {
       final cachedData = await CacheService.getDislikes();
+      AppLogger.info('🔍 [DislikeRepo] Cache result: ${cachedData?.length ?? 0} items');
+
       if (cachedData != null && cachedData.isNotEmpty) {
+        AppLogger.info('🎯 [CACHE HIT] Dislikes loaded from cache (${cachedData.length} items)');
         // Background refresh
         _refreshDislikesInBackground(language: language);
 
@@ -36,19 +42,22 @@ class DislikeRepositoryImpl implements DislikeRepository {
             .toList();
       }
     } catch (e) {
-      // Cache error: fallback to API
+      AppLogger.error('❌ [CACHE ERROR] Failed to load dislikes from cache', e);
     }
 
     // Fetch from API
+    AppLogger.info('❌ [CACHE MISS] Fetching dislikes from API...');
     final models = await remoteDataSource.getUserDislikes(language: language);
     final entities = models.map((model) => model.toEntity(language: language)).toList();
 
     // Save to cache
     try {
       final jsonList = entities.map((entity) => entity.toJson()).toList();
+      AppLogger.info('💾 [CACHE SAVE] Saving ${jsonList.length} dislikes to cache...');
       await CacheService.saveDislikes(jsonList);
+      AppLogger.info('✅ [CACHE SAVE] Successfully saved dislikes to cache');
     } catch (e) {
-      // Cache save error: ignore
+      AppLogger.error('❌ [CACHE SAVE ERROR] Failed to save dislikes to cache', e);
     }
 
     return entities;
