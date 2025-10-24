@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import '../utils/logger.dart';
 
 /// Cache service for managing local data storage using Hive
 class CacheService {
@@ -314,28 +315,40 @@ class CacheService {
       final box = Hive.box(_proteinPreferencesBox);
       final data = box.get('available_protein_types');
 
-      if (data == null) return null;
+      AppLogger.debug('📦 [CacheService] Hive box: $_proteinPreferencesBox');
+      AppLogger.debug('📦 [CacheService] Data found: ${data != null}');
+
+      if (data == null) {
+        AppLogger.debug('📦 [CacheService] No data in cache (null)');
+        return null;
+      }
 
       // Check if expired (10 minutes - master data doesn't change often)
       if (_isExpired('available_protein_types', const Duration(minutes: 10))) {
+        AppLogger.debug('📦 [CacheService] Cache expired (> 10 minutes)');
         return null;
       }
 
       if (data is List) {
+        AppLogger.debug('📦 [CacheService] Returning ${data.length} items from cache');
         return data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
       }
 
+      AppLogger.debug('📦 [CacheService] Data is not a List (type: ${data.runtimeType})');
       return null;
     } catch (e) {
+      AppLogger.error('📦 [CacheService] ERROR loading from cache', e);
       return null;
     }
   }
 
   /// Cache available protein types
   static Future<void> saveAvailableProteinTypes(List<Map<String, dynamic>> proteinTypes) async {
+    AppLogger.debug('💾 [CacheService] Saving ${proteinTypes.length} items to Hive...');
     final box = Hive.box(_proteinPreferencesBox);
     await box.put('available_protein_types', proteinTypes);
     await _updateTimestamp('available_protein_types');
+    AppLogger.debug('💾 [CacheService] Save complete!');
   }
 
   /// Get cached user protein preferences

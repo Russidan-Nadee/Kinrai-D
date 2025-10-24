@@ -11,11 +11,15 @@ class ProteinPreferenceRepositoryImpl implements ProteinPreferenceRepository {
 
   @override
   Future<List<ProteinTypeEntity>> getAvailableProteinTypes({String language = 'th'}) async {
+    AppLogger.info('🔍 [ProteinRepo] Checking cache for available protein types...');
+
     // Cache-first strategy: Try cache first, then API
     try {
       final cachedData = await CacheService.getAvailableProteinTypes();
+      AppLogger.info('🔍 [ProteinRepo] Cache result: ${cachedData?.length ?? 0} items');
+
       if (cachedData != null && cachedData.isNotEmpty) {
-        AppLogger.info('🎯 [CACHE HIT] Available protein types loaded from cache');
+        AppLogger.info('🎯 [CACHE HIT] Available protein types loaded from cache (${cachedData.length} items)');
         // Background sync: Refresh cache in background
         _refreshProteinTypesInBackground(language: language);
 
@@ -28,10 +32,11 @@ class ProteinPreferenceRepositoryImpl implements ProteinPreferenceRepository {
         }).toList();
       }
     } catch (e) {
-      // Cache error: fallback to API
+      AppLogger.error('❌ [CACHE ERROR] Failed to load from cache', e);
     }
 
     // Cache miss: Fetch from API
+    AppLogger.info('❌ [CACHE MISS] Fetching from API...');
     final models = await remoteDataSource.getAvailableProteinTypes(language: language);
     final entities = models.map((model) => model.toEntity(language: language)).toList();
 
@@ -42,9 +47,11 @@ class ProteinPreferenceRepositoryImpl implements ProteinPreferenceRepository {
         'key': entity.key,
         'name': entity.name,
       }).toList();
+      AppLogger.info('💾 [CACHE SAVE] Saving ${jsonList.length} protein types to cache...');
       await CacheService.saveAvailableProteinTypes(jsonList);
+      AppLogger.info('✅ [CACHE SAVE] Successfully saved to cache');
     } catch (e) {
-      // Cache save error: ignore, API data still works
+      AppLogger.error('❌ [CACHE SAVE ERROR] Failed to save to cache', e);
     }
 
     return entities;
