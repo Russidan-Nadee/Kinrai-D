@@ -1,4 +1,5 @@
 import '../../../../core/cache/cache_service.dart';
+import '../../../../core/utils/logger.dart';
 import '../../domain/entities/protein_preference_entity.dart';
 import '../../domain/repositories/protein_preference_repository.dart';
 import '../datasources/protein_preference_remote_data_source.dart';
@@ -14,6 +15,7 @@ class ProteinPreferenceRepositoryImpl implements ProteinPreferenceRepository {
     try {
       final cachedData = await CacheService.getAvailableProteinTypes();
       if (cachedData != null && cachedData.isNotEmpty) {
+        AppLogger.info('🎯 [CACHE HIT] Available protein types loaded from cache');
         // Background sync: Refresh cache in background
         _refreshProteinTypesInBackground(language: language);
 
