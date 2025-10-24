@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/api/api_client.dart';
+import '../../../../../core/cache/cache_service.dart';
 import '../../../../../core/utils/logger.dart';
 import '../../widgets/add_menu_dialog.dart';
 import '../../widgets/bulk_add_menu_dialog.dart';
@@ -63,9 +64,42 @@ class _MenusTabState extends State<MenusTab> {
     });
 
     try {
+      // Cache-first strategy: Check cache first
+      if (!refresh) {
+        final cachedData = await CacheService.getAdminMenus(page: currentPage);
+        if (cachedData != null) {
+          // Load from cache instantly
+          if (mounted) {
+            setState(() {
+              menus = cachedData['data'] ?? [];
+              final pagination = cachedData['pagination'];
+              if (pagination != null) {
+                totalPages = pagination['total_pages'] ?? 1;
+                totalMenus = pagination['total'] ?? 0;
+                hasMore = pagination['has_next'] ?? false;
+              }
+              isLoading = false;
+            });
+          }
+
+          // Background refresh: Update cache in background
+          _refreshMenusInBackground(page: currentPage);
+          return;
+        }
+      }
+
+      // Cache miss or refresh: Fetch from API
       final apiClient = ApiClient();
       apiClient.initialize();
       final response = await apiClient.get('/menus?page=$currentPage&limit=20');
+
+      final responseData = {
+        'data': response.data['data'],
+        'pagination': response.data['pagination'],
+      };
+
+      // Save to cache
+      await CacheService.saveAdminMenus(responseData, page: currentPage);
 
       if (mounted) {
         setState(() {
@@ -90,21 +124,91 @@ class _MenusTabState extends State<MenusTab> {
     }
   }
 
-  Future<void> _loadMoreMenus() async {
-    if (isLoadingMore || !hasMore) return;
-
-    setState(() {
-      isLoadingMore = true;
-      currentPage++;
-    });
-
+  /// Background refresh: Update cache without blocking UI
+  Future<void> _refreshMenusInBackground({required int page}) async {
     try {
       final apiClient = ApiClient();
       apiClient.initialize();
-      final response = await apiClient.get('/menus?page=$currentPage&limit=20');
+      final response = await apiClient.get('/menus?page=$page&limit=20');
+
+      final responseData = {
+        'data': response.data['data'],
+        'pagination': response.data['pagination'],
+      };
+
+      await CacheService.saveAdminMenus(responseData, page: page);
+
+      // Update UI if data changed
+      if (mounted && page == currentPage) {
+        final newMenus = response.data['data'] ?? [];
+        if (newMenus.length != menus.length) {
+          setState(() {
+            menus = newMenus;
+            final pagination = response.data['pagination'];
+            if (pagination != null) {
+              totalPages = pagination['total_pages'] ?? 1;
+              totalMenus = pagination['total'] ?? 0;
+              hasMore = pagination['has_next'] ?? false;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      // Background refresh failed: ignore, cached data still valid
+      AppLogger.error('Background refresh failed', e);
+    }
+  }
+
+  Future<void> _loadMoreMenus() async {
+    if (isLoadingMore || !hasMore) return;
+
+    final nextPage = currentPage + 1;
+
+    setState(() {
+      isLoadingMore = true;
+    });
+
+    try {
+      // Check cache for next page first
+      final cachedData = await CacheService.getAdminMenus(page: nextPage);
+      if (cachedData != null) {
+        if (mounted) {
+          setState(() {
+            currentPage = nextPage;
+            final newMenus = cachedData['data'] ?? [];
+            menus.addAll(newMenus);
+
+            final pagination = cachedData['pagination'];
+            if (pagination != null) {
+              totalPages = pagination['total_pages'] ?? 1;
+              totalMenus = pagination['total'] ?? 0;
+              hasMore = pagination['has_next'] ?? false;
+            }
+            isLoadingMore = false;
+          });
+        }
+
+        // Background refresh for this page
+        _refreshMenusInBackground(page: nextPage);
+        return;
+      }
+
+      // Cache miss: Fetch from API
+      final apiClient = ApiClient();
+      apiClient.initialize();
+      final response = await apiClient.get('/menus?page=$nextPage&limit=20');
+
+      final responseData = {
+        'data': response.data['data'],
+        'pagination': response.data['pagination'],
+      };
+
+      // Save to cache
+      await CacheService.saveAdminMenus(responseData, page: nextPage);
 
       if (mounted) {
         setState(() {
+          currentPage = nextPage;
           final newMenus = response.data['data'] ?? [];
           menus.addAll(newMenus);
 
@@ -121,7 +225,6 @@ class _MenusTabState extends State<MenusTab> {
       AppLogger.error('Error loading more menus', e);
       if (mounted) {
         setState(() {
-          currentPage--; // Revert page number on error
           isLoadingMore = false;
         });
       }
@@ -179,8 +282,11 @@ class _MenusTabState extends State<MenusTab> {
         );
       }
 
+      // Clear cache since data changed
+      await CacheService.clearAdminMenus();
+
       // Reload menus
-      await _loadMenus();
+      await _loadMenus(refresh: true);
     } catch (e) {
       AppLogger.error('Error creating menu', e);
       if (mounted) {
@@ -232,8 +338,11 @@ class _MenusTabState extends State<MenusTab> {
         }
       }
 
+      // Clear cache since data changed
+      await CacheService.clearAdminMenus();
+
       // Reload menus
-      await _loadMenus();
+      await _loadMenus(refresh: true);
     } catch (e) {
       AppLogger.error('Error creating bulk menus', e);
       if (mounted) {
@@ -301,8 +410,11 @@ class _MenusTabState extends State<MenusTab> {
         );
       }
 
+      // Clear cache since data changed
+      await CacheService.clearAdminMenus();
+
       // Reload menus
-      await _loadMenus();
+      await _loadMenus(refresh: true);
     } catch (e) {
       AppLogger.error('Error deleting menu', e);
       if (mounted) {
@@ -428,8 +540,11 @@ class _MenusTabState extends State<MenusTab> {
         isSelectionMode = false;
       });
 
+      // Clear cache since data changed
+      await CacheService.clearAdminMenus();
+
       // Reload menus
-      await _loadMenus();
+      await _loadMenus(refresh: true);
     } catch (e) {
       AppLogger.error('Error bulk deleting menus', e);
       if (mounted) {
