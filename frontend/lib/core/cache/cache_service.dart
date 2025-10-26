@@ -323,9 +323,9 @@ class CacheService {
         return null;
       }
 
-      // Check if expired (10 minutes - master data doesn't change often)
-      if (_isExpired('available_protein_types', const Duration(minutes: 10))) {
-        AppLogger.debug('📦 [CacheService] Cache expired (> 10 minutes)');
+      // Check if expired (30 days - master data rarely changes)
+      if (_isExpired('available_protein_types', const Duration(days: 30))) {
+        AppLogger.debug('📦 [CacheService] Cache expired (> 30 days)');
         return null;
       }
 
@@ -359,8 +359,8 @@ class CacheService {
 
       if (data == null) return null;
 
-      // Check if expired (5 minutes - user preferences change more often)
-      if (_isExpired('user_protein_preferences', const Duration(minutes: 5))) {
+      // Check if expired (1 day - user preferences rarely change)
+      if (_isExpired('user_protein_preferences', const Duration(days: 1))) {
         return null;
       }
 
@@ -402,8 +402,8 @@ class CacheService {
 
       if (data == null) return null;
 
-      // Check if expired (1 hour)
-      if (_isExpired('dislikes_list', const Duration(hours: 1))) {
+      // Check if expired (1 day - dislikes rarely change)
+      if (_isExpired('dislikes_list', const Duration(days: 1))) {
         return null;
       }
 

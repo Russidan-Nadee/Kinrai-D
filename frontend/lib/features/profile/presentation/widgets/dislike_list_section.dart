@@ -118,7 +118,6 @@ class _DislikeListSectionState extends State<DislikeListSection> {
     final profileProvider = Provider.of<ProfileProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final dislikes = profileProvider.dislikes;
-    final isLoadingDislikes = profileProvider.isLoadingDislikes;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,32 +185,25 @@ class _DislikeListSectionState extends State<DislikeListSection> {
               ),
             ],
           ),
-          child: isLoadingDislikes && dislikes.isEmpty
-              ? const Center(
+          child: dislikes.isEmpty
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(color: Color(0xFFFF6B35)),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Icon(Icons.sentiment_satisfied, size: 48, color: Colors.grey[400]),
+                        const SizedBox(height: 8),
+                        Text(
+                          languageProvider.currentLanguageCode == 'en'
+                              ? 'No dislikes yet'
+                              : 'ยังไม่มีรายการที่ไม่ชอบ',
+                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
                   ),
                 )
-              : dislikes.isEmpty && !isLoadingDislikes
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            Icon(Icons.sentiment_satisfied, size: 48, color: Colors.grey[400]),
-                            const SizedBox(height: 8),
-                            Text(
-                              languageProvider.currentLanguageCode == 'en'
-                                  ? 'No dislikes yet'
-                                  : 'ยังไม่มีรายการที่ไม่ชอบ',
-                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : Column(
+              : Column(
                       children: [
                         ...(_showAllDislikes ? dislikes : dislikes.take(3)).map((dislike) {
                           return KeyedSubtree(

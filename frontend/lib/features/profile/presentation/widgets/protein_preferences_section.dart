@@ -92,16 +92,7 @@ class ProteinPreferencesSection extends StatelessWidget {
               ),
             ],
           ),
-          child: profileProvider.isLoadingProteins && profileProvider.availableProteinTypes.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFFF6B35),
-                    ),
-                  ),
-                )
-              : profileProvider.availableProteinTypes.isEmpty && !profileProvider.isLoadingProteins
+          child: profileProvider.availableProteinTypes.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20),

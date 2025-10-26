@@ -24,19 +24,14 @@ class ProfileProvider extends ChangeNotifier {
   // Protein Preferences State
   List<ProteinTypeEntity> _availableProteinTypes = [];
   List<ProteinPreferenceEntity> _userProteinPreferences = [];
-  bool _isLoadingProteins = false;
 
   // Dislikes State
   List<DislikeEntity> _dislikes = [];
-  bool _isLoadingDislikes = false;
 
   // Getters
   List<ProteinTypeEntity> get availableProteinTypes => _availableProteinTypes;
   List<ProteinPreferenceEntity> get userProteinPreferences => _userProteinPreferences;
-  bool get isLoadingProteins => _isLoadingProteins;
-
   List<DislikeEntity> get dislikes => _dislikes;
-  bool get isLoadingDislikes => _isLoadingDislikes;
 
   ProfileProvider({
     required GetAvailableProteinTypes getAvailableProteinTypes,
@@ -60,13 +55,9 @@ class ProfileProvider extends ChangeNotifier {
       AppLogger.info('🚀 [ProfileProvider] Loading ALL profile data in parallel...');
       final startTime = DateTime.now();
 
-      // Show loading only if we don't have cached data
-      final hasData = _availableProteinTypes.isNotEmpty || _dislikes.isNotEmpty;
-      if (!hasData) {
-        _isLoadingProteins = true;
-        _isLoadingDislikes = true;
-        notifyListeners();
-      }
+      // NEVER show loading spinner - we'll use cache-first strategy
+      // This prevents the spinner from showing even when data is being fetched
+      // Users will see cached data instantly, and UI will update silently if needed
 
       // Load ALL data in parallel for maximum performance
       final results = await Future.wait([
@@ -85,27 +76,53 @@ class ProfileProvider extends ChangeNotifier {
       // Sort dislikes alphabetically
       _dislikes.sort((a, b) => a.menuName.toLowerCase().compareTo(b.menuName.toLowerCase()));
 
-      _isLoadingProteins = false;
-      _isLoadingDislikes = false;
       notifyListeners();
     } catch (e) {
       AppLogger.error('❌ [ProfileProvider] Error loading profile data', e);
-      _isLoadingProteins = false;
-      _isLoadingDislikes = false;
       notifyListeners();
     }
   }
 
-  /// Toggle protein preference
+  /// Toggle protein preference with optimistic UI update
   Future<bool> toggleProteinPreference(int proteinTypeId, bool exclude, String language) async {
+    // OPTIMISTIC UPDATE: Update UI immediately before API call
+    final previousPreferences = List<ProteinPreferenceEntity>.from(_userProteinPreferences);
+
     try {
+      // Update UI instantly for better UX
+      if (exclude) {
+        // Add to excluded list immediately
+        final proteinType = _availableProteinTypes.firstWhere(
+          (p) => p.id == proteinTypeId,
+          orElse: () => ProteinTypeEntity(id: proteinTypeId, key: '', name: ''),
+        );
+
+        _userProteinPreferences = [
+          ..._userProteinPreferences,
+          ProteinPreferenceEntity(
+            proteinTypeId: proteinTypeId,
+            proteinTypeName: proteinType.name,
+            exclude: true,
+          ),
+        ];
+      } else {
+        // Remove from excluded list immediately
+        _userProteinPreferences = _userProteinPreferences
+            .where((pref) => pref.proteinTypeId != proteinTypeId)
+            .toList();
+      }
+
+      // Notify listeners immediately - UI updates now!
+      notifyListeners();
+
+      // Now make API call in background
       if (exclude) {
         await _setProteinPreference(proteinTypeId: proteinTypeId, exclude: true);
       } else {
         await _removeProteinPreference(proteinTypeId: proteinTypeId);
       }
 
-      // Reload only protein preferences (fast)
+      // Reload from server to ensure consistency (silent update)
       final results = await Future.wait([
         _getAvailableProteinTypes(language: language),
         _getUserProteinPreferences(language: language),
@@ -117,7 +134,12 @@ class ProfileProvider extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      AppLogger.error('❌ [ProfileProvider] Error toggling protein preference', e);
+      AppLogger.error('❌ [ProfileProvider] Error toggling protein preference - rolling back', e);
+
+      // ROLLBACK: Restore previous state on error
+      _userProteinPreferences = previousPreferences;
+      notifyListeners();
+
       return false;
     }
   }
