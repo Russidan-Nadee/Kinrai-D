@@ -4,15 +4,6 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/di/injection.dart';
-import '../../../protein_preferences/domain/usecases/get_available_protein_types.dart';
-import '../../../protein_preferences/domain/usecases/get_user_protein_preferences.dart';
-import '../../../protein_preferences/domain/usecases/set_protein_preference.dart';
-import '../../../protein_preferences/domain/usecases/remove_protein_preference.dart';
-import '../../../protein_preferences/data/repositories/protein_preference_repository_impl.dart';
-import '../../../protein_preferences/data/datasources/protein_preference_remote_data_source.dart';
-import '../../../dislikes/domain/usecases/get_user_dislikes.dart';
-import '../../../dislikes/domain/usecases/remove_dislike.dart';
-import '../../../dislikes/domain/usecases/remove_bulk_dislikes.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/language_section.dart';
@@ -30,48 +21,24 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> with AutomaticKeepAliveClientMixin {
-  late ProfileProvider _profileProvider;
-  bool _isInitialized = false;
-
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    _initializeProvider();
-  }
 
-  void _initializeProvider() {
-    // Initialize protein preferences dependencies
-    final proteinDataSource = ProteinPreferenceRemoteDataSourceImpl();
-    final proteinRepository = ProteinPreferenceRepositoryImpl(remoteDataSource: proteinDataSource);
+    // Load data only on first app launch (singleton provider persists data)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileProvider = getIt<ProfileProvider>();
+      final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
-    // Create ProfileProvider with all dependencies
-    _profileProvider = ProfileProvider(
-      getAvailableProteinTypes: GetAvailableProteinTypes(proteinRepository),
-      getUserProteinPreferences: GetUserProteinPreferences(proteinRepository),
-      setProteinPreference: SetProteinPreference(proteinRepository),
-      removeProteinPreference: RemoveProteinPreference(proteinRepository),
-      getUserDislikes: getIt.get<GetUserDislikes>(),
-      removeDislike: getIt.get<RemoveDislike>(),
-      removeBulkDislikes: getIt.get<RemoveBulkDislikes>(),
-    );
-
-    // Load data on first mount only
-    if (!_isInitialized) {
-      _isInitialized = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-        _profileProvider.loadAllProfileData(language: languageProvider.currentLanguageCode);
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _profileProvider.dispose();
-    super.dispose();
+      // Only load if data is empty (first time)
+      if (profileProvider.availableProteinTypes.isEmpty &&
+          profileProvider.dislikes.isEmpty) {
+        profileProvider.loadAllProfileData(language: languageProvider.currentLanguageCode);
+      }
+    });
   }
 
   @override
@@ -81,7 +48,7 @@ class _ProfilePageState extends State<ProfilePage> with AutomaticKeepAliveClient
     final l10n = AppLocalizations.of(context);
 
     return ChangeNotifierProvider<ProfileProvider>.value(
-      value: _profileProvider,
+      value: getIt<ProfileProvider>(), // Use singleton provider from DI
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.profile),
