@@ -2,10 +2,39 @@ import 'package:flutter/material.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../widgets/random_menu_widget.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final String title;
 
   const HomePage({super.key, required this.title});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Preload emoji flags to prevent delay in Profile page
+    _preloadEmojis();
+  }
+
+  void _preloadEmojis() {
+    // Force render emojis off-screen to preload font
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final textPainter = TextPainter(
+          text: const TextSpan(
+            text: '🇹🇭🇺🇸🇯🇵🇨🇳',
+            style: TextStyle(fontSize: 24),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+        textPainter.dispose();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
