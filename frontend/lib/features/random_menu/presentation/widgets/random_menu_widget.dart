@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
@@ -16,17 +17,45 @@ class RandomMenuWidget extends StatefulWidget {
   State<RandomMenuWidget> createState() => _RandomMenuWidgetState();
 }
 
-class _RandomMenuWidgetState extends State<RandomMenuWidget> {
+class _RandomMenuWidgetState extends State<RandomMenuWidget>
+    with SingleTickerProviderStateMixin {
   late final GetPersonalizedRandomMenu _getPersonalizedRandomMenu;
   MenuEntity? _randomMenu;
   bool _isLoading = false;
   String? _errorMessage;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     // Get use case from dependency injection
     _getPersonalizedRandomMenu = getIt.get<GetPersonalizedRandomMenu>();
+
+    // Initialize animation controller
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+
+    _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOutBack,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _getRandomMenu() async {
@@ -39,21 +68,34 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
     });
 
     try {
-      final randomMenu = await _getPersonalizedRandomMenu(
-        language: languageProvider.currentLanguageCode,
-      );
+      // Run API call and minimum loading time in parallel
+      final results = await Future.wait([
+        _getPersonalizedRandomMenu(
+          language: languageProvider.currentLanguageCode,
+        ),
+        Future.delayed(const Duration(milliseconds: 1000)), // Minimum 1 second to see dice
+      ]);
+
+      final randomMenu = results[0] as MenuEntity;
+
       if (mounted) {
         setState(() {
           _randomMenu = randomMenu;
           _isLoading = false;
         });
+        // Start animation when menu is loaded
+        _animationController.forward(from: 0.0);
       }
     } catch (e) {
       if (mounted) {
+        // Still wait minimum time even on error
+        await Future.delayed(const Duration(milliseconds: 1000));
         setState(() {
           _errorMessage = l10n.cannotRandomMenu;
           _isLoading = false;
         });
+        // Start animation even on error
+        _animationController.forward(from: 0.0);
       }
     }
   }
@@ -62,8 +104,8 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    // Show button in center when no menu is displayed yet
-    if (_randomMenu == null && _errorMessage == null) {
+    // Show button when no menu is displayed and not loading
+    if (_randomMenu == null && _errorMessage == null && !_isLoading) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -80,7 +122,7 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
 
             // Random Menu Button (centered)
             RandomMenuButton(
-              isLoading: _isLoading,
+              isLoading: false,
               onPressed: _getRandomMenu,
             ),
           ],
@@ -88,93 +130,126 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget> {
       );
     }
 
-    // After menu is displayed (or loading from previous state), show card at top and button at bottom
-    return Column(
-      children: [
-        // Top section with card/dice (1/2) - centered in this area
-        Expanded(
-          flex: 1,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 600),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  // Combine scale and rotation for flip effect
-                  final rotateAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                  );
+    // When loading with existing menu, show only dice animation centered
+    if (_isLoading) {
+      return const Center(
+        child: DiceAnimation(
+          size: 200,
+        ),
+      );
+    }
 
-                  return ScaleTransition(
-                    scale: animation,
-                    child: RotationTransition(
-                      turns: rotateAnimation,
-                      child: FadeTransition(
-                        opacity: animation,
-                        child: child,
+    // After menu is displayed or when error, show card at top and button at bottom
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Column(
+          children: [
+            // Top section with card/error (1/2) - centered in this area
+            Expanded(
+              flex: 1,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Transform.translate(
+                    offset: Offset(0, -20 * (1 - _fadeAnimation.value)),
+                    child: Opacity(
+                      opacity: _fadeAnimation.value,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 800),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          // 3D Card Flip Animation
+                          final rotateAnimation = Tween<double>(
+                            begin: math.pi / 2, // Start rotated 90 degrees (invisible)
+                            end: 0.0, // End at 0 degrees (fully visible)
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutBack,
+                            ),
+                          );
+
+                          return AnimatedBuilder(
+                            animation: rotateAnimation,
+                            child: child,
+                            builder: (context, child) {
+                              // Apply 3D perspective transformation
+                              final transform = Matrix4.identity()
+                                ..setEntry(3, 2, 0.001) // Add perspective
+                                ..rotateY(rotateAnimation.value); // Rotate around Y-axis
+
+                              return Transform(
+                                transform: transform,
+                                alignment: Alignment.center,
+                                child: child,
+                              );
+                            },
+                          );
+                        },
+                        child: _errorMessage != null
+                            ? Center(
+                                key: const ValueKey('error'),
+                                child: Container(
+                                  width: 320,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red[50],
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.red[200]!),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.error_outline, color: Colors.red[600]),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: TextStyle(color: Colors.red[600]),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : _randomMenu != null
+                                ? RandomMenuCard(
+                                    key: ValueKey('card_${_randomMenu!.id}'),
+                                    menu: _randomMenu!,
+                                    onDisliked: () {
+                                      // Optional: Auto-generate new menu after dislike
+                                      _getRandomMenu();
+                                    },
+                                  )
+                                : const SizedBox.shrink(key: ValueKey('empty')),
                       ),
                     ),
-                  );
-                },
-                child: _isLoading
-                    ? const DiceAnimation(
-                        key: ValueKey('dice'),
-                        size: 200,
-                      )
-                    : _errorMessage != null
-                        ? Center(
-                            key: const ValueKey('error'),
-                            child: Container(
-                              width: 320,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.red[50],
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.red[200]!),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.error_outline, color: Colors.red[600]),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      _errorMessage!,
-                                      style: TextStyle(color: Colors.red[600]),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : _randomMenu != null
-                            ? RandomMenuCard(
-                                key: ValueKey('card_${_randomMenu!.id}'),
-                                menu: _randomMenu!,
-                                onDisliked: () {
-                                  // Optional: Auto-generate new menu after dislike
-                                  _getRandomMenu();
-                                },
-                              )
-                            : const SizedBox.shrink(key: ValueKey('empty')),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
 
-        // Bottom section with button (1/2) - button centered in this area
-        Expanded(
-          flex: 1,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              RandomMenuButton(
-                isLoading: _isLoading,
-                onPressed: _getRandomMenu,
+            // Bottom section with button (1/2) - button centered in this area
+            Expanded(
+              flex: 1,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Transform.translate(
+                    offset: Offset(0, _slideAnimation.value),
+                    child: Opacity(
+                      opacity: _fadeAnimation.value,
+                      child: RandomMenuButton(
+                        isLoading: false,
+                        onPressed: _getRandomMenu,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
