@@ -1,7 +1,12 @@
-import { Controller, Get, Delete, Param, Put } from '@nestjs/common';
+import { Controller, Get, Delete, Param, Put, UseGuards } from '@nestjs/common';
 import { AdminMenusService } from '../services/admin-menus.service';
+import { AdminOnly } from '../../auth/decorators/auth.decorators';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
 
 @Controller('admin/menus')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@AdminOnly()
 export class AdminMenusController {
   constructor(private readonly menusService: AdminMenusService) {}
 

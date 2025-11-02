@@ -34,6 +34,7 @@ export class MenusController {
   constructor(private readonly menusService: MenusService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @AdminOnly()
   @ApiOperation({ summary: 'Create a new menu item (Admin only)' })
   @ApiResponse({ status: 201, description: 'Menu item created successfully.' })
@@ -47,6 +48,7 @@ export class MenusController {
   }
 
   @Post('batch')
+  @UseGuards(JwtAuthGuard)
   @AdminOnly()
   @ApiOperation({ summary: 'Create multiple menu items at once (Admin only)' })
   @ApiResponse({
@@ -59,6 +61,7 @@ export class MenusController {
   }
 
   @Delete('batch')
+  @UseGuards(JwtAuthGuard)
   @AdminOnly()
   @ApiOperation({ summary: 'Delete multiple menu items at once (Admin only)' })
   @ApiResponse({
@@ -214,6 +217,7 @@ export class MenusController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @AdminOnly()
   @ApiOperation({ summary: 'Update menu item (Admin only)' })
   @ApiResponse({ status: 200, description: 'Menu item updated successfully.' })
@@ -231,6 +235,7 @@ export class MenusController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   @AdminOnly()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft delete menu item (Admin only)' })

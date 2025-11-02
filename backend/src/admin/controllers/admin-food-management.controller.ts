@@ -7,9 +7,12 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { AdminFoodManagementService } from '../services/admin-food-management.service';
 import { AdminOnly } from '../../auth/decorators/auth.decorators';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
 import {
   CreateFoodTypeDto,
   UpdateFoodTypeDto,
@@ -22,6 +25,7 @@ import {
 } from '../dto/bulk-upload.dto';
 
 @Controller('admin/food-management')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @AdminOnly()
 export class AdminFoodManagementController {
   constructor(
