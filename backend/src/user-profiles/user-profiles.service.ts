@@ -199,16 +199,12 @@ export class UserProfilesService {
           include: {
             Subcategory: {
               include: {
-                Translations: {
-                  where: { language },
-                },
+                Translations: true, // Get all translations for subcategory
               },
             },
             ProteinType: {
               include: {
-                Translations: {
-                  where: { language },
-                },
+                Translations: true, // Get all translations for protein type
               },
             },
           },

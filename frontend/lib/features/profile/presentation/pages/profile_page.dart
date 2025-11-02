@@ -20,30 +20,30 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class _ProfilePageState extends State<ProfilePage> {
+  bool _isFirstLoad = true;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    // Load data only on first app launch (singleton provider persists data)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final profileProvider = getIt<ProfileProvider>();
-      final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    // Load data every time the page becomes visible
+    if (_isFirstLoad) {
+      _isFirstLoad = false;
 
-      // Only load if data is empty (first time)
-      if (profileProvider.availableProteinTypes.isEmpty &&
-          profileProvider.dislikes.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final profileProvider = getIt<ProfileProvider>();
+        final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+
+        // Always refresh data when entering Profile page
+        // This ensures dislike list is up-to-date after adding/removing dislikes
         profileProvider.loadAllProfileData(language: languageProvider.currentLanguageCode);
-      }
-    });
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final authProvider = Provider.of<AuthProvider>(context);
     final l10n = AppLocalizations.of(context);
 

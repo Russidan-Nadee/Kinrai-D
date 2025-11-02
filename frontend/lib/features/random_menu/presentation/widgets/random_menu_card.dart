@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/cache/cache_service.dart';
 import '../../domain/entities/menu_entity.dart';
 import '../../../dislikes/domain/usecases/add_dislike.dart';
 import '../../../dislikes/domain/usecases/remove_dislike.dart';
 import '../../../dislikes/domain/usecases/is_menu_disliked.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 
 class RandomMenuCard extends StatefulWidget {
   final MenuEntity menu;
@@ -66,6 +68,18 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
       _isLoading = true;
     });
 
+    // Get providers and context before async gap
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    // Try to get ProfileProvider if it exists (it might not be provided in all contexts)
+    ProfileProvider? profileProvider;
+    try {
+      profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    } catch (e) {
+      AppLogger.info('[RandomMenuCard] ProfileProvider not available in this context');
+    }
+
     try {
       if (_isDisliked) {
         await _removeDislike(menuId: widget.menu.id);
@@ -74,7 +88,24 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
             _isDisliked = false;
             _isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
+
+          // Wait a bit for cache to be cleared, then refresh ProfileProvider
+          if (profileProvider != null) {
+            // Clear cache first to ensure fresh data
+            await CacheService.clearDislikes();
+
+            // Small delay to ensure cache is cleared
+            await Future.delayed(const Duration(milliseconds: 100));
+
+            // Now refresh the profile data
+            profileProvider.loadAllProfileData(
+              language: languageProvider.currentLanguageCode,
+            ).catchError((error) {
+              AppLogger.error('[RandomMenuCard] Failed to refresh profile data', error);
+            });
+          }
+
+          scaffoldMessenger.showSnackBar(
             SnackBar(
               content: Text('ลบออกจากรายการไม่ชอบแล้ว'),
               backgroundColor: Colors.green,
@@ -88,7 +119,24 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
             _isDisliked = true;
             _isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
+
+          // Wait a bit for cache to be cleared, then refresh ProfileProvider
+          if (profileProvider != null) {
+            // Clear cache first to ensure fresh data
+            await CacheService.clearDislikes();
+
+            // Small delay to ensure cache is cleared
+            await Future.delayed(const Duration(milliseconds: 100));
+
+            // Now refresh the profile data
+            profileProvider.loadAllProfileData(
+              language: languageProvider.currentLanguageCode,
+            ).catchError((error) {
+              AppLogger.error('[RandomMenuCard] Failed to refresh profile data', error);
+            });
+          }
+
+          scaffoldMessenger.showSnackBar(
             SnackBar(
               content: Text('เพิ่มในรายการไม่ชอบแล้ว'),
               backgroundColor: Colors.orange,
@@ -103,7 +151,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
             backgroundColor: Colors.red,

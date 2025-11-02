@@ -36,14 +36,44 @@ class DislikeModel {
     String? menuDescription;
 
     if (menu != null) {
-      final translations = menu!.translations;
-      if (translations != null && translations.isNotEmpty) {
-        final translation = translations.firstWhere(
-          (t) => t['language'] == language,
-          orElse: () => translations.first,
-        );
-        menuName = translation['name'] ?? menuName;
-        menuDescription = translation['description'];
+      // Menu name is constructed from ProteinType + Subcategory
+      // Example: "ไก่ ผัดกะเพรา" = "ไก่" (protein) + "ผัดกะเพรา" (subcategory)
+
+      String? proteinName;
+      String? subcategoryName;
+
+      // Get protein type translation
+      if (menu!.proteinType != null && menu!.proteinType!.translations != null) {
+        final proteinTranslations = menu!.proteinType!.translations!;
+        if (proteinTranslations.isNotEmpty) {
+          final proteinTranslation = proteinTranslations.firstWhere(
+            (t) => t['language'] == language,
+            orElse: () => proteinTranslations.first,
+          );
+          proteinName = proteinTranslation['name'];
+        }
+      }
+
+      // Get subcategory translation
+      if (menu!.subcategory != null && menu!.subcategory!.translations != null) {
+        final subcategoryTranslations = menu!.subcategory!.translations!;
+        if (subcategoryTranslations.isNotEmpty) {
+          final subcategoryTranslation = subcategoryTranslations.firstWhere(
+            (t) => t['language'] == language,
+            orElse: () => subcategoryTranslations.first,
+          );
+          subcategoryName = subcategoryTranslation['name'];
+          menuDescription = subcategoryTranslation['description'];
+        }
+      }
+
+      // Construct menu name from protein + subcategory
+      if (proteinName != null && subcategoryName != null) {
+        menuName = '$proteinName $subcategoryName';
+      } else if (subcategoryName != null) {
+        menuName = subcategoryName;
+      } else if (proteinName != null) {
+        menuName = proteinName;
       }
     }
 
@@ -59,17 +89,79 @@ class DislikeModel {
 
 class MenuData {
   final int id;
+  final SubcategoryData? subcategory;
+  final ProteinTypeData? proteinType;
+
+  MenuData({
+    required this.id,
+    this.subcategory,
+    this.proteinType,
+  });
+
+  factory MenuData.fromJson(Map<String, dynamic> json) {
+    return MenuData(
+      id: json['id'] ?? 0,
+      subcategory: json['Subcategory'] != null
+          ? SubcategoryData.fromJson(json['Subcategory'])
+          : null,
+      proteinType: json['ProteinType'] != null
+          ? ProteinTypeData.fromJson(json['ProteinType'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'Subcategory': subcategory?.toJson(),
+      'ProteinType': proteinType?.toJson(),
+    };
+  }
+}
+
+class SubcategoryData {
+  final int id;
   final String key;
   final List<Map<String, dynamic>>? translations;
 
-  MenuData({
+  SubcategoryData({
     required this.id,
     required this.key,
     this.translations,
   });
 
-  factory MenuData.fromJson(Map<String, dynamic> json) {
-    return MenuData(
+  factory SubcategoryData.fromJson(Map<String, dynamic> json) {
+    return SubcategoryData(
+      id: json['id'] ?? 0,
+      key: json['key'] ?? '',
+      translations: json['Translations'] != null
+          ? List<Map<String, dynamic>>.from(json['Translations'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'key': key,
+      'Translations': translations,
+    };
+  }
+}
+
+class ProteinTypeData {
+  final int id;
+  final String key;
+  final List<Map<String, dynamic>>? translations;
+
+  ProteinTypeData({
+    required this.id,
+    required this.key,
+    this.translations,
+  });
+
+  factory ProteinTypeData.fromJson(Map<String, dynamic> json) {
+    return ProteinTypeData(
       id: json['id'] ?? 0,
       key: json['key'] ?? '',
       translations: json['Translations'] != null

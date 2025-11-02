@@ -25,39 +25,14 @@ class DislikeRepositoryImpl implements DislikeRepository {
 
   @override
   Future<List<DislikeEntity>> getUserDislikes({String language = 'th'}) async {
-    AppLogger.info('🔍 [DislikeRepo] Checking cache for user dislikes...');
+    // Always fetch from API to ensure fresh data
+    // This ensures dislike list is always up-to-date
+    AppLogger.info('🔄 [DislikeRepo] Fetching fresh dislikes from API...');
 
-    // Cache-first strategy
-    try {
-      final cachedData = await CacheService.getDislikes();
-      AppLogger.info('🔍 [DislikeRepo] Cache result: ${cachedData?.length ?? 0} items');
-
-      if (cachedData != null && cachedData.isNotEmpty) {
-        AppLogger.info('🎯 [CACHE HIT] Dislikes loaded from cache (${cachedData.length} items)');
-        // Return cached data immediately - no background refresh
-        return cachedData
-            .map((json) => DislikeEntity.fromJson(json as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (e) {
-      AppLogger.error('❌ [CACHE ERROR] Failed to load dislikes from cache', e);
-    }
-
-    // Fetch from API
-    AppLogger.info('❌ [CACHE MISS] Fetching dislikes from API...');
     final models = await remoteDataSource.getUserDislikes(language: language);
     final entities = models.map((model) => model.toEntity(language: language)).toList();
 
-    // Save to cache
-    try {
-      final jsonList = entities.map((entity) => entity.toJson()).toList();
-      AppLogger.info('💾 [CACHE SAVE] Saving ${jsonList.length} dislikes to cache...');
-      await CacheService.saveDislikes(jsonList);
-      AppLogger.info('✅ [CACHE SAVE] Successfully saved dislikes to cache');
-    } catch (e) {
-      AppLogger.error('❌ [CACHE SAVE ERROR] Failed to save dislikes to cache', e);
-    }
-
+    AppLogger.info('✅ [DislikeRepo] Fetched ${entities.length} dislikes from API');
     return entities;
   }
 
