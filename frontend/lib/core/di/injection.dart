@@ -33,10 +33,8 @@ final getIt = GetIt.instance;
 
 Future<void> setupDependencies() async {
   // Core - Singleton
-  // ApiClient is already a singleton, initialize it once
-  final apiClient = ApiClient();
-  apiClient.initialize();
-  getIt.registerSingleton<ApiClient>(apiClient);
+  // ApiClient is already a singleton, auto-initializes on first access
+  getIt.registerSingleton<ApiClient>(ApiClient());
 
   // Data Sources
   getIt.registerLazySingleton<MenuRemoteDataSource>(

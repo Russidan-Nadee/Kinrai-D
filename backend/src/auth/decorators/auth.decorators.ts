@@ -10,6 +10,7 @@ import {
   ApiUnauthorizedResponse,
   ApiForbiddenResponse,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { PermissionsGuard } from '../guards/permissions.guard';
 import { AuthRequest, TokenRequest } from '../../common/types/request.types';
@@ -66,7 +67,7 @@ export const AuthToken = createParamDecorator(
  */
 export const AuthRoles = (...roles: string[]) =>
   applyDecorators(
-    UseGuards(RolesGuard),
+    UseGuards(JwtAuthGuard, RolesGuard),  // Add JwtAuthGuard first!
     Roles(...roles),
     ApiBearerAuth(),
     ApiUnauthorizedResponse({ description: 'Unauthorized' }),

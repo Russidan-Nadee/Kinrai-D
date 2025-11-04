@@ -22,6 +22,7 @@ export class JwtAuthGuard implements CanActivate {
   private supabase: SupabaseClient | null = null;
 
   constructor(private configService: ConfigService) {
+    this.logger.log('🔐 JwtAuthGuard constructor called');
     // Initialize Supabase client
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
     const supabaseKey = this.configService.get<string>('SUPABASE_ANON_KEY');
@@ -32,17 +33,26 @@ export class JwtAuthGuard implements CanActivate {
       );
     } else {
       this.supabase = createClient(supabaseUrl, supabaseKey);
+      this.logger.log('✅ Supabase client initialized successfully');
     }
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    this.logger.log('🚀 JwtAuthGuard.canActivate() called');
     const request = context.switchToHttp().getRequest<RequestWithHeaders>();
+
+    // Debug: Log the raw authorization header
+    this.logger.debug(`Raw auth header: ${request.headers.authorization?.substring(0, 50)}...`);
+
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
       this.logger.warn('No authorization token provided');
+      this.logger.debug(`Headers received: ${JSON.stringify(Object.keys(request.headers))}`);
       throw new UnauthorizedException('Access token is required');
     }
+
+    this.logger.debug(`Token extracted successfully (length: ${token.length})`);
 
     if (!this.supabase) {
       this.logger.error('Supabase client not initialized');
@@ -92,7 +102,15 @@ export class JwtAuthGuard implements CanActivate {
       return undefined;
     }
 
-    const parts = authHeader.split(' ');
+    // Remove any whitespace/newlines and split
+    const cleanedHeader = authHeader.replace(/\s+/g, ' ').trim();
+    const parts = cleanedHeader.split(' ');
+
+    if (parts.length !== 2) {
+      this.logger.warn(`Invalid authorization header format: ${parts.length} parts found`);
+      return undefined;
+    }
+
     const [type, token] = parts;
     return type === 'Bearer' ? token : undefined;
   }

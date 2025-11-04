@@ -89,9 +89,7 @@ class _MenusTabState extends State<MenusTab> {
       }
 
       // Cache miss or refresh: Fetch from API
-      final apiClient = ApiClient();
-      apiClient.initialize();
-      final response = await apiClient.get('/menus?page=$currentPage&limit=20');
+      final response = await ApiClient().get('/menus?page=$currentPage&limit=20');
 
       final responseData = {
         'data': response.data['data'],
@@ -127,9 +125,7 @@ class _MenusTabState extends State<MenusTab> {
   /// Background refresh: Update cache without blocking UI
   Future<void> _refreshMenusInBackground({required int page}) async {
     try {
-      final apiClient = ApiClient();
-      apiClient.initialize();
-      final response = await apiClient.get('/menus?page=$page&limit=20');
+      final response = await ApiClient().get('/menus?page=$page&limit=20');
 
       final responseData = {
         'data': response.data['data'],
@@ -194,9 +190,7 @@ class _MenusTabState extends State<MenusTab> {
       }
 
       // Cache miss: Fetch from API
-      final apiClient = ApiClient();
-      apiClient.initialize();
-      final response = await apiClient.get('/menus?page=$nextPage&limit=20');
+      final response = await ApiClient().get('/menus?page=$nextPage&limit=20');
 
       final responseData = {
         'data': response.data['data'],
@@ -261,9 +255,6 @@ class _MenusTabState extends State<MenusTab> {
 
   Future<void> _createMenu(Map<String, dynamic> menuData) async {
     try {
-      final apiClient = ApiClient();
-      apiClient.initialize();
-
       // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -271,7 +262,7 @@ class _MenusTabState extends State<MenusTab> {
         );
       }
 
-      await apiClient.post('/menus', data: menuData);
+      await ApiClient().post('/menus', data: menuData);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -302,9 +293,6 @@ class _MenusTabState extends State<MenusTab> {
 
   Future<void> _createBulkMenus(List<Map<String, dynamic>> menusData) async {
     try {
-      final apiClient = ApiClient();
-      apiClient.initialize();
-
       // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -313,7 +301,7 @@ class _MenusTabState extends State<MenusTab> {
       }
 
       // Use batch endpoint instead of sequential calls
-      final response = await apiClient.post('/menus/batch', data: {
+      final response = await ApiClient().post('/menus/batch', data: {
         'menus': menusData,
       });
 
@@ -389,9 +377,6 @@ class _MenusTabState extends State<MenusTab> {
 
   Future<void> _deleteMenu(int menuId) async {
     try {
-      final apiClient = ApiClient();
-      apiClient.initialize();
-
       // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -399,7 +384,7 @@ class _MenusTabState extends State<MenusTab> {
         );
       }
 
-      await apiClient.delete('/menus/$menuId');
+      await ApiClient().delete('/menus/$menuId');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -498,9 +483,6 @@ class _MenusTabState extends State<MenusTab> {
 
   Future<void> _deleteBulkMenus(List<int> menuIds) async {
     try {
-      final apiClient = ApiClient();
-      apiClient.initialize();
-
       // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -509,7 +491,7 @@ class _MenusTabState extends State<MenusTab> {
       }
 
       // Use batch endpoint instead of sequential calls
-      final response = await apiClient.delete('/menus/batch', data: {
+      final response = await ApiClient().delete('/menus/batch', data: {
         'ids': menuIds,
       });
 

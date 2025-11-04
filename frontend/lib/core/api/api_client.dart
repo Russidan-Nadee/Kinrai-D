@@ -7,15 +7,11 @@ import '../utils/logger.dart';
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
-  ApiClient._internal();
 
   late final Dio _dio;
-  bool _isInitialized = false;
 
-  Dio get dio => _dio;
-
-  void initialize() {
-    if (_isInitialized) return;
+  ApiClient._internal() {
+    AppLogger.info('🚀 Creating ApiClient instance');
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConstants.baseUrl + AppConstants.apiVersion,
@@ -33,8 +29,10 @@ class ApiClient {
     );
 
     _addInterceptors();
-    _isInitialized = true;
+    AppLogger.info('✅ ApiClient initialized with ${_dio.interceptors.length} interceptors');
   }
+
+  Dio get dio => _dio;
 
   void _addInterceptors() {
     // Auth interceptor
@@ -45,6 +43,9 @@ class ApiClient {
           final session = Supabase.instance.client.auth.currentSession;
           if (session != null) {
             options.headers['Authorization'] = 'Bearer ${session.accessToken}';
+            AppLogger.debug('[API] Auth token added to request: ${options.path}');
+          } else {
+            AppLogger.warning('[API] No session found! Request will be sent without auth token: ${options.path}');
           }
           handler.next(options);
         },
