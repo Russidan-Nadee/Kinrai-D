@@ -13,9 +13,7 @@ class DislikeRemoteDataSourceImpl implements DislikeRemoteDataSource {
   final ApiClient _apiClient;
 
   DislikeRemoteDataSourceImpl({ApiClient? apiClient})
-      : _apiClient = apiClient ?? ApiClient() {
-    _apiClient.initialize();
-  }
+      : _apiClient = apiClient ?? ApiClient();
 
   @override
   Future<void> addDislike({required int menuId, String? reason}) async {

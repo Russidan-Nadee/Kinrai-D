@@ -3,12 +3,7 @@ import '../../../core/utils/logger.dart';
 import '../models/admin_info_model.dart';
 
 class AdminService {
-  late final ApiClient _apiClient;
-
-  AdminService() {
-    _apiClient = ApiClient();
-    _apiClient.initialize();
-  }
+  final ApiClient _apiClient = ApiClient();
 
   Future<AdminInfoModel> getMenuInfo({int limit = 1000}) async {
     try {

@@ -13,9 +13,7 @@ class ProteinPreferenceRemoteDataSourceImpl implements ProteinPreferenceRemoteDa
   final ApiClient _apiClient;
 
   ProteinPreferenceRemoteDataSourceImpl({ApiClient? apiClient})
-      : _apiClient = apiClient ?? ApiClient() {
-    _apiClient.initialize();
-  }
+      : _apiClient = apiClient ?? ApiClient();
 
   @override
   Future<List<ProteinTypeModel>> getAvailableProteinTypes({String language = 'th'}) async {

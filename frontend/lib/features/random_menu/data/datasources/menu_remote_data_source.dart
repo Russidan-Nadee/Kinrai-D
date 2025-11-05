@@ -13,9 +13,7 @@ class MenuRemoteDataSourceImpl implements MenuRemoteDataSource {
   final ApiClient _apiClient;
 
   MenuRemoteDataSourceImpl({ApiClient? apiClient})
-      : _apiClient = apiClient ?? ApiClient() {
-    _apiClient.initialize();
-  }
+      : _apiClient = apiClient ?? ApiClient();
 
   @override
   Future<MenuModel> getRandomMenu({String? language}) async {

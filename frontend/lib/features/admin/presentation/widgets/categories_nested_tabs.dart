@@ -30,9 +30,7 @@ class _CategoriesNestedTabsState extends State<CategoriesNestedTabs> {
   @override
   void initState() {
     super.initState();
-    final apiClient = ApiClient();
-    apiClient.initialize();
-    _dataSource = CategoryRemoteDataSourceImpl(apiClient: apiClient);
+    _dataSource = CategoryRemoteDataSourceImpl(apiClient: ApiClient());
     _loadFoodTypes();
   }
 
