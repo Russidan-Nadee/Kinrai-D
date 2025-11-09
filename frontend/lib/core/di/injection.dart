@@ -29,6 +29,9 @@ import '../../features/protein_preferences/domain/usecases/remove_protein_prefer
 // Profile
 import '../../features/profile/presentation/providers/profile_provider.dart';
 
+// Dislike Provider
+import '../../features/dislikes/presentation/providers/dislike_provider.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> setupDependencies() async {
@@ -111,6 +114,12 @@ Future<void> setupDependencies() async {
       getUserProteinPreferences: getIt<GetUserProteinPreferences>(),
       setProteinPreference: getIt<SetProteinPreference>(),
       removeProteinPreference: getIt<RemoveProteinPreference>(),
+    ),
+  );
+
+  // Providers - Dislike (Singleton - keep data in memory)
+  getIt.registerLazySingleton<DislikeProvider>(
+    () => DislikeProvider(
       getUserDislikes: getIt<GetUserDislikes>(),
       removeDislike: getIt<RemoveDislike>(),
       removeBulkDislikes: getIt<RemoveBulkDislikes>(),

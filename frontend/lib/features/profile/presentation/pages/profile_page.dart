@@ -5,10 +5,11 @@ import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/di/injection.dart';
 import '../providers/profile_provider.dart';
+import '../../../dislikes/presentation/providers/dislike_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/language_section.dart';
 import '../widgets/protein_preferences_section.dart';
-import '../widgets/dislike_list_section.dart';
+import '../../../dislikes/presentation/widgets/dislike_list_section.dart';
 import '../widgets/sign_out_section.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -33,11 +34,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final profileProvider = getIt<ProfileProvider>();
+        final dislikeProvider = getIt<DislikeProvider>();
         final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
         // Always refresh data when entering Profile page
         // This ensures dislike list is up-to-date after adding/removing dislikes
         profileProvider.loadAllProfileData(language: languageProvider.currentLanguageCode);
+        dislikeProvider.loadDislikes(language: languageProvider.currentLanguageCode);
       });
     }
   }
@@ -47,8 +50,15 @@ class _ProfilePageState extends State<ProfilePage> {
     final authProvider = Provider.of<AuthProvider>(context);
     final l10n = AppLocalizations.of(context);
 
-    return ChangeNotifierProvider<ProfileProvider>.value(
-      value: getIt<ProfileProvider>(), // Use singleton provider from DI
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ProfileProvider>.value(
+          value: getIt<ProfileProvider>(),
+        ),
+        ChangeNotifierProvider<DislikeProvider>.value(
+          value: getIt<DislikeProvider>(),
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.profile),

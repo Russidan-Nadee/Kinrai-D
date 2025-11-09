@@ -31,13 +31,12 @@ goto end
 :web_release_dev
 echo.
 echo ========================================
-echo Building Flutter Web (Release - Dev API)
+echo Running Flutter Web (Release - Dev API)
 echo ========================================
 echo.
 cd /d "%~dp0"
-flutter build web --release --dart-define=API_URL=http://localhost:8000
-if %ERRORLEVEL% NEQ 0 goto build_failed
-goto build_success
+flutter run -d chrome --release --dart-define=API_URL=http://localhost:8000 --web-port=8080
+goto end
 
 :web_release_prod
 echo.
