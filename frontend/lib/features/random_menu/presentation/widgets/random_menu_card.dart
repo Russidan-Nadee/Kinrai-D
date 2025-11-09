@@ -8,7 +8,7 @@ import '../../domain/entities/menu_entity.dart';
 import '../../../dislikes/domain/usecases/add_dislike.dart';
 import '../../../dislikes/domain/usecases/remove_dislike.dart';
 import '../../../dislikes/domain/usecases/is_menu_disliked.dart';
-import '../../../profile/presentation/providers/profile_provider.dart';
+import '../../../dislikes/presentation/providers/dislike_provider.dart';
 
 class RandomMenuCard extends StatefulWidget {
   final MenuEntity menu;
@@ -72,12 +72,12 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    // Try to get ProfileProvider if it exists (it might not be provided in all contexts)
-    ProfileProvider? profileProvider;
+    // Try to get DislikeProvider if it exists (it might not be provided in all contexts)
+    DislikeProvider? dislikeProvider;
     try {
-      profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      dislikeProvider = Provider.of<DislikeProvider>(context, listen: false);
     } catch (e) {
-      AppLogger.info('[RandomMenuCard] ProfileProvider not available in this context');
+      AppLogger.info('[RandomMenuCard] DislikeProvider not available in this context');
     }
 
     try {
@@ -90,18 +90,18 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
           });
 
           // Wait a bit for cache to be cleared, then refresh ProfileProvider
-          if (profileProvider != null) {
+          if (dislikeProvider != null) {
             // Clear cache first to ensure fresh data
             await CacheService.clearDislikes();
 
             // Small delay to ensure cache is cleared
             await Future.delayed(const Duration(milliseconds: 100));
 
-            // Now refresh the profile data
-            profileProvider.loadAllProfileData(
+            // Now refresh the dislike data
+            dislikeProvider.loadDislikes(
               language: languageProvider.currentLanguageCode,
             ).catchError((error) {
-              AppLogger.error('[RandomMenuCard] Failed to refresh profile data', error);
+              AppLogger.error('[RandomMenuCard] Failed to refresh dislike data', error);
             });
           }
 
@@ -121,18 +121,18 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
           });
 
           // Wait a bit for cache to be cleared, then refresh ProfileProvider
-          if (profileProvider != null) {
+          if (dislikeProvider != null) {
             // Clear cache first to ensure fresh data
             await CacheService.clearDislikes();
 
             // Small delay to ensure cache is cleared
             await Future.delayed(const Duration(milliseconds: 100));
 
-            // Now refresh the profile data
-            profileProvider.loadAllProfileData(
+            // Now refresh the dislike data
+            dislikeProvider.loadDislikes(
               language: languageProvider.currentLanguageCode,
             ).catchError((error) {
-              AppLogger.error('[RandomMenuCard] Failed to refresh profile data', error);
+              AppLogger.error('[RandomMenuCard] Failed to refresh dislike data', error);
             });
           }
 

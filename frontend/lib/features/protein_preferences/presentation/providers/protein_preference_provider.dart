@@ -1,29 +1,32 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/logger.dart';
-import '../../../protein_preferences/domain/entities/protein_preference_entity.dart';
-import '../../../protein_preferences/domain/usecases/get_available_protein_types.dart';
-import '../../../protein_preferences/domain/usecases/get_user_protein_preferences.dart';
-import '../../../protein_preferences/domain/usecases/set_protein_preference.dart';
-import '../../../protein_preferences/domain/usecases/remove_protein_preference.dart';
+import '../../domain/entities/protein_preference_entity.dart';
+import '../../domain/usecases/get_available_protein_types.dart';
+import '../../domain/usecases/get_user_protein_preferences.dart';
+import '../../domain/usecases/set_protein_preference.dart';
+import '../../domain/usecases/remove_protein_preference.dart';
 
-/// Provider to manage profile-related data (protein preferences only)
-/// Note: Dislike management has been moved to DislikeProvider
-class ProfileProvider extends ChangeNotifier {
+/// Provider to manage protein preference state and operations
+class ProteinPreferenceProvider extends ChangeNotifier {
   // Dependencies
   final GetAvailableProteinTypes _getAvailableProteinTypes;
   final GetUserProteinPreferences _getUserProteinPreferences;
   final SetProteinPreference _setProteinPreference;
   final RemoveProteinPreference _removeProteinPreference;
 
-  // Protein Preferences State
+  // State
   List<ProteinTypeEntity> _availableProteinTypes = [];
   List<ProteinPreferenceEntity> _userProteinPreferences = [];
+  bool _isLoading = false;
+  String? _errorMessage;
 
   // Getters
   List<ProteinTypeEntity> get availableProteinTypes => _availableProteinTypes;
   List<ProteinPreferenceEntity> get userProteinPreferences => _userProteinPreferences;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
-  ProfileProvider({
+  ProteinPreferenceProvider({
     required GetAvailableProteinTypes getAvailableProteinTypes,
     required GetUserProteinPreferences getUserProteinPreferences,
     required SetProteinPreference setProteinPreference,
@@ -33,15 +36,13 @@ class ProfileProvider extends ChangeNotifier {
         _setProteinPreference = setProteinPreference,
         _removeProteinPreference = removeProteinPreference;
 
-  /// Load all profile data in parallel for optimal performance
-  Future<void> loadAllProfileData({required String language}) async {
+  /// Load protein preferences data with cache-first strategy
+  Future<void> loadProteinPreferences({required String language}) async {
     try {
-      AppLogger.info('🚀 [ProfileProvider] Loading protein preferences data in parallel...');
-      final startTime = DateTime.now();
-
-      // NEVER show loading spinner - we'll use cache-first strategy
-      // This prevents the spinner from showing even when data is being fetched
-      // Users will see cached data instantly, and UI will update silently if needed
+      AppLogger.info('🚀 [ProteinPreferenceProvider] Loading protein preferences...');
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
 
       // Load protein preferences data in parallel for maximum performance
       final results = await Future.wait([
@@ -49,15 +50,15 @@ class ProfileProvider extends ChangeNotifier {
         _getUserProteinPreferences(language: language),
       ]);
 
-      final duration = DateTime.now().difference(startTime);
-      AppLogger.info('✅ [ProfileProvider] Loaded all data in ${duration.inMilliseconds}ms');
-
       _availableProteinTypes = results[0] as List<ProteinTypeEntity>;
       _userProteinPreferences = results[1] as List<ProteinPreferenceEntity>;
 
-      notifyListeners();
+      AppLogger.info('✅ [ProteinPreferenceProvider] Loaded ${_availableProteinTypes.length} protein types');
     } catch (e) {
-      AppLogger.error('❌ [ProfileProvider] Error loading profile data', e);
+      AppLogger.error('❌ [ProteinPreferenceProvider] Error loading protein preferences', e);
+      _errorMessage = 'Failed to load protein preferences';
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
@@ -68,6 +69,8 @@ class ProfileProvider extends ChangeNotifier {
     final previousPreferences = List<ProteinPreferenceEntity>.from(_userProteinPreferences);
 
     try {
+      AppLogger.info('🔄 [ProteinPreferenceProvider] Toggling protein $proteinTypeId to exclude=$exclude');
+
       // Update UI instantly for better UX
       if (exclude) {
         // Add to excluded list immediately
@@ -111,9 +114,10 @@ class ProfileProvider extends ChangeNotifier {
       _userProteinPreferences = results[1] as List<ProteinPreferenceEntity>;
       notifyListeners();
 
+      AppLogger.info('✅ [ProteinPreferenceProvider] Successfully toggled protein preference');
       return true;
     } catch (e) {
-      AppLogger.error('❌ [ProfileProvider] Error toggling protein preference - rolling back', e);
+      AppLogger.error('❌ [ProteinPreferenceProvider] Error toggling protein preference - rolling back', e);
 
       // ROLLBACK: Restore previous state on error
       _userProteinPreferences = previousPreferences;
@@ -128,5 +132,11 @@ class ProfileProvider extends ChangeNotifier {
     return _userProteinPreferences.any(
       (pref) => pref.proteinTypeId == proteinTypeId && pref.exclude,
     );
+  }
+
+  /// Clear error message
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
   }
 }

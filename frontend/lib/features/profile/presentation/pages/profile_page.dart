@@ -4,11 +4,11 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/di/injection.dart';
-import '../providers/profile_provider.dart';
 import '../../../dislikes/presentation/providers/dislike_provider.dart';
+import '../../../protein_preferences/presentation/providers/protein_preference_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/language_section.dart';
-import '../widgets/protein_preferences_section.dart';
+import '../../../protein_preferences/presentation/widgets/protein_preferences_section.dart';
 import '../../../dislikes/presentation/widgets/dislike_list_section.dart';
 import '../widgets/sign_out_section.dart';
 
@@ -33,14 +33,13 @@ class _ProfilePageState extends State<ProfilePage> {
       _isFirstLoad = false;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final profileProvider = getIt<ProfileProvider>();
         final dislikeProvider = getIt<DislikeProvider>();
+        final proteinProvider = getIt<ProteinPreferenceProvider>();
         final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
         // Always refresh data when entering Profile page
-        // This ensures dislike list is up-to-date after adding/removing dislikes
-        profileProvider.loadAllProfileData(language: languageProvider.currentLanguageCode);
         dislikeProvider.loadDislikes(language: languageProvider.currentLanguageCode);
+        proteinProvider.loadProteinPreferences(language: languageProvider.currentLanguageCode);
       });
     }
   }
@@ -52,11 +51,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<ProfileProvider>.value(
-          value: getIt<ProfileProvider>(),
-        ),
         ChangeNotifierProvider<DislikeProvider>.value(
           value: getIt<DislikeProvider>(),
+        ),
+        ChangeNotifierProvider<ProteinPreferenceProvider>.value(
+          value: getIt<ProteinPreferenceProvider>(),
         ),
       ],
       child: Scaffold(

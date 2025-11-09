@@ -26,11 +26,11 @@ import '../../features/protein_preferences/domain/usecases/get_user_protein_pref
 import '../../features/protein_preferences/domain/usecases/set_protein_preference.dart';
 import '../../features/protein_preferences/domain/usecases/remove_protein_preference.dart';
 
-// Profile
-import '../../features/profile/presentation/providers/profile_provider.dart';
-
 // Dislike Provider
 import '../../features/dislikes/presentation/providers/dislike_provider.dart';
+
+// Protein Preference Provider
+import '../../features/protein_preferences/presentation/providers/protein_preference_provider.dart';
 
 final getIt = GetIt.instance;
 
@@ -107,22 +107,22 @@ Future<void> setupDependencies() async {
     () => RemoveProteinPreference(getIt<ProteinPreferenceRepository>()),
   );
 
-  // Providers - Profile (Singleton - keep data in memory)
-  getIt.registerLazySingleton<ProfileProvider>(
-    () => ProfileProvider(
-      getAvailableProteinTypes: getIt<GetAvailableProteinTypes>(),
-      getUserProteinPreferences: getIt<GetUserProteinPreferences>(),
-      setProteinPreference: getIt<SetProteinPreference>(),
-      removeProteinPreference: getIt<RemoveProteinPreference>(),
-    ),
-  );
-
   // Providers - Dislike (Singleton - keep data in memory)
   getIt.registerLazySingleton<DislikeProvider>(
     () => DislikeProvider(
       getUserDislikes: getIt<GetUserDislikes>(),
       removeDislike: getIt<RemoveDislike>(),
       removeBulkDislikes: getIt<RemoveBulkDislikes>(),
+    ),
+  );
+
+  // Providers - Protein Preference (Singleton - keep data in memory)
+  getIt.registerLazySingleton<ProteinPreferenceProvider>(
+    () => ProteinPreferenceProvider(
+      getAvailableProteinTypes: getIt<GetAvailableProteinTypes>(),
+      getUserProteinPreferences: getIt<GetUserProteinPreferences>(),
+      setProteinPreference: getIt<SetProteinPreference>(),
+      removeProteinPreference: getIt<RemoveProteinPreference>(),
     ),
   );
 }

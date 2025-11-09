@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
-import '../../../protein_preferences/domain/entities/protein_preference_entity.dart';
-import '../providers/profile_provider.dart';
+import '../../domain/entities/protein_preference_entity.dart';
+import '../providers/protein_preference_provider.dart';
 
 class ProteinPreferencesSection extends StatelessWidget {
   const ProteinPreferencesSection({super.key});
@@ -12,10 +12,10 @@ class ProteinPreferencesSection extends StatelessWidget {
     int proteinTypeId,
     bool exclude,
   ) async {
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    final proteinProvider = Provider.of<ProteinPreferenceProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
-    final success = await profileProvider.toggleProteinPreference(
+    final success = await proteinProvider.toggleProteinPreference(
       proteinTypeId,
       exclude,
       languageProvider.currentLanguageCode,
@@ -41,7 +41,7 @@ class ProteinPreferencesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profileProvider = Provider.of<ProfileProvider>(context);
+    final proteinProvider = Provider.of<ProteinPreferenceProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
 
     return Column(
@@ -92,7 +92,7 @@ class ProteinPreferencesSection extends StatelessWidget {
               ),
             ],
           ),
-          child: profileProvider.availableProteinTypes.isEmpty
+          child: proteinProvider.availableProteinTypes.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -111,7 +111,7 @@ class ProteinPreferencesSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Show current restrictions if any
-                    if (profileProvider.userProteinPreferences.isNotEmpty) ...[
+                    if (proteinProvider.userProteinPreferences.isNotEmpty) ...[
                       Text(
                         languageProvider.currentLanguageCode == 'en'
                             ? 'Don\'t eat:'
@@ -126,7 +126,7 @@ class ProteinPreferencesSection extends StatelessWidget {
                       Wrap(
                         spacing: 6,
                         runSpacing: 6,
-                        children: profileProvider.userProteinPreferences.map((pref) {
+                        children: proteinProvider.userProteinPreferences.map((pref) {
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
@@ -159,7 +159,7 @@ class ProteinPreferencesSection extends StatelessWidget {
   }
 
   Widget _buildProteinGrid(BuildContext context, LanguageProvider languageProvider) {
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    final proteinProvider = Provider.of<ProteinPreferenceProvider>(context, listen: false);
 
     return LayoutBuilder(
       builder: (builderContext, constraints) {
@@ -171,7 +171,7 @@ class ProteinPreferencesSection extends StatelessWidget {
         // If screen is very narrow (mobile), use single column
         if (constraints.maxWidth < 500) {
           return Column(
-            children: profileProvider.availableProteinTypes.map((proteinType) {
+            children: proteinProvider.availableProteinTypes.map((proteinType) {
               return _buildProteinItem(context, proteinType, languageProvider, true);
             }).toList(),
           );
@@ -187,9 +187,9 @@ class ProteinPreferencesSection extends StatelessWidget {
             mainAxisSpacing: 12,
             childAspectRatio: 4.5,
           ),
-          itemCount: profileProvider.availableProteinTypes.length,
+          itemCount: proteinProvider.availableProteinTypes.length,
           itemBuilder: (gridContext, index) {
-            return _buildProteinItem(context, profileProvider.availableProteinTypes[index], languageProvider, false);
+            return _buildProteinItem(context, proteinProvider.availableProteinTypes[index], languageProvider, false);
           },
         );
       },
@@ -197,8 +197,8 @@ class ProteinPreferencesSection extends StatelessWidget {
   }
 
   Widget _buildProteinItem(BuildContext context, ProteinTypeEntity proteinType, LanguageProvider languageProvider, bool isMobile) {
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-    final isExcluded = profileProvider.isProteinExcluded(proteinType.id);
+    final proteinProvider = Provider.of<ProteinPreferenceProvider>(context, listen: false);
+    final isExcluded = proteinProvider.isProteinExcluded(proteinType.id);
 
     return Container(
       width: isMobile ? double.infinity : null,
