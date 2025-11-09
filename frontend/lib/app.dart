@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'features/admin/presentation/pages/admin_main_page.dart';
 import 'features/random_menu/presentation/pages/home_page.dart';
 import 'features/profile/presentation/pages/profile_page.dart';
 import 'core/presentation/sidebar_widget.dart';
 import 'core/presentation/bottom_navigation_widget.dart';
+import 'core/providers/auth_provider.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -60,7 +62,18 @@ class _MainNavigationState extends State<MainNavigation>
     }
   }
 
-  void _navigateToPage(int index) {
+  void _navigateToPage(int index, {required bool isAdmin}) {
+    // Prevent navigation to Admin page if not admin
+    if (index == 2 && !isAdmin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Access denied. Admin privileges required.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _currentIndex = index;
     });
@@ -68,6 +81,28 @@ class _MainNavigationState extends State<MainNavigation>
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
+    // Show loading indicator while fetching user data
+    if (authProvider.isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final isAdmin = authProvider.user?.isAdmin ?? false;
+
+    // If current page is Admin but user is not admin, redirect to home
+    if (_currentIndex == 2 && !isAdmin) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _currentIndex = 0;
+        });
+      });
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
@@ -82,7 +117,8 @@ class _MainNavigationState extends State<MainNavigation>
                   isCollapsed: _isCollapsed,
                   currentIndex: _currentIndex,
                   onToggle: _toggleSidebar,
-                  onNavigate: _navigateToPage,
+                  onNavigate: (index) => _navigateToPage(index, isAdmin: isAdmin),
+                  isAdmin: isAdmin,
                 ),
               // Content area
               Expanded(child: _pages[_currentIndex]),
@@ -92,7 +128,8 @@ class _MainNavigationState extends State<MainNavigation>
           bottomNavigationBar: isMobile
               ? BottomNavigationWidget(
                   currentIndex: _currentIndex,
-                  onNavigate: _navigateToPage,
+                  onNavigate: (index) => _navigateToPage(index, isAdmin: isAdmin),
+                  isAdmin: isAdmin,
                 )
               : null,
         );

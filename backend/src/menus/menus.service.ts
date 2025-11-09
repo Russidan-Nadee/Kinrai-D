@@ -1134,94 +1134,88 @@ export class MenusService {
     const results: any[] = [];
     const errors: any[] = [];
 
-    // Use transaction for atomic operation
-    try {
-      await this.prisma.$transaction(async (prisma) => {
-        for (const menuData of menusData) {
-          try {
-            // Validate subcategory
-            const subcategory = await prisma.subcategory.findUnique({
-              where: { id: menuData.subcategory_id },
-            });
+    // Process each menu independently (no transaction to allow partial success)
+    for (const menuData of menusData) {
+      try {
+        // Validate subcategory
+        const subcategory = await this.prisma.subcategory.findUnique({
+          where: { id: menuData.subcategory_id },
+        });
 
-            if (!subcategory) {
-              errors.push({
-                menu: menuData,
-                error: `Subcategory ${menuData.subcategory_id} not found`,
-              });
-              continue;
-            }
+        if (!subcategory) {
+          errors.push({
+            menu: menuData,
+            error: `Subcategory ${menuData.subcategory_id} not found`,
+          });
+          continue;
+        }
 
-            // Validate protein type if provided
-            if (menuData.protein_type_id) {
-              const proteinType = await prisma.proteinType.findUnique({
-                where: { id: menuData.protein_type_id },
-              });
-              if (!proteinType) {
-                errors.push({
-                  menu: menuData,
-                  error: `Protein type ${menuData.protein_type_id} not found`,
-                });
-                continue;
-              }
-            }
-
-            // Check for duplicates
-            const existing = await prisma.menu.findFirst({
-              where: {
-                subcategory_id: menuData.subcategory_id,
-                protein_type_id: menuData.protein_type_id,
-              },
-            });
-
-            if (existing) {
-              errors.push({
-                menu: menuData,
-                error: 'Menu already exists',
-              });
-              continue;
-            }
-
-            // Create menu
-            const created = await prisma.menu.create({
-              data: {
-                subcategory_id: menuData.subcategory_id,
-                protein_type_id: menuData.protein_type_id,
-                image_url: menuData.image_url,
-                contains: menuData.contains,
-                meal_time: menuData.meal_time,
-              },
-              include: {
-                Subcategory: {
-                  include: { Translations: true },
-                },
-                ProteinType: {
-                  include: { Translations: true },
-                },
-              },
-            });
-
-            results.push(created);
-          } catch (error) {
+        // Validate protein type if provided
+        if (menuData.protein_type_id) {
+          const proteinType = await this.prisma.proteinType.findUnique({
+            where: { id: menuData.protein_type_id },
+          });
+          if (!proteinType) {
             errors.push({
               menu: menuData,
-              error: error.message || 'Unknown error',
+              error: `Protein type ${menuData.protein_type_id} not found`,
             });
+            continue;
           }
         }
-      });
 
-      return {
-        success: true,
-        total: menusData.length,
-        created: results.length,
-        failed: errors.length,
-        results,
-        errors: errors.length > 0 ? errors : undefined,
-      };
-    } catch (error) {
-      throw error;
+        // Check for duplicates
+        const existing = await this.prisma.menu.findFirst({
+          where: {
+            subcategory_id: menuData.subcategory_id,
+            protein_type_id: menuData.protein_type_id,
+          },
+        });
+
+        if (existing) {
+          errors.push({
+            menu: menuData,
+            error: 'Menu already exists',
+          });
+          continue;
+        }
+
+        // Create menu
+        const created = await this.prisma.menu.create({
+          data: {
+            subcategory_id: menuData.subcategory_id,
+            protein_type_id: menuData.protein_type_id,
+            image_url: menuData.image_url,
+            contains: menuData.contains,
+            meal_time: menuData.meal_time,
+          },
+          include: {
+            Subcategory: {
+              include: { Translations: true },
+            },
+            ProteinType: {
+              include: { Translations: true },
+            },
+          },
+        });
+
+        results.push(created);
+      } catch (error) {
+        errors.push({
+          menu: menuData,
+          error: error.message || 'Unknown error',
+        });
+      }
     }
+
+    return {
+      success: true,
+      total: menusData.length,
+      created: results.length,
+      failed: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
+    };
   }
 
   @CacheEvictByTags(['menus', 'menu_list'])

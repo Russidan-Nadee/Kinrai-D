@@ -1,6 +1,8 @@
 import {
   Controller,
   Post,
+  Get,
+  Param,
   Body,
   Logger,
   HttpStatus,
@@ -48,6 +50,45 @@ export class UsersController {
         {
           success: false,
           message: 'Failed to sync user',
+          error: (error as Error).message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':id')
+  async getUserById(@Param('id') id: string) {
+    this.logger.log(`Fetching user: ${id}`);
+
+    try {
+      const user = await this.usersService.getUserById(id);
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone_number: user.phone,
+        email_verified: true,
+        is_admin: user.role === 'ADMIN',
+        created_at: user.created_at.toISOString(),
+        updated_at: user.updated_at.toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`Failed to fetch user ${id}:`, error);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Failed to fetch user',
           error: (error as Error).message,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

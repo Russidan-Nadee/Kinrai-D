@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dio/dio.dart';
 import '../utils/logger.dart';
+import '../models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
-  User? _user;
+  User? _supabaseUser;
+  UserModel? _userModel;
   bool _isLoading = true;
   String? _error;
   final Dio _dio = Dio(BaseOptions(
@@ -13,25 +15,58 @@ class AuthProvider extends ChangeNotifier {
     receiveTimeout: const Duration(seconds: 3),
   ));
 
-  User? get user => _user;
+  UserModel? get user => _userModel;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get isAuthenticated => _user != null;
+  bool get isAuthenticated => _supabaseUser != null;
 
   AuthProvider() {
     _init();
   }
 
-  void _init() {
-    _user = Supabase.instance.client.auth.currentUser;
+  void _init() async {
+    _supabaseUser = Supabase.instance.client.auth.currentUser;
+    if (_supabaseUser != null) {
+      await _fetchUserModel(_supabaseUser!);
+    }
     _isLoading = false;
     notifyListeners();
 
     // Listen to auth changes
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      _user = data.session?.user;
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      _supabaseUser = data.session?.user;
+      if (_supabaseUser != null) {
+        await _fetchUserModel(_supabaseUser!);
+      } else {
+        _userModel = null;
+      }
       notifyListeners();
     });
+  }
+
+  Future<void> _fetchUserModel(User supabaseUser) async {
+    try {
+      AppLogger.info('📥 Fetching user data from backend for: ${supabaseUser.email}');
+
+      final response = await _dio.get('/users/${supabaseUser.id}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        _userModel = UserModel.fromJson(response.data);
+        AppLogger.info('✅ User model fetched successfully. isAdmin: ${_userModel?.isAdmin}');
+      }
+    } catch (e) {
+      AppLogger.error('❌ Failed to fetch user model, using default', e);
+      // Fallback: Create UserModel from Supabase user data
+      _userModel = UserModel(
+        id: supabaseUser.id,
+        email: supabaseUser.email ?? '',
+        name: supabaseUser.userMetadata?['name'],
+        emailVerified: supabaseUser.emailConfirmedAt != null,
+        isAdmin: false, // Default to non-admin
+        createdAt: DateTime.parse(supabaseUser.createdAt),
+        updatedAt: DateTime.now(),
+      );
+    }
   }
 
   Future<bool> signInWithEmail(String email, String password) async {
@@ -49,7 +84,11 @@ class AuthProvider extends ChangeNotifier {
 
       AppLogger.info('✅ Login response: ${response.user?.email}');
 
-      _user = response.user;
+      _supabaseUser = response.user;
+      if (_supabaseUser != null) {
+        await _fetchUserModel(_supabaseUser!);
+      }
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -88,7 +127,8 @@ class AuthProvider extends ChangeNotifier {
         // Sync user to backend database
         await _syncUserToDatabase(response.user!);
 
-        _user = response.user;
+        _supabaseUser = response.user;
+        await _fetchUserModel(_supabaseUser!);
       }
 
       _isLoading = false;
@@ -126,7 +166,8 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signOut() async {
     try {
       await Supabase.instance.client.auth.signOut();
-      _user = null;
+      _supabaseUser = null;
+      _userModel = null;
       notifyListeners();
     } catch (e) {
       _error = e.toString();

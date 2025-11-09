@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class BottomNavigationWidget extends StatelessWidget {
   final int currentIndex;
   final Function(int) onNavigate;
+  final bool isAdmin;
 
   const BottomNavigationWidget({
     super.key,
     required this.currentIndex,
     required this.onNavigate,
+    this.isAdmin = false,
   });
 
   @override
@@ -43,22 +45,23 @@ class BottomNavigationWidget extends StatelessWidget {
             type: BottomNavigationBarType.fixed,
             backgroundColor: const Color(0xFFFF6B35),
             elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
+            items: [
+              const BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined),
                 activeIcon: Icon(Icons.home),
                 label: '',
               ),
-              BottomNavigationBarItem(
+              const BottomNavigationBarItem(
                 icon: Icon(Icons.person_outline),
                 activeIcon: Icon(Icons.person),
                 label: '',
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.admin_panel_settings_outlined),
-                activeIcon: Icon(Icons.admin_panel_settings),
-                label: '',
-              ),
+              if (isAdmin)
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.admin_panel_settings_outlined),
+                  activeIcon: Icon(Icons.admin_panel_settings),
+                  label: '',
+                ),
             ],
           ),
         ),

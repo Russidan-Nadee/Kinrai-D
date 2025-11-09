@@ -9,6 +9,7 @@ class SidebarWidget extends StatelessWidget {
   final int currentIndex;
   final VoidCallback onToggle;
   final Function(int) onNavigate;
+  final bool isAdmin;
 
   const SidebarWidget({
     super.key,
@@ -17,6 +18,7 @@ class SidebarWidget extends StatelessWidget {
     required this.currentIndex,
     required this.onToggle,
     required this.onNavigate,
+    this.isAdmin = false,
   });
 
   @override
@@ -72,15 +74,16 @@ class SidebarWidget extends StatelessWidget {
                   isCollapsed: isMobile || isCollapsed,
                   onTap: () => onNavigate(1),
                 ),
-                SidebarNavItem(
-                  icon: Icons.admin_panel_settings_outlined,
-                  selectedIcon: Icons.admin_panel_settings,
-                  label: l10n.admin,
-                  index: 2,
-                  currentIndex: currentIndex,
-                  isCollapsed: isMobile || isCollapsed,
-                  onTap: () => onNavigate(2),
-                ),
+                if (isAdmin)
+                  SidebarNavItem(
+                    icon: Icons.admin_panel_settings_outlined,
+                    selectedIcon: Icons.admin_panel_settings,
+                    label: l10n.admin,
+                    index: 2,
+                    currentIndex: currentIndex,
+                    isCollapsed: isMobile || isCollapsed,
+                    onTap: () => onNavigate(2),
+                  ),
               ],
             ),
           ),
