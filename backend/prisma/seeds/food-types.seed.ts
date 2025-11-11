@@ -18,7 +18,7 @@ export const foodTypeSeedData = [
         description: 'อาหารคาว อาหารจานหลัก',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '主食',
         description: 'メイン料理と塩味の食事',
       },

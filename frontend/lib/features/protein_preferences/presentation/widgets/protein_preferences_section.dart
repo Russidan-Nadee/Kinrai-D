@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../domain/entities/protein_preference_entity.dart';
 import '../providers/protein_preference_provider.dart';
 
-class ProteinPreferencesSection extends StatelessWidget {
+class ProteinPreferencesSection extends StatefulWidget {
   const ProteinPreferencesSection({super.key});
+
+  @override
+  State<ProteinPreferencesSection> createState() => _ProteinPreferencesSectionState();
+}
+
+class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
+  String? _previousLanguage;
 
   Future<void> _toggleProteinPreference(
     BuildContext context,
@@ -14,6 +22,7 @@ class ProteinPreferencesSection extends StatelessWidget {
   ) async {
     final proteinProvider = Provider.of<ProteinPreferenceProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context);
 
     final success = await proteinProvider.toggleProteinPreference(
       proteinTypeId,
@@ -25,13 +34,7 @@ class ProteinPreferencesSection extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            success
-                ? (languageProvider.currentLanguageCode == 'en'
-                    ? 'Protein preference updated'
-                    : 'อัพเดตความชอบเนื้อสัตว์แล้ว')
-                : (languageProvider.currentLanguageCode == 'en'
-                    ? 'An error occurred. Please try again'
-                    : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
+            success ? l10n.proteinPreferenceUpdated : l10n.errorOccurred,
           ),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
@@ -43,6 +46,17 @@ class ProteinPreferencesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final proteinProvider = Provider.of<ProteinPreferenceProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
+    final l10n = AppLocalizations.of(context);
+
+    // Auto-reload when language changes
+    final currentLanguage = languageProvider.currentLanguageCode;
+    if (_previousLanguage != null && _previousLanguage != currentLanguage) {
+      // Language changed - reload data with new language
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        proteinProvider.loadProteinPreferences(language: currentLanguage);
+      });
+    }
+    _previousLanguage = currentLanguage;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,9 +70,7 @@ class ProteinPreferencesSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              languageProvider.currentLanguageCode == 'en'
-                  ? 'Protein Preferences'
-                  : 'ไม่อยากกินเนื้อสัตว์',
+              l10n.proteinPreferences,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -69,9 +81,7 @@ class ProteinPreferencesSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          languageProvider.currentLanguageCode == 'en'
-              ? 'Choose which proteins you don\'t want to eat'
-              : 'เลือกเนื้อสัตว์ที่ไม่อยากกิน',
+          l10n.manageProteinPreferences,
           style: TextStyle(
             fontSize: 14,
             color: Colors.grey[600],
@@ -97,9 +107,7 @@ class ProteinPreferencesSection extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Text(
-                      languageProvider.currentLanguageCode == 'en'
-                          ? 'No protein types available'
-                          : 'ไม่มีประเภทเนื้อสัตว์',
+                      l10n.noProteinTypesAvailable,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[600],
@@ -113,9 +121,7 @@ class ProteinPreferencesSection extends StatelessWidget {
                     // Show current restrictions if any
                     if (proteinProvider.userProteinPreferences.isNotEmpty) ...[
                       Text(
-                        languageProvider.currentLanguageCode == 'en'
-                            ? 'Don\'t eat:'
-                            : 'ไม่กิน:',
+                        l10n.dontEat,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../domain/entities/dislike_entity.dart';
 import '../providers/dislike_provider.dart';
 
@@ -13,10 +14,12 @@ class DislikeListSection extends StatefulWidget {
 
 class _DislikeListSectionState extends State<DislikeListSection> {
   bool _showAllDislikes = false;
+  String? _previousLanguage;
 
   Future<void> _handleRemoveDislike(int menuId) async {
     final dislikeProvider = Provider.of<DislikeProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context);
 
     final success = await dislikeProvider.removeDislike(menuId, languageProvider.currentLanguageCode);
 
@@ -24,13 +27,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            success
-                ? (languageProvider.currentLanguageCode == 'en'
-                    ? 'Removed from dislike list'
-                    : 'ลบออกจากรายการไม่ชอบแล้ว')
-                : (languageProvider.currentLanguageCode == 'en'
-                    ? 'An error occurred. Please try again'
-                    : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
+            success ? l10n.removedFromDislikeList : l10n.errorOccurred,
           ),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
@@ -56,6 +53,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
   Future<void> _handleRemoveBulkDislikes() async {
     final dislikeProvider = Provider.of<DislikeProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context);
     final removedCount = dislikeProvider.selectedCount;
 
     final success = await dislikeProvider.removeBulkDislikes(
@@ -67,13 +65,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            success
-                ? (languageProvider.currentLanguageCode == 'en'
-                    ? 'Removed $removedCount items from dislike list'
-                    : 'ลบรายการที่ไม่ชอบ $removedCount รายการแล้ว')
-                : (languageProvider.currentLanguageCode == 'en'
-                    ? 'An error occurred. Please try again'
-                    : 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
+            success ? l10n.removedMultipleFromDislikeList(removedCount) : l10n.errorOccurred,
           ),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
@@ -88,7 +80,18 @@ class _DislikeListSectionState extends State<DislikeListSection> {
   @override
   Widget build(BuildContext context) {
     final dislikeProvider = Provider.of<DislikeProvider>(context);
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final l10n = AppLocalizations.of(context);
+
+    // Auto-reload when language changes
+    final currentLanguage = languageProvider.currentLanguageCode;
+    if (_previousLanguage != null && _previousLanguage != currentLanguage) {
+      // Language changed - reload data with new language
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        dislikeProvider.loadDislikes(language: currentLanguage);
+      });
+    }
+    _previousLanguage = currentLanguage;
     final dislikes = dislikeProvider.dislikes;
     final isBulkMode = dislikeProvider.isBulkMode;
     final selectedMenuIds = dislikeProvider.selectedMenuIds;
@@ -101,9 +104,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
             Icon(Icons.thumb_down_outlined, color: Colors.red[600], size: 20),
             const SizedBox(width: 8),
             Text(
-              languageProvider.currentLanguageCode == 'en'
-                  ? 'Dislike List'
-                  : 'รายการที่ไม่ชอบ',
+              l10n.dislikeList,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -116,29 +117,19 @@ class _DislikeListSectionState extends State<DislikeListSection> {
                 TextButton.icon(
                   onPressed: _toggleBulkMode,
                   icon: const Icon(Icons.edit, size: 16),
-                  label: Text(
-                    languageProvider.currentLanguageCode == 'en' ? 'Select' : 'เลือก',
-                  ),
+                  label: Text(l10n.select),
                   style: TextButton.styleFrom(foregroundColor: Colors.blue[600]),
                 )
               else ...[
                 TextButton(
                   onPressed: _deselectAll,
                   style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
-                  child: Text(
-                    languageProvider.currentLanguageCode == 'en'
-                        ? 'Deselect All'
-                        : 'ยกเลิกทั้งหมด',
-                  ),
+                  child: Text(l10n.deselectAll),
                 ),
                 TextButton(
                   onPressed: _selectAll,
                   style: TextButton.styleFrom(foregroundColor: Colors.blue[600]),
-                  child: Text(
-                    languageProvider.currentLanguageCode == 'en'
-                        ? 'Select All'
-                        : 'เลือกทั้งหมด',
-                  ),
+                  child: Text(l10n.selectAll),
                 ),
               ],
             ],
@@ -168,9 +159,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
                         Icon(Icons.sentiment_satisfied, size: 48, color: Colors.grey[400]),
                         const SizedBox(height: 8),
                         Text(
-                          languageProvider.currentLanguageCode == 'en'
-                              ? 'No dislikes yet'
-                              : 'ยังไม่มีรายการที่ไม่ชอบ',
+                          l10n.noDislikes,
                           style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
                       ],
@@ -191,11 +180,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
                             child: TextButton.icon(
                               onPressed: () => setState(() => _showAllDislikes = true),
                               icon: const Icon(Icons.expand_more, size: 18),
-                              label: Text(
-                                languageProvider.currentLanguageCode == 'en'
-                                    ? 'Show All (${dislikes.length})'
-                                    : 'ดูทั้งหมด (${dislikes.length})',
-                              ),
+                              label: Text(l10n.showAllCount(dislikes.length)),
                               style: TextButton.styleFrom(foregroundColor: Colors.blue[600]),
                             ),
                           ),
@@ -206,11 +191,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
                             child: TextButton.icon(
                               onPressed: () => setState(() => _showAllDislikes = false),
                               icon: const Icon(Icons.expand_less, size: 18),
-                              label: Text(
-                                languageProvider.currentLanguageCode == 'en'
-                                    ? 'Show Less'
-                                    : 'ย่อเก็บ',
-                              ),
+                              label: Text(l10n.showLess),
                               style: TextButton.styleFrom(foregroundColor: Colors.blue[600]),
                             ),
                           ),
@@ -223,11 +204,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
                                 child: ElevatedButton.icon(
                                   onPressed: _toggleBulkMode,
                                   icon: const Icon(Icons.close, size: 18),
-                                  label: Text(
-                                    languageProvider.currentLanguageCode == 'en'
-                                        ? 'Cancel'
-                                        : 'ยกเลิก',
-                                  ),
+                                  label: Text(l10n.cancel),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.grey[300],
                                     foregroundColor: Colors.grey[700],
@@ -242,11 +219,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
                                       ? _handleRemoveBulkDislikes
                                       : null,
                                   icon: const Icon(Icons.delete_sweep, size: 18),
-                                  label: Text(
-                                    languageProvider.currentLanguageCode == 'en'
-                                        ? 'Remove Selected (${selectedMenuIds.length})'
-                                        : 'ลบที่เลือก (${selectedMenuIds.length})',
-                                  ),
+                                  label: Text(l10n.removeSelectedCount(selectedMenuIds.length)),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: selectedMenuIds.isNotEmpty
                                         ? Colors.red[400]
@@ -273,6 +246,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
     Set<int> selectedMenuIds,
   ) {
     final dislikeProvider = Provider.of<DislikeProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context);
     final isSelected = selectedMenuIds.contains(dislike.menuId);
 
     return Container(
@@ -337,13 +311,13 @@ class _DislikeListSectionState extends State<DislikeListSection> {
                 if (dislike.reason != null && dislike.reason!.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '${languageProvider.currentLanguageCode == 'en' ? 'Reason' : 'เหตุผล'}: ${dislike.reason}',
+                    '${l10n.reason}: ${dislike.reason}',
                     style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
                 const SizedBox(height: 4),
                 Text(
-                  '${languageProvider.currentLanguageCode == 'en' ? 'Added on' : 'เพิ่มเมื่อ'}: ${_formatDate(dislike.createdAt)}',
+                  '${l10n.addedOn}: ${_formatDate(dislike.createdAt)}',
                   style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                 ),
               ],
@@ -354,9 +328,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
               onPressed: () => _handleRemoveDislike(dislike.menuId),
               icon: Icon(Icons.delete_outline, color: Colors.red[600], size: 20),
               splashRadius: 20,
-              tooltip: languageProvider.currentLanguageCode == 'en'
-                  ? 'Remove from dislike list'
-                  : 'ลบจากรายการไม่ชอบ',
+              tooltip: l10n.removeFromDislikeList,
             ),
         ],
       ),

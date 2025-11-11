@@ -21,5 +21,29 @@
 
   "otherFeaturesDeveloping": "その他の機能を開発中",
 
-  "comingSoon": "近日公開！"
+  "comingSoon": "近日公開！",
+
+  "dislikeList": "苦手なメニュー",
+
+  "noDislikesYet": "まだ苦手なメニューはありません",
+
+  "removedFromDislikes": "苦手リストから削除しました",
+
+  "removeFromDislikes": "苦手リストから削除",
+
+  "errorTryAgain": "エラーが発生しました。もう一度お試しください",
+
+  "reason": "理由",
+
+  "addedOn": "追加日",
+
+  "proteinPreferences": "食べたくないタンパク質",
+
+  "noProteinRestrictions": "すべてのタンパク質が食べられます",
+
+  "manageProteinPreferences": "食べたくないタンパク質を選択",
+
+  "proteinPreferenceUpdated": "タンパク質の設定を更新しました",
+
+  "dontEatProteins": "食べない："
 }

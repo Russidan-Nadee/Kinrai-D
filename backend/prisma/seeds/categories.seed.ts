@@ -20,7 +20,7 @@ export const categorySeedData = [
         description: 'ข้าวราดแกง ข้าวผัด และอาหารจานเดียว',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'ライス料理',
         description: 'ご飯もの料理とライスベースの食事',
       },
@@ -47,7 +47,7 @@ export const categorySeedData = [
         description: 'ก๋วยเตี๋ยว บะหมี่ เส้นใหญ่ เส้นเล็ก',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '麺類',
         description: '様々な麺料理',
       },
@@ -74,7 +74,7 @@ export const categorySeedData = [
         description: 'แกงเผ็ด แกงเขียวหวาน แกงมัสมั่น',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'カレー',
         description: 'タイカレーとカレーベースの料理',
       },
@@ -101,7 +101,7 @@ export const categorySeedData = [
         description: 'ผัดไทย ผัดซีอิ๊ว ผัดกะเพรา',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '炒め物',
         description: '炒め料理と中華鍋料理',
       },
@@ -128,7 +128,7 @@ export const categorySeedData = [
         description: 'ต้มยำ ต้มข่า ต้มจืด',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'スープ',
         description: 'タイのスープ類',
       },
@@ -155,7 +155,7 @@ export const categorySeedData = [
         description: 'ส้มตำ ยำวุ้นเส้น ลาบ',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'サラダ',
         description: 'タイ風サラダと生野菜料理',
       },
@@ -182,7 +182,7 @@ export const categorySeedData = [
         description: 'ไก่ย่าง หมูเผา ปลาเผา',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '焼き物',
         description: 'グリル料理とバーベキュー',
       },

@@ -85,5 +85,35 @@
   "admin": "Admin",
   "@admin": {
     "description": "Admin tab title"
+  },
+
+  "proteinPreferences": "Protein Preferences",
+  "@proteinPreferences": {
+    "description": "Protein preferences section title"
+  },
+
+  "manageProteinPreferences": "Choose which proteins you don't want to eat",
+  "@manageProteinPreferences": {
+    "description": "Protein preferences section subtitle"
+  },
+
+  "noProteinTypesAvailable": "No protein types available",
+  "@noProteinTypesAvailable": {
+    "description": "Message when no protein types are available"
+  },
+
+  "dontEat": "Don't eat:",
+  "@dontEat": {
+    "description": "Label for excluded proteins"
+  },
+
+  "proteinPreferenceUpdated": "Protein preference updated",
+  "@proteinPreferenceUpdated": {
+    "description": "Success message when protein preference is updated"
+  },
+
+  "errorOccurred": "An error occurred. Please try again",
+  "@errorOccurred": {
+    "description": "Generic error message"
   }
 }

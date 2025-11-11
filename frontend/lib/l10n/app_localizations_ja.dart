@@ -57,4 +57,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get admin => '管理者';
+
+  @override
+  String get proteinPreferences => '食べたくないタンパク質';
+
+  @override
+  String get manageProteinPreferences => '食べたくないタンパク質を選択';
+
+  @override
+  String get noProteinTypesAvailable => '利用可能なタンパク質がありません';
+
+  @override
+  String get dontEat => '食べない：';
+
+  @override
+  String get proteinPreferenceUpdated => 'タンパク質の設定を更新しました';
+
+  @override
+  String get errorOccurred => 'エラーが発生しました。もう一度お試しください';
 }

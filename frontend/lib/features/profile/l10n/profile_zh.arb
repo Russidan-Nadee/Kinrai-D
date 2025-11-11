@@ -21,5 +21,29 @@
 
   "otherFeaturesDeveloping": "其他功能正在开发中",
 
-  "comingSoon": "即将推出！"
+  "comingSoon": "即将推出！",
+
+  "dislikeList": "不喜欢的菜单",
+
+  "noDislikesYet": "还没有不喜欢的菜单",
+
+  "removedFromDislikes": "已从不喜欢列表中删除",
+
+  "removeFromDislikes": "从不喜欢列表中删除",
+
+  "errorTryAgain": "发生错误，请重试",
+
+  "reason": "原因",
+
+  "addedOn": "添加日期",
+
+  "proteinPreferences": "不想吃的肉类",
+
+  "noProteinRestrictions": "所有肉类都可以吃",
+
+  "manageProteinPreferences": "选择不想吃的肉类",
+
+  "proteinPreferenceUpdated": "已更新肉类偏好",
+
+  "dontEatProteins": "不吃："
 }

@@ -57,4 +57,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin => 'Admin';
+
+  @override
+  String get proteinPreferences => 'Protein Preferences';
+
+  @override
+  String get manageProteinPreferences =>
+      'Choose which proteins you don\'t want to eat';
+
+  @override
+  String get noProteinTypesAvailable => 'No protein types available';
+
+  @override
+  String get dontEat => 'Don\'t eat:';
+
+  @override
+  String get proteinPreferenceUpdated => 'Protein preference updated';
+
+  @override
+  String get errorOccurred => 'An error occurred. Please try again';
 }

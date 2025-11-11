@@ -197,6 +197,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Admin'**
   String get admin;
+
+  /// Protein preferences section title
+  ///
+  /// In en, this message translates to:
+  /// **'Protein Preferences'**
+  String get proteinPreferences;
+
+  /// Protein preferences section subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which proteins you don\'t want to eat'**
+  String get manageProteinPreferences;
+
+  /// Message when no protein types are available
+  ///
+  /// In en, this message translates to:
+  /// **'No protein types available'**
+  String get noProteinTypesAvailable;
+
+  /// Label for excluded proteins
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t eat:'**
+  String get dontEat;
+
+  /// Success message when protein preference is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Protein preference updated'**
+  String get proteinPreferenceUpdated;
+
+  /// Generic error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred. Please try again'**
+  String get errorOccurred;
 }
 
 class _AppLocalizationsDelegate

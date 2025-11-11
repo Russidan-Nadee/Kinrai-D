@@ -16,7 +16,7 @@ export const proteinTypeSeedData = [
         name: 'ไก่',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '鶏肉',
       },
       {
@@ -38,7 +38,7 @@ export const proteinTypeSeedData = [
         name: 'หมู',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '豚肉',
       },
       {
@@ -60,7 +60,7 @@ export const proteinTypeSeedData = [
         name: 'เนื้อวัว',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '牛肉',
       },
       {
@@ -70,24 +70,112 @@ export const proteinTypeSeedData = [
     ],
   },
   {
-    key: 'seafood',
+    key: 'fish',
     is_active: true,
     translations: [
       {
         language: 'en',
-        name: 'Seafood',
+        name: 'Fish',
       },
       {
         language: 'th',
-        name: 'อาหารทะเล',
+        name: 'ปลา',
       },
       {
-        language: 'jp',
-        name: 'シーフード',
+        language: 'ja',
+        name: '魚',
       },
       {
         language: 'zh',
-        name: '海鲜',
+        name: '鱼',
+      },
+    ],
+  },
+  {
+    key: 'squid',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Squid',
+      },
+      {
+        language: 'th',
+        name: 'หมึก',
+      },
+      {
+        language: 'ja',
+        name: 'イカ',
+      },
+      {
+        language: 'zh',
+        name: '鱿鱼',
+      },
+    ],
+  },
+  {
+    key: 'shellfish',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Shellfish',
+      },
+      {
+        language: 'th',
+        name: 'หอย',
+      },
+      {
+        language: 'ja',
+        name: '貝',
+      },
+      {
+        language: 'zh',
+        name: '贝类',
+      },
+    ],
+  },
+  {
+    key: 'crab',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Crab',
+      },
+      {
+        language: 'th',
+        name: 'ปู',
+      },
+      {
+        language: 'ja',
+        name: 'カニ',
+      },
+      {
+        language: 'zh',
+        name: '螃蟹',
+      },
+    ],
+  },
+  {
+    key: 'duck',
+    is_active: true,
+    translations: [
+      {
+        language: 'en',
+        name: 'Duck',
+      },
+      {
+        language: 'th',
+        name: 'เป็ด',
+      },
+      {
+        language: 'ja',
+        name: '鴨肉',
+      },
+      {
+        language: 'zh',
+        name: '鸭肉',
       },
     ],
   },
@@ -104,7 +192,7 @@ export const proteinTypeSeedData = [
         name: 'มังสวิรัติ',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'ベジタリアン',
       },
       {
@@ -126,56 +214,12 @@ export const proteinTypeSeedData = [
         name: 'เจ',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'ヴィーガン',
       },
       {
         language: 'zh',
         name: '纯素',
-      },
-    ],
-  },
-  {
-    key: 'duck',
-    is_active: true,
-    translations: [
-      {
-        language: 'en',
-        name: 'Duck',
-      },
-      {
-        language: 'th',
-        name: 'เป็ด',
-      },
-      {
-        language: 'jp',
-        name: '鴨肉',
-      },
-      {
-        language: 'zh',
-        name: '鸭肉',
-      },
-    ],
-  },
-  {
-    key: 'mixed_protein',
-    is_active: true,
-    translations: [
-      {
-        language: 'en',
-        name: 'Mixed Protein',
-      },
-      {
-        language: 'th',
-        name: 'โปรตีนรวม',
-      },
-      {
-        language: 'jp',
-        name: 'ミックスプロテイン',
-      },
-      {
-        language: 'zh',
-        name: '混合蛋白',
       },
     ],
   },
@@ -192,7 +236,7 @@ export const proteinTypeSeedData = [
         name: 'กุ้ง',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'エビ',
       },
       {

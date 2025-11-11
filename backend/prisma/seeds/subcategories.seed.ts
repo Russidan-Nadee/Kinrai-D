@@ -20,7 +20,7 @@ export const subcategorySeedData = [
         description: 'ข้าวผัดกะเพราไก่ หมู เนื้อ',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'パッカパオ',
         description: 'タイバジル炒めご飯',
       },
@@ -47,7 +47,7 @@ export const subcategorySeedData = [
         description: 'ข้าวผัดพริกแกงหมู ไก่ กุ้ง',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'パッピックゲーン',
         description: 'カレーペースト炒めご飯',
       },
@@ -74,7 +74,7 @@ export const subcategorySeedData = [
         description: 'ข้าวผัดปู ข้าวผัดกุ้ง ข้าวผัดสับปะรด',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'カオパッド',
         description: 'タイ風チャーハン',
       },
@@ -82,33 +82,6 @@ export const subcategorySeedData = [
         language: 'zh',
         name: '泰式炒饭',
         description: '蟹肉炒饭、虾仁炒饭、菠萝炒饭',
-      },
-    ],
-  },
-  {
-    category_key: 'rice_dishes',
-    key: 'khao_gaeng',
-    is_active: true,
-    translations: [
-      {
-        language: 'en',
-        name: 'Khao Gaeng',
-        description: 'Rice with curry',
-      },
-      {
-        language: 'th',
-        name: 'ข้าวแกง',
-        description: 'ข้าวราดแกง ข้าวกับแกงต่างๆ',
-      },
-      {
-        language: 'jp',
-        name: 'カオゲーン',
-        description: 'カレーかけご飯',
-      },
-      {
-        language: 'zh',
-        name: '咖喱拌饭',
-        description: '各种咖喱拌饭',
       },
     ],
   },
@@ -128,7 +101,7 @@ export const subcategorySeedData = [
         description: 'ข้าวมันสไตล์ไทย เสิร์ฟคู่กับเนื้อสัตว์',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'カオマン',
         description: 'タイ風海南ライス',
       },
@@ -156,7 +129,7 @@ export const subcategorySeedData = [
         description: 'ก๋วยเตี๋ยวน้ำใส น้ำตก เส้นใหญ่ เส้นเล็ก',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'クイッティアオ',
         description: 'タイ風米麺スープ',
       },
@@ -183,7 +156,7 @@ export const subcategorySeedData = [
         description: 'ผัดไทยกุ้ง ไก่ หมู เต้าหู้',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'パッタイ',
         description: 'タイ風焼きそば',
       },
@@ -210,7 +183,7 @@ export const subcategorySeedData = [
         description: 'ผัดซีอิ๊วเส้นใหญ่ ใส่หมู ไก่ กุ้ง',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'パッシーユー',
         description: '醤油炒め麺',
       },
@@ -237,7 +210,7 @@ export const subcategorySeedData = [
         description: 'เส้นใหญ่ผัดเผ็ด ใส่กะเพรา พริก',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'パッキーマオ',
         description: 'スパイシー炒め麺',
       },
@@ -264,7 +237,7 @@ export const subcategorySeedData = [
         description: 'บะหมี่น้ำ บะหมี่แห้ง วันตัน',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'バミー',
         description: 'タイ風卵麺',
       },
@@ -292,7 +265,7 @@ export const subcategorySeedData = [
         description: 'แกงเขียวหวานไก่ หมู เนื้อ',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'グリーンカレー',
         description: 'タイグリーンカレー',
       },
@@ -319,7 +292,7 @@ export const subcategorySeedData = [
         description: 'แกงเผ็ดไก่ หมู เป็ด',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'レッドカレー',
         description: 'タイレッドカレー',
       },
@@ -346,7 +319,7 @@ export const subcategorySeedData = [
         description: 'แกงมัสมั่นไก่ เนื้อ',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'マッサマンカレー',
         description: 'タイマッサマンカレー',
       },
@@ -374,7 +347,7 @@ export const subcategorySeedData = [
         description: 'ส้มตำไทย ส้มตำปู ส้มตำปลาร้า',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'ソムタム',
         description: 'タイ風青パパイヤサラダ',
       },
@@ -403,7 +376,7 @@ export const subcategorySeedData = [
         description: 'ผัดผักรวม ผัดบวบกิ้ง ผัดคะน้า',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '野菜炒め',
         description: 'タイ風野菜炒め',
       },
@@ -430,7 +403,7 @@ export const subcategorySeedData = [
         description: 'ผัดคะน้าหมูกรอบ ไก่ เนื้อ',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'カナ炒め',
         description: '中国ブロッコリー炒め',
       },
@@ -459,7 +432,7 @@ export const subcategorySeedData = [
         description: 'ต้มยำกุ้ง ต้มยำไก่ ต้มยำมิกซ์',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'トムヤム',
         description: '辛酸っぱいタイスープ',
       },
@@ -486,7 +459,7 @@ export const subcategorySeedData = [
         description: 'ต้มข่าไก่ ต้มข่าหอย ต้มข่ากุ้ง',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'トムカー',
         description: 'ココナッツとガランガルのスープ',
       },
@@ -513,7 +486,7 @@ export const subcategorySeedData = [
         description: 'ต้มจืดผักรวม ต้มจืดฟักเมล็ดมะขาม',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'トムジュート',
         description: 'タイ風澄ましスープ',
       },
@@ -542,7 +515,7 @@ export const subcategorySeedData = [
         description: 'เนื้อย่างสไตล์ไทย ย่างบนเตาถ่าน',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '焼き肉',
         description: 'タイ風焼き肉',
       },
@@ -569,7 +542,7 @@ export const subcategorySeedData = [
         description: 'อาหารทะเลย่างสไตล์ไทย',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: '焼きシーフード',
         description: 'タイ風焼きシーフード',
       },
@@ -598,7 +571,7 @@ export const subcategorySeedData = [
         description: 'ข้าวราดหน้าและผักรวม',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'カオナー',
         description: 'のせご飯',
       },
@@ -627,7 +600,7 @@ export const subcategorySeedData = [
         description: 'ข้าวซอยเส้นนิ่มและกรอบ',
       },
       {
-        language: 'jp',
+        language: 'ja',
         name: 'カオソイ',
         description: '北タイ風カレー麺',
       },
@@ -642,7 +615,7 @@ export const subcategorySeedData = [
 
 export async function seedSubcategories() {
   console.log('🏪 Seeding subcategories...');
-  
+
   for (const subcategory of subcategorySeedData) {
     // Find the category first
     const category = await prisma.category.findUnique({
@@ -676,10 +649,10 @@ export async function seedSubcategories() {
         Translations: true,
       },
     });
-    
+
     console.log(`✅ Created subcategory: ${createdSubcategory.key}`);
   }
-  
+
   console.log('🎉 Subcategories seeding completed!');
 }
 

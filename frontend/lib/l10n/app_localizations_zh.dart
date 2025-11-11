@@ -57,4 +57,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get admin => '管理员';
+
+  @override
+  String get proteinPreferences => '不想吃的肉类';
+
+  @override
+  String get manageProteinPreferences => '选择不想吃的肉类';
+
+  @override
+  String get noProteinTypesAvailable => '没有可用的肉类';
+
+  @override
+  String get dontEat => '不吃：';
+
+  @override
+  String get proteinPreferenceUpdated => '已更新肉类偏好';
+
+  @override
+  String get errorOccurred => '发生错误，请重试';
 }
