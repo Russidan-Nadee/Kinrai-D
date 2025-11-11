@@ -15,7 +15,7 @@ import {
   Cacheable,
   CacheEvictByTags,
 } from '../common/decorators/cache.decorator';
-import { CreateMenuDto } from './dto/create-menu.dto';
+import { CreateMenuDto, MealTime } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { FilterMenuDto } from './dto/filter-menu.dto';
 import { SearchMenuDto, SearchMenuResultDto } from './dto/search-menu.dto';
@@ -25,17 +25,16 @@ import {
 } from './dto/menu-recommendation.dto';
 import { MenuWithTranslations } from './entities/menu.entity';
 import { RecommendationService } from './services/recommendation.service';
-import { MealTime } from './dto/create-menu.dto';
 
 @Injectable()
 @UseInterceptors(CacheInterceptor, LoggingInterceptor)
 export class MenusService {
   constructor(
-    private prisma: PrismaService,
-    private languageService: LanguageService,
-    private cacheService: CacheService,
-    private loggingService: LoggingService,
-    private recommendationService: RecommendationService,
+    private readonly prisma: PrismaService,
+    private readonly languageService: LanguageService,
+    private readonly cacheService: CacheService,
+    private readonly loggingService: LoggingService,
+    private readonly recommendationService: RecommendationService,
   ) {}
 
   @CacheEvictByTags(['menus', 'menu_list'])
@@ -215,28 +214,13 @@ export class MenusService {
         include: {
           Subcategory: {
             include: {
-              Translations: {
-                where:
-                  this.languageService.createTranslationWhereClause(
-                    preferredLanguage,
-                  ),
-              },
+              Translations: true, // Return all translations for client-side language switching
               Category: {
                 include: {
-                  Translations: {
-                    where:
-                      this.languageService.createTranslationWhereClause(
-                        preferredLanguage,
-                      ),
-                  },
+                  Translations: true, // Return all translations
                   FoodType: {
                     include: {
-                      Translations: {
-                        where:
-                          this.languageService.createTranslationWhereClause(
-                            preferredLanguage,
-                          ),
-                      },
+                      Translations: true, // Return all translations
                     },
                   },
                 },
@@ -245,9 +229,7 @@ export class MenusService {
           },
           ProteinType: {
             include: {
-              Translations: {
-                where: { language: language },
-              },
+              Translations: true, // Return all translations for client-side language switching
             },
           },
         },
@@ -371,81 +353,96 @@ export class MenusService {
 
   async update(id: number, updateMenuDto: UpdateMenuDto) {
     try {
-      // ตรวจสอบ subcategory หากมี
-      if (updateMenuDto.subcategory_id) {
-        const subcategory = await this.prisma.subcategory.findUnique({
-          where: { id: updateMenuDto.subcategory_id },
-        });
-        if (!subcategory) {
-          throw new NotFoundException(
-            `Subcategory with ID ${updateMenuDto.subcategory_id} not found`,
-          );
-        }
-      }
-
-      // ตรวจสอบ protein_type หากมี
-      if (updateMenuDto.protein_type_id) {
-        const proteinType = await this.prisma.proteinType.findUnique({
-          where: { id: updateMenuDto.protein_type_id },
-        });
-        if (!proteinType) {
-          throw new NotFoundException(
-            `Protein type with ID ${updateMenuDto.protein_type_id} not found`,
-          );
-        }
-      }
-
-      // อัพเดทข้อมูลหลัก
-      const updateData: any = {};
-      if (updateMenuDto.subcategory_id)
-        updateData.subcategory_id = updateMenuDto.subcategory_id;
-      if (updateMenuDto.protein_type_id !== undefined)
-        updateData.protein_type_id = updateMenuDto.protein_type_id;
-      if (updateMenuDto.image_url !== undefined)
-        updateData.image_url = updateMenuDto.image_url;
-      if (updateMenuDto.contains) updateData.contains = updateMenuDto.contains;
-      if (updateMenuDto.meal_time)
-        updateData.meal_time = updateMenuDto.meal_time;
-      if (updateMenuDto.is_active !== undefined)
-        updateData.is_active = updateMenuDto.is_active;
-
+      await this.validateUpdateReferences(updateMenuDto);
+      const updateData = this.buildUpdateData(updateMenuDto);
       const menu = await this.prisma.menu.update({
         where: { id },
         data: updateData,
+        include: this.getMenuIncludeOptions(),
+      });
+      return menu;
+    } catch (error) {
+      this.handleUpdateError(error, id);
+    }
+  }
+
+  private async validateUpdateReferences(
+    updateMenuDto: UpdateMenuDto,
+  ): Promise<void> {
+    // Validate subcategory if provided
+    if (updateMenuDto.subcategory_id) {
+      const subcategory = await this.prisma.subcategory.findUnique({
+        where: { id: updateMenuDto.subcategory_id },
+      });
+      if (!subcategory) {
+        throw new NotFoundException(
+          `Subcategory with ID ${updateMenuDto.subcategory_id} not found`,
+        );
+      }
+    }
+
+    // Validate protein type if provided
+    if (updateMenuDto.protein_type_id) {
+      const proteinType = await this.prisma.proteinType.findUnique({
+        where: { id: updateMenuDto.protein_type_id },
+      });
+      if (!proteinType) {
+        throw new NotFoundException(
+          `Protein type with ID ${updateMenuDto.protein_type_id} not found`,
+        );
+      }
+    }
+  }
+
+  private buildUpdateData(updateMenuDto: UpdateMenuDto): any {
+    const updateData: any = {};
+    if (updateMenuDto.subcategory_id)
+      updateData.subcategory_id = updateMenuDto.subcategory_id;
+    if (updateMenuDto.protein_type_id !== undefined)
+      updateData.protein_type_id = updateMenuDto.protein_type_id;
+    if (updateMenuDto.image_url !== undefined)
+      updateData.image_url = updateMenuDto.image_url;
+    if (updateMenuDto.contains) updateData.contains = updateMenuDto.contains;
+    if (updateMenuDto.meal_time)
+      updateData.meal_time = updateMenuDto.meal_time;
+    if (updateMenuDto.is_active !== undefined)
+      updateData.is_active = updateMenuDto.is_active;
+    return updateData;
+  }
+
+  private getMenuIncludeOptions() {
+    return {
+      Subcategory: {
         include: {
-          Subcategory: {
+          Translations: true,
+          Category: {
             include: {
               Translations: true,
-              Category: {
+              FoodType: {
                 include: {
                   Translations: true,
-                  FoodType: {
-                    include: {
-                      Translations: true,
-                    },
-                  },
                 },
               },
             },
           },
-          ProteinType: {
-            include: {
-              Translations: true,
-            },
-          },
         },
-      });
+      },
+      ProteinType: {
+        include: {
+          Translations: true,
+        },
+      },
+    };
+  }
 
-      return menu;
-    } catch (error) {
-      if ((error as { code?: string })?.code === 'P2025') {
-        throw new NotFoundException(`Menu with ID ${id} not found`);
-      }
-      if ((error as { code?: string })?.code === 'P2002') {
-        throw new ConflictException('Menu key already exists');
-      }
-      throw error;
+  private handleUpdateError(error: any, id: number): never {
+    if (error?.code === 'P2025') {
+      throw new NotFoundException(`Menu with ID ${id} not found`);
     }
+    if (error?.code === 'P2002') {
+      throw new ConflictException('Menu key already exists');
+    }
+    throw error;
   }
 
   async remove(id: number) {
@@ -612,107 +609,10 @@ export class MenusService {
   async searchMenus(searchDto: SearchMenuDto): Promise<SearchMenuResultDto> {
     const startTime = Date.now();
     const tracker = this.loggingService.createPerformanceTracker('menu_search');
-    const {
-      search,
-      language = 'th',
-      meal_time,
-      page = 1,
-      limit = 20,
-      sort_by = 'relevance',
-      sort_order = 'desc',
-      min_rating,
-      food_type_ids,
-      category_ids,
-      subcategory_ids,
-      protein_type_ids,
-    } = searchDto;
+    const { language = 'th', page = 1, limit = 20 } = searchDto;
 
-    // Build where conditions
-    const where: any = {
-      is_active: true,
-    };
-
-    // Text search in subcategory and protein translations
-    if (search) {
-      where.OR = [
-        {
-          Subcategory: {
-            Translations: {
-              some: {
-                name: { contains: search, mode: 'insensitive' },
-                language: language,
-              },
-            },
-          },
-        },
-        {
-          ProteinType: {
-            Translations: {
-              some: {
-                name: { contains: search, mode: 'insensitive' },
-                language: language,
-              },
-            },
-          },
-        },
-      ];
-    }
-
-    // Filter by meal time
-    if (meal_time) {
-      where.meal_time = meal_time;
-    }
-
-    // Filter by food types
-    if (food_type_ids?.length) {
-      where.Subcategory = {
-        Category: {
-          food_type_id: { in: food_type_ids },
-        },
-      };
-    }
-
-    // Filter by categories
-    if (category_ids?.length) {
-      where.Subcategory = {
-        ...where.Subcategory,
-        category_id: { in: category_ids },
-      };
-    }
-
-    // Filter by subcategories
-    if (subcategory_ids?.length) {
-      where.subcategory_id = { in: subcategory_ids };
-    }
-
-    // Filter by protein types
-    if (protein_type_ids?.length) {
-      where.protein_type_id = { in: protein_type_ids };
-    }
-
-    // Build order by
-    let orderBy: any = {};
-    switch (sort_by) {
-      case 'name':
-        // This is a simplified version - proper implementation would need aggregation
-        orderBy = { id: sort_order };
-        break;
-      case 'rating':
-        orderBy = { created_at: sort_order }; // Simplified - would need rating aggregation
-        break;
-      case 'popularity':
-        orderBy = [
-          { Favorites: { _count: sort_order } },
-          { created_at: sort_order },
-        ];
-        break;
-      case 'created_at':
-        orderBy = { created_at: sort_order };
-        break;
-      default: // relevance
-        orderBy = search ? { created_at: sort_order } : { created_at: 'desc' };
-    }
-
+    const where = this.buildSearchWhereConditions(searchDto);
+    const orderBy = this.buildSearchOrderBy(searchDto);
     const skip = (page - 1) * limit;
 
     const [menus, totalCount] = await Promise.all([
@@ -721,31 +621,19 @@ export class MenusService {
         include: {
           Subcategory: {
             include: {
-              Translations: {
-                where: { language },
-              },
+              Translations: { where: { language } },
               Category: {
                 include: {
-                  Translations: {
-                    where: { language },
-                  },
+                  Translations: { where: { language } },
                   FoodType: {
-                    include: {
-                      Translations: {
-                        where: { language },
-                      },
-                    },
+                    include: { Translations: { where: { language } } },
                   },
                 },
               },
             },
           },
           ProteinType: {
-            include: {
-              Translations: {
-                where: { language },
-              },
-            },
+            include: { Translations: { where: { language } } },
           },
         },
         orderBy,
@@ -755,24 +643,119 @@ export class MenusService {
       this.prisma.menu.count({ where }),
     ]);
 
-    const endTime = Date.now();
-    const searchTimeMs = endTime - startTime;
+    const searchTimeMs = Date.now() - startTime;
+    this.logSearchIfNeeded(searchDto.search, totalCount, searchTimeMs);
 
-    const filtersApplied: string[] = [];
-    if (search) filtersApplied.push('text_search');
-    if (meal_time) filtersApplied.push('meal_time');
-    if (food_type_ids?.length) filtersApplied.push('food_types');
-    if (category_ids?.length) filtersApplied.push('categories');
-    if (subcategory_ids?.length) filtersApplied.push('subcategories');
-    if (protein_type_ids?.length) filtersApplied.push('protein_types');
-    if (min_rating) filtersApplied.push('min_rating');
+    const result = this.buildSearchResult(
+      menus,
+      totalCount,
+      searchDto,
+      searchTimeMs,
+    );
 
-    // Log search operation
+    tracker.finish(true, { results: totalCount });
+    return result;
+  }
+
+  private buildSearchWhereConditions(searchDto: SearchMenuDto): any {
+    const {
+      search,
+      language = 'th',
+      meal_time,
+      food_type_ids,
+      category_ids,
+      subcategory_ids,
+      protein_type_ids,
+    } = searchDto;
+
+    const where: any = { is_active: true };
+
+    if (search) {
+      where.OR = [
+        {
+          Subcategory: {
+            Translations: {
+              some: {
+                name: { contains: search, mode: 'insensitive' },
+                language,
+              },
+            },
+          },
+        },
+        {
+          ProteinType: {
+            Translations: {
+              some: {
+                name: { contains: search, mode: 'insensitive' },
+                language,
+              },
+            },
+          },
+        },
+      ];
+    }
+
+    if (meal_time) where.meal_time = meal_time;
+    if (subcategory_ids?.length)
+      where.subcategory_id = { in: subcategory_ids };
+    if (protein_type_ids?.length)
+      where.protein_type_id = { in: protein_type_ids };
+
+    if (food_type_ids?.length || category_ids?.length) {
+      where.Subcategory = where.Subcategory || {};
+      if (category_ids?.length) {
+        where.Subcategory.category_id = { in: category_ids };
+      }
+      if (food_type_ids?.length) {
+        where.Subcategory.Category = {
+          food_type_id: { in: food_type_ids },
+        };
+      }
+    }
+
+    return where;
+  }
+
+  private buildSearchOrderBy(searchDto: SearchMenuDto): any {
+    const { sort_by = 'relevance', sort_order = 'desc', search } = searchDto;
+
+    switch (sort_by) {
+      case 'name':
+        return { id: sort_order };
+      case 'rating':
+        return { created_at: sort_order };
+      case 'popularity':
+        return [
+          { Favorites: { _count: sort_order } },
+          { created_at: sort_order },
+        ];
+      case 'created_at':
+        return { created_at: sort_order };
+      default:
+        return search ? { created_at: sort_order } : { created_at: 'desc' };
+    }
+  }
+
+  private logSearchIfNeeded(
+    search: string | undefined,
+    totalCount: number,
+    searchTimeMs: number,
+  ): void {
     if (search) {
       this.loggingService.logSearchOperation(search, totalCount, searchTimeMs);
     }
+  }
 
-    const result = {
+  private buildSearchResult(
+    menus: any[],
+    totalCount: number,
+    searchDto: SearchMenuDto,
+    searchTimeMs: number,
+  ): SearchMenuResultDto {
+    const { search, language = 'th', page = 1, limit = 20, sort_by = 'relevance', sort_order = 'desc' } = searchDto;
+    const filtersApplied = this.getAppliedFilters(searchDto);
+
+    return {
       menus,
       total: totalCount,
       page,
@@ -794,14 +777,18 @@ export class MenusService {
             : undefined,
       },
     };
+  }
 
-    tracker.finish(true, {
-      results: totalCount,
-      search_term: search,
-      filters: filtersApplied.length,
-    });
-
-    return result;
+  private getAppliedFilters(searchDto: SearchMenuDto): string[] {
+    const filters: string[] = [];
+    if (searchDto.search) filters.push('text_search');
+    if (searchDto.meal_time) filters.push('meal_time');
+    if (searchDto.food_type_ids?.length) filters.push('food_types');
+    if (searchDto.category_ids?.length) filters.push('categories');
+    if (searchDto.subcategory_ids?.length) filters.push('subcategories');
+    if (searchDto.protein_type_ids?.length) filters.push('protein_types');
+    if (searchDto.min_rating) filters.push('min_rating');
+    return filters;
   }
 
   @Cacheable({
@@ -949,8 +936,8 @@ export class MenusService {
   }
 
   async getPersonalizedRandomMenu(
-    language: string = DEFAULT_LANGUAGE,
     userId: string,
+    language: string = DEFAULT_LANGUAGE,
   ): Promise<MenuWithTranslations> {
     // Get user's disliked menu IDs
     const userDislikes = await this.prisma.userDislike.findMany({
@@ -1223,44 +1210,40 @@ export class MenusService {
     const results: any[] = [];
     const errors: any[] = [];
 
-    try {
-      for (const id of ids) {
-        try {
-          const menu = await this.prisma.menu.findUnique({
-            where: { id },
-          });
+    for (const id of ids) {
+      try {
+        const menu = await this.prisma.menu.findUnique({
+          where: { id },
+        });
 
-          if (!menu) {
-            errors.push({
-              id,
-              error: 'Menu not found',
-            });
-            continue;
-          }
-
-          await this.prisma.menu.delete({
-            where: { id },
-          });
-
-          results.push({ id, deleted: true });
-        } catch (error) {
+        if (!menu) {
           errors.push({
             id,
-            error: error.message || 'Unknown error',
+            error: 'Menu not found',
           });
+          continue;
         }
-      }
 
-      return {
-        success: true,
-        total: ids.length,
-        deleted: results.length,
-        failed: errors.length,
-        results,
-        errors: errors.length > 0 ? errors : undefined,
-      };
-    } catch (error) {
-      throw error;
+        await this.prisma.menu.delete({
+          where: { id },
+        });
+
+        results.push({ id, deleted: true });
+      } catch (error) {
+        errors.push({
+          id,
+          error: error.message || 'Unknown error',
+        });
+      }
     }
+
+    return {
+      success: true,
+      total: ids.length,
+      deleted: results.length,
+      failed: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
+    };
   }
 }

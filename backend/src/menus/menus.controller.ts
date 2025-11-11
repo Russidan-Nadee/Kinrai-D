@@ -168,7 +168,7 @@ export class MenusController {
     @UserId() userId: string,
     @Query('language') language?: string,
   ) {
-    return this.menusService.getPersonalizedRandomMenu(language, userId);
+    return this.menusService.getPersonalizedRandomMenu(userId, language);
   }
 
   @Get('subcategory/:subcategoryId/protein/:proteinId')

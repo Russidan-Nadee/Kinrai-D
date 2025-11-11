@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/api/api_client.dart';
 import '../../../../../core/cache/cache_service.dart';
+import '../../../../../core/providers/language_provider.dart';
 import '../../../../../core/utils/logger.dart';
 import '../../widgets/add_menu_dialog.dart';
 import '../../widgets/bulk_add_menu_dialog.dart';
@@ -29,6 +31,9 @@ class _MenusTabState extends State<MenusTab> {
   // Scroll controller for lazy loading
   final ScrollController _scrollController = ScrollController();
 
+  // Track current language to detect changes
+  String? _currentLanguage;
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +45,20 @@ class _MenusTabState extends State<MenusTab> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Check if language has changed
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final newLanguage = languageProvider.currentLanguageCode;
+
+    if (_currentLanguage != null && _currentLanguage != newLanguage) {
+      // Language changed - reload menus to refresh display
+      _loadMenus(refresh: true);
+    }
+    _currentLanguage = newLanguage;
   }
 
   void _onScroll() {
@@ -345,7 +364,8 @@ class _MenusTabState extends State<MenusTab> {
   }
 
   Future<void> _showDeleteConfirmation(dynamic menu) async {
-    final menuName = _getMenuDisplayName(menu);
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final menuName = _getMenuDisplayName(menu, languageProvider.currentLanguageCode);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -540,31 +560,37 @@ class _MenusTabState extends State<MenusTab> {
     }
   }
 
-  String _getMenuDisplayName(dynamic menu) {
-    // Get subcategory name in Thai
+  String _getMenuDisplayName(dynamic menu, String language) {
+    // Get subcategory name in selected language
     String menuName = 'Unknown Menu';
     final subcategory = menu['Subcategory'];
     if (subcategory != null && subcategory['Translations'] != null) {
       final translations = subcategory['Translations'] as List;
-      final thTranslation = translations.firstWhere(
-        (t) => t['language'] == 'th',
-        orElse: () => translations.isNotEmpty ? translations[0] : null,
+      final translation = translations.firstWhere(
+        (t) => t['language'] == language,
+        orElse: () => translations.firstWhere(
+          (t) => t['language'] == 'th',
+          orElse: () => translations.isNotEmpty ? translations[0] : null,
+        ),
       );
-      if (thTranslation != null) {
-        menuName = thTranslation['name'] ?? 'Unknown Menu';
+      if (translation != null) {
+        menuName = translation['name'] ?? 'Unknown Menu';
       }
     }
 
-    // Get protein name in Thai if available
+    // Get protein name in selected language if available
     final proteinType = menu['ProteinType'];
     if (proteinType != null && proteinType['Translations'] != null) {
       final translations = proteinType['Translations'] as List;
-      final thTranslation = translations.firstWhere(
-        (t) => t['language'] == 'th',
-        orElse: () => translations.isNotEmpty ? translations[0] : null,
+      final translation = translations.firstWhere(
+        (t) => t['language'] == language,
+        orElse: () => translations.firstWhere(
+          (t) => t['language'] == 'th',
+          orElse: () => translations.isNotEmpty ? translations[0] : null,
+        ),
       );
-      if (thTranslation != null) {
-        final proteinName = thTranslation['name'];
+      if (translation != null) {
+        final proteinName = translation['name'];
         if (proteinName != null && proteinName.isNotEmpty) {
           return '$menuName$proteinName';
         }
@@ -829,7 +855,8 @@ class _MenusTabState extends State<MenusTab> {
   }
 
   Widget _buildMenuCard(dynamic menu, {Key? key}) {
-    final displayName = _getMenuDisplayName(menu);
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final displayName = _getMenuDisplayName(menu, languageProvider.currentLanguageCode);
     final mealTime = menu['meal_time'] ?? 'UNKNOWN';
     final isActive = menu['is_active'] ?? false;
     final menuId = menu['id'] as int;

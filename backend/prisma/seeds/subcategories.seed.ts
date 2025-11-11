@@ -658,13 +658,14 @@ export async function seedSubcategories() {
 
 // Run if this file is executed directly
 if (require.main === module) {
-  seedSubcategories()
-    .then(async () => {
+  void (async () => {
+    try {
+      await seedSubcategories();
       await prisma.$disconnect();
-    })
-    .catch(async (e) => {
+    } catch (e) {
       console.error('❌ Error seeding subcategories:', e);
       await prisma.$disconnect();
       process.exit(1);
-    });
+    }
+  })();
 }

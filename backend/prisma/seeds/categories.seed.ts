@@ -240,13 +240,14 @@ export async function seedCategories() {
 
 // Run if this file is executed directly
 if (require.main === module) {
-  seedCategories()
-    .then(async () => {
+  void (async () => {
+    try {
+      await seedCategories();
       await prisma.$disconnect();
-    })
-    .catch(async (e) => {
+    } catch (e) {
       console.error('❌ Error seeding categories:', e);
       await prisma.$disconnect();
       process.exit(1);
-    });
+    }
+  })();
 }

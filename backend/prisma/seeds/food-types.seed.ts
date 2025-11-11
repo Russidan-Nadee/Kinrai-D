@@ -65,13 +65,14 @@ export async function seedFoodTypes() {
 
 // Run if this file is executed directly
 if (require.main === module) {
-  seedFoodTypes()
-    .then(async () => {
+  void (async () => {
+    try {
+      await seedFoodTypes();
       await prisma.$disconnect();
-    })
-    .catch(async (e) => {
+    } catch (e) {
       console.error('❌ Error seeding food types:', e);
       await prisma.$disconnect();
       process.exit(1);
-    });
+    }
+  })();
 }

@@ -281,13 +281,14 @@ export async function seedProteinTypes() {
 
 // Run if this file is executed directly
 if (require.main === module) {
-  seedProteinTypes()
-    .then(async () => {
+  void (async () => {
+    try {
+      await seedProteinTypes();
       await prisma.$disconnect();
-    })
-    .catch(async (e) => {
+    } catch (e) {
       console.error('❌ Error seeding protein types:', e);
       await prisma.$disconnect();
       process.exit(1);
-    });
+    }
+  })();
 }
