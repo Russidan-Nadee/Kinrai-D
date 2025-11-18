@@ -1,0 +1,37 @@
+{
+  "@@locale": "ja",
+
+  "signInToAccount": "アカウントにサインイン",
+
+  "email": "メール",
+
+  "password": "パスワード",
+
+  "signIn": "サインイン",
+
+  "signUp": "サインアップ",
+
+  "dontHaveAccount": "アカウントをお持ちではありませんか？",
+
+  "emailRequired": "メールは必須です",
+
+  "emailInvalid": "有効なメールを入力してください",
+
+  "passwordRequired": "パスワードは必須です",
+
+  "passwordMinLength": "パスワードは6文字以上である必要があります",
+
+  "signOut": "サインアウト",
+
+  "createNewAccount": "新しいアカウントを作成",
+
+  "confirmPassword": "パスワード確認",
+
+  "confirmPasswordRequired": "パスワードを確認してください",
+
+  "passwordsDoNotMatch": "パスワードが一致しません",
+
+  "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
+
+  "signUpSuccess": "アカウントが正常に作成されました！"
+}

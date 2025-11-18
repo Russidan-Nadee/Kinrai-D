@@ -1,0 +1,37 @@
+{
+  "@@locale": "th",
+
+  "signInToAccount": "เข้าสู่ระบบบัญชีของคุณ",
+
+  "email": "อีเมล",
+
+  "password": "รหัสผ่าน",
+
+  "signIn": "เข้าสู่ระบบ",
+
+  "signUp": "สมัครสมาชิก",
+
+  "dontHaveAccount": "ยังไม่มีบัญชี?",
+
+  "emailRequired": "อีเมลจำเป็น",
+
+  "emailInvalid": "กรุณากรอกอีเมลที่ถูกต้อง",
+
+  "passwordRequired": "รหัสผ่านจำเป็น",
+
+  "passwordMinLength": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+
+  "signOut": "ออกจากระบบ",
+
+  "createNewAccount": "สร้างบัญชีใหม่",
+
+  "confirmPassword": "ยืนยันรหัสผ่าน",
+
+  "confirmPasswordRequired": "กรุณายืนยันรหัสผ่าน",
+
+  "passwordsDoNotMatch": "รหัสผ่านไม่ตรงกัน",
+
+  "alreadyHaveAccount": "มีบัญชีอยู่แล้ว?",
+
+  "signUpSuccess": "สร้างบัญชีสำเร็จ!"
+}

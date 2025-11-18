@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/l10n/app_localizations.dart';
+import '../../../auth/l10n/auth_localizations.dart';
 import '../../../../core/providers/auth_provider.dart';
 
 class SignOutSection extends StatelessWidget {
@@ -8,7 +8,7 @@ class SignOutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AuthLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.all(16),

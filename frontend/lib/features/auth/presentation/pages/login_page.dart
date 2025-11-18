@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/language_provider.dart';
-import '../../../../core/l10n/app_localizations.dart';
+import '../../l10n/auth_localizations.dart';
 import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 8),
 
                     Text(
-                      AppLocalizations.of(context).signInToAccount,
+                      AuthLocalizations.of(context).signInToAccount,
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 32),
@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context).email,
+                        labelText: AuthLocalizations.of(context).email,
                         prefixIcon: const Icon(Icons.email_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -100,12 +100,12 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return AppLocalizations.of(context).emailRequired;
+                          return AuthLocalizations.of(context).emailRequired;
                         }
                         if (!RegExp(
                           r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                         ).hasMatch(value)) {
-                          return AppLocalizations.of(context).emailInvalid;
+                          return AuthLocalizations.of(context).emailInvalid;
                         }
                         return null;
                       },
@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: _isObscure,
                       onFieldSubmitted: (_) => _handleLogin(),
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context).password,
+                        labelText: AuthLocalizations.of(context).password,
                         prefixIcon: const Icon(Icons.lock_outlined),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -142,10 +142,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return AppLocalizations.of(context).passwordRequired;
+                          return AuthLocalizations.of(context).passwordRequired;
                         }
                         if (value.length < 6) {
-                          return AppLocalizations.of(context).passwordMinLength;
+                          return AuthLocalizations.of(context).passwordMinLength;
                         }
                         return null;
                       },
@@ -207,7 +207,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               )
                             : Text(
-                                AppLocalizations.of(context).signIn,
+                                AuthLocalizations.of(context).signIn,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -231,13 +231,13 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(color: Colors.grey[600]),
                           children: [
                             TextSpan(
-                              text: AppLocalizations.of(
+                              text: AuthLocalizations.of(
                                 context,
                               ).dontHaveAccount,
                             ),
                             const TextSpan(text: ' '),
                             TextSpan(
-                              text: AppLocalizations.of(context).signUp,
+                              text: AuthLocalizations.of(context).signUp,
                               style: const TextStyle(
                                 color: Color(0xFFFF6B35),
                                 fontWeight: FontWeight.w600,

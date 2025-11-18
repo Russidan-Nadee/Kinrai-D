@@ -1,0 +1,37 @@
+{
+  "@@locale": "zh",
+
+  "signInToAccount": "登录您的账户",
+
+  "email": "邮箱",
+
+  "password": "密码",
+
+  "signIn": "登录",
+
+  "signUp": "注册",
+
+  "dontHaveAccount": "还没有账户？",
+
+  "emailRequired": "邮箱为必填项",
+
+  "emailInvalid": "请输入有效的邮箱",
+
+  "passwordRequired": "密码为必填项",
+
+  "passwordMinLength": "密码至少需要6个字符",
+
+  "signOut": "退出登录",
+
+  "createNewAccount": "创建新账户",
+
+  "confirmPassword": "确认密码",
+
+  "confirmPasswordRequired": "请确认您的密码",
+
+  "passwordsDoNotMatch": "密码不匹配",
+
+  "alreadyHaveAccount": "已有账户？",
+
+  "signUpSuccess": "账户创建成功！"
+}
