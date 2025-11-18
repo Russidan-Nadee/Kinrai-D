@@ -1,0 +1,25 @@
+{
+  "@@locale": "th",
+
+  "dislikeList": "รายการที่ไม่ชอบ",
+
+  "noDislikes": "ยังไม่มีรายการที่ไม่ชอบ",
+
+  "select": "เลือก",
+
+  "deselectAll": "ยกเลิกทั้งหมด",
+
+  "selectAll": "เลือกทั้งหมด",
+
+  "showLess": "ย่อเก็บ",
+
+  "cancel": "ยกเลิก",
+
+  "reason": "เหตุผล",
+
+  "addedOn": "เพิ่มเมื่อ",
+
+  "removeFromDislikeList": "ลบจากรายการไม่ชอบ",
+
+  "removedFromDislikeList": "ลบออกจากรายการไม่ชอบแล้ว"
+}

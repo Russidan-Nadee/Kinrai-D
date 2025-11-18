@@ -1,0 +1,25 @@
+{
+  "@@locale": "ja",
+
+  "dislikeList": "苦手なメニュー",
+
+  "noDislikes": "まだ苦手なメニューはありません",
+
+  "select": "選択",
+
+  "deselectAll": "すべて解除",
+
+  "selectAll": "すべて選択",
+
+  "showLess": "折りたたむ",
+
+  "cancel": "キャンセル",
+
+  "reason": "理由",
+
+  "addedOn": "追加日",
+
+  "removeFromDislikeList": "苦手リストから削除",
+
+  "removedFromDislikeList": "苦手リストから削除しました"
+}

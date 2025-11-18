@@ -1,0 +1,25 @@
+{
+  "@@locale": "zh",
+
+  "dislikeList": "不喜欢的菜单",
+
+  "noDislikes": "还没有不喜欢的菜单",
+
+  "select": "选择",
+
+  "deselectAll": "取消全选",
+
+  "selectAll": "全选",
+
+  "showLess": "收起",
+
+  "cancel": "取消",
+
+  "reason": "原因",
+
+  "addedOn": "添加日期",
+
+  "removeFromDislikeList": "从不喜欢列表中删除",
+
+  "removedFromDislikeList": "已从不喜欢列表中删除"
+}

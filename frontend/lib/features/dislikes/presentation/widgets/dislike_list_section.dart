@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../domain/entities/dislike_entity.dart';
+import '../../l10n/dislikes_localizations.dart';
 import '../providers/dislike_provider.dart';
 
 class DislikeListSection extends StatefulWidget {
@@ -19,7 +20,8 @@ class _DislikeListSectionState extends State<DislikeListSection> {
   Future<void> _handleRemoveDislike(int menuId) async {
     final dislikeProvider = Provider.of<DislikeProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context);
+    final dislikeL10n = DislikesLocalizations.of(context);
+    final appL10n = AppLocalizations.of(context);
 
     final success = await dislikeProvider.removeDislike(menuId, languageProvider.currentLanguageCode);
 
@@ -27,7 +29,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            success ? l10n.removedFromDislikeList : l10n.errorOccurred,
+            success ? dislikeL10n.removedFromDislikeList : appL10n.errorOccurred,
           ),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
@@ -53,7 +55,8 @@ class _DislikeListSectionState extends State<DislikeListSection> {
   Future<void> _handleRemoveBulkDislikes() async {
     final dislikeProvider = Provider.of<DislikeProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context);
+    final dislikeL10n = DislikesLocalizations.of(context);
+    final appL10n = AppLocalizations.of(context);
     final removedCount = dislikeProvider.selectedCount;
 
     final success = await dislikeProvider.removeBulkDislikes(
@@ -65,7 +68,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            success ? l10n.removedMultipleFromDislikeList(removedCount) : l10n.errorOccurred,
+            success ? dislikeL10n.removedMultipleFromDislikeList(removedCount) : appL10n.errorOccurred,
           ),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
@@ -81,7 +84,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
   Widget build(BuildContext context) {
     final dislikeProvider = Provider.of<DislikeProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final l10n = AppLocalizations.of(context);
+    final l10n = DislikesLocalizations.of(context);
 
     // Auto-reload when language changes
     final currentLanguage = languageProvider.currentLanguageCode;
@@ -246,7 +249,7 @@ class _DislikeListSectionState extends State<DislikeListSection> {
     Set<int> selectedMenuIds,
   ) {
     final dislikeProvider = Provider.of<DislikeProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context);
+    final l10n = DislikesLocalizations.of(context);
     final isSelected = selectedMenuIds.contains(dislike.menuId);
 
     return Container(

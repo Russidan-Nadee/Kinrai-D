@@ -1,0 +1,58 @@
+{
+  "@@locale": "en",
+
+  "dislikeList": "Dislike List",
+  "@dislikeList": {
+    "description": "Dislike list section title"
+  },
+
+  "noDislikes": "No dislikes yet",
+  "@noDislikes": {
+    "description": "Message when no dislikes exist"
+  },
+
+  "select": "Select",
+  "@select": {
+    "description": "Select mode button text"
+  },
+
+  "deselectAll": "Deselect All",
+  "@deselectAll": {
+    "description": "Deselect all button text"
+  },
+
+  "selectAll": "Select All",
+  "@selectAll": {
+    "description": "Select all button text"
+  },
+
+  "showLess": "Show Less",
+  "@showLess": {
+    "description": "Show less button text"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+
+  "reason": "Reason",
+  "@reason": {
+    "description": "Reason label"
+  },
+
+  "addedOn": "Added on",
+  "@addedOn": {
+    "description": "Added date label"
+  },
+
+  "removeFromDislikeList": "Remove from dislike list",
+  "@removeFromDislikeList": {
+    "description": "Remove from dislike list action text"
+  },
+
+  "removedFromDislikeList": "Removed from dislike list",
+  "@removedFromDislikeList": {
+    "description": "Success message for single removal"
+  }
+}
