@@ -59,20 +59,5 @@ class AppLocalizationsTh extends AppLocalizations {
   String get admin => 'ผู้ดูแล';
 
   @override
-  String get proteinPreferences => 'ไม่อยากกินเนื้อสัตว์';
-
-  @override
-  String get manageProteinPreferences => 'เลือกเนื้อสัตว์ที่ไม่อยากกิน';
-
-  @override
-  String get noProteinTypesAvailable => 'ไม่มีประเภทเนื้อสัตว์';
-
-  @override
-  String get dontEat => 'ไม่กิน:';
-
-  @override
-  String get proteinPreferenceUpdated => 'อัพเดตความชอบเนื้อสัตว์แล้ว';
-
-  @override
   String get errorOccurred => 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
 }

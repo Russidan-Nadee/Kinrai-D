@@ -10,6 +10,7 @@ import 'core/config/supabase_config.dart';
 import 'core/di/injection.dart';
 import 'core/cache/cache_service.dart';
 import 'features/auth/presentation/widgets/auth_wrapper.dart';
+import 'features/protein_preferences/l10n/protein_preferences_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
             supportedLocales: languageProvider.supportedLocales,
             localizationsDelegates: const [
               AppLocalizations.delegate,
+              ProteinPreferencesLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,

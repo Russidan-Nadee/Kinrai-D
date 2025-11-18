@@ -1,0 +1,13 @@
+{
+  "@@locale": "ja",
+
+  "proteinPreferences": "食べたくないタンパク質",
+
+  "manageProteinPreferences": "食べたくないタンパク質を選択",
+
+  "noProteinTypesAvailable": "利用可能なタンパク質がありません",
+
+  "dontEat": "食べない：",
+
+  "proteinPreferenceUpdated": "タンパク質の設定を更新しました"
+}

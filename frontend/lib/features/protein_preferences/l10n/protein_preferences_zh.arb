@@ -1,0 +1,13 @@
+{
+  "@@locale": "zh",
+
+  "proteinPreferences": "不想吃的肉类",
+
+  "manageProteinPreferences": "选择不想吃的肉类",
+
+  "noProteinTypesAvailable": "没有可用的肉类",
+
+  "dontEat": "不吃：",
+
+  "proteinPreferenceUpdated": "已更新肉类偏好"
+}

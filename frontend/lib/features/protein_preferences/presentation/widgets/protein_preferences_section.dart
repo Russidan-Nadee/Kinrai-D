@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../domain/entities/protein_preference_entity.dart';
+import '../../l10n/protein_preferences_localizations.dart';
 import '../providers/protein_preference_provider.dart';
 
 class ProteinPreferencesSection extends StatefulWidget {
@@ -22,7 +23,8 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
   ) async {
     final proteinProvider = Provider.of<ProteinPreferenceProvider>(context, listen: false);
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context);
+    final l10n = ProteinPreferencesLocalizations.of(context);
+    final appL10n = AppLocalizations.of(context);
 
     final success = await proteinProvider.toggleProteinPreference(
       proteinTypeId,
@@ -34,7 +36,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            success ? l10n.proteinPreferenceUpdated : l10n.errorOccurred,
+            success ? l10n.proteinPreferenceUpdated : appL10n.errorOccurred,
           ),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
@@ -46,7 +48,7 @@ class _ProteinPreferencesSectionState extends State<ProteinPreferencesSection> {
   Widget build(BuildContext context) {
     final proteinProvider = Provider.of<ProteinPreferenceProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final l10n = AppLocalizations.of(context);
+    final l10n = ProteinPreferencesLocalizations.of(context);
 
     // Auto-reload when language changes
     final currentLanguage = languageProvider.currentLanguageCode;

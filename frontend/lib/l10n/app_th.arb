@@ -33,15 +33,5 @@
 
   "admin": "ผู้ดูแล",
 
-  "proteinPreferences": "ไม่อยากกินเนื้อสัตว์",
-
-  "manageProteinPreferences": "เลือกเนื้อสัตว์ที่ไม่อยากกิน",
-
-  "noProteinTypesAvailable": "ไม่มีประเภทเนื้อสัตว์",
-
-  "dontEat": "ไม่กิน:",
-
-  "proteinPreferenceUpdated": "อัพเดตความชอบเนื้อสัตว์แล้ว",
-
   "errorOccurred": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง"
 }
