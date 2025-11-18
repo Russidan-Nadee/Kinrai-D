@@ -1,6 +1,6 @@
 import '../../../../core/api/api_client.dart';
 import '../../../../core/utils/logger.dart';
-import '../../models/admin_info_model.dart';
+import '../models/admin_info_model.dart';
 
 abstract class AdminRemoteDataSource {
   Future<AdminInfoModel> getMenus({int limit = 1000});
