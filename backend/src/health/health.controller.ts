@@ -68,10 +68,6 @@ export class HealthController {
         port: process.env.PORT,
         logLevel: process.env.LOG_LEVEL,
         databaseConfigured: !!process.env.DATABASE_URL,
-        databaseHost: process.env.DATABASE_URL
-          ? new URL(process.env.DATABASE_URL).host
-          : 'not configured',
-        supabaseConfigured: !!process.env.SUPABASE_URL,
       },
       system: {
         platform: process.platform,

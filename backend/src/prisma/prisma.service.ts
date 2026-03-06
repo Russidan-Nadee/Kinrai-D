@@ -31,12 +31,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     this.logger.log('PrismaService constructor called');
     this.logger.log(`DATABASE_URL configured: ${process.env.DATABASE_URL ? 'Yes' : 'No'}`);
-
-    if (process.env.DATABASE_URL) {
-      // Log connection string (masked password)
-      const maskedUrl = process.env.DATABASE_URL.replace(/:([^:@]+)@/, ':****@');
-      this.logger.log(`Connection string: ${maskedUrl}`);
-    }
   }
 
   async onModuleInit() {
