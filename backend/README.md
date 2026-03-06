@@ -1,98 +1,297 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Kinrai-D Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS-based REST API for Kinrai-D food menu management system. Provides comprehensive endpoints for menu management, user preferences, recommendations, and admin operations.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Quick Start
 
-## Description
+### Prerequisites
+- Node.js 22+
+- PostgreSQL 13+
+- npm or yarn
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+### Installation
 
 ```bash
-$ npm install
+# Install dependencies
+npm install
+
+# Setup environment variables
+cp .env.example .env
+
+# Generate Prisma client
+npm run prisma:generate
+
+# Create and seed database
+npm run db:reset
 ```
 
-## Compile and run the project
+### Running the Server
 
 ```bash
-# development
-$ npm run start
+# Development (watch mode)
+npm run start:dev
 
-# watch mode
-$ npm run start:dev
+# Debug mode
+npm run start:debug
 
-# production mode
-$ npm run start:prod
+# Production
+npm run build && npm run start:prod
 ```
 
-## Run tests
+Server will be available at `http://localhost:3000/api/v1`
+
+## 📚 API Documentation
+
+### Swagger UI
+Interactive API documentation available at:
+```
+http://localhost:3000/api/docs
+```
+
+### Health Endpoints
 
 ```bash
-# unit tests
-$ npm run test
+# Basic health check
+GET /api/v1/health
 
-# e2e tests
-$ npm run test:e2e
+# Database connection test
+GET /api/v1/health/db
 
-# test coverage
-$ npm run test:cov
+# Environment configuration (dev only)
+GET /api/v1/health/env
+
+# Connection pool benchmark
+GET /api/v1/health/connection-test
 ```
 
-## Deployment
+## 🔑 Core Features
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Menu Management
+- Create, read, update, delete menus
+- Support for multiple languages
+- Categorization by food type, category, subcategory
+- Protein type filtering
+- Meal time classification (Breakfast, Lunch, Dinner, Snack)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### User Management
+- User profile creation and updates
+- Role-based access (USER, ADMIN)
+- Supabase authentication integration
+- User profile statistics
+
+### Recommendations Engine
+- Random menu suggestions
+- Personalized recommendations based on:
+  - Favorite history
+  - Disliked menus
+  - Protein preferences
+  - Rating patterns
+- Search with full-text support
+
+### Analytics
+- Popular menu tracking
+- Meal time distribution analysis
+- Protein preference analytics
+- Rating trends
+- User engagement metrics
+
+### Admin Dashboard
+- User management and activation/deactivation
+- Menu management interface
+- Category and protein type management
+- Dashboard statistics and recent activity
+- Batch operations support
+
+## 🏗️ Project Structure
+
+```
+src/
+├── auth/
+│  ├── decorators/        # Custom decorators (@CurrentUser, @UserId, etc.)
+│  ├── guards/            # JWT & permission guards
+│  └── dto/               # Auth DTOs
+├── admin/
+│  ├── controllers/       # Admin endpoints
+│  ├── services/          # Admin business logic
+│  └── dto/               # Admin DTOs
+├── food-management/
+│  ├── services/          # Food type & category services
+│  ├── controllers/       # Food management endpoints
+│  └── dto/               # Food management DTOs
+├── menus/
+│  ├── menus.service.ts   # Core menu service
+│  ├── menus.controller.ts # Menu endpoints
+│  └── dto/               # Menu DTOs
+├── user-profiles/
+│  ├── services/          # User profile logic
+│  ├── controllers/       # User endpoints
+│  └── dto/               # User DTOs
+├── favorites/
+│  ├── favorites.service.ts # Favorite management
+│  └── favorites.controller.ts # Favorite endpoints
+├── ratings/
+│  └── Rating system      # Menu ratings & reviews
+├── protein-preferences/
+│  └── User dietary restrictions
+├── analytics/
+│  ├── analytics.service.ts # Analytics calculations
+│  └── analytics.controller.ts # Analytics endpoints
+├── queues/
+│  ├── processors/        # Job processors
+│  └── jobs.controller.ts # Queue management
+├── common/
+│  ├── interceptors/      # Global interceptors
+│  ├── services/          # Shared services (Cache, Search)
+│  ├── decorators/        # Shared decorators
+│  └── types/             # Type definitions
+├── health/
+│  └── Health check endpoints
+├── prisma/
+│  └── Prisma ORM service
+└── app.module.ts         # Root module
+```
+
+## 📦 Key Dependencies
+
+```json
+{
+  "@nestjs/core": "^11.1.5",
+  "@nestjs/common": "^11.0.1",
+  "@nestjs/config": "^4.0.2",
+  "@prisma/client": "^6.13.0",
+  "bull": "^4.16.5",
+  "ioredis": "^5.7.0",
+  "@supabase/supabase-js": "^2.75.0",
+  "class-validator": "^0.14.2",
+  "class-transformer": "^0.5.1"
+}
+```
+
+## 🔌 API Endpoints
+
+### Menus
+```
+GET    /api/v1/menus                    # Get all menus
+POST   /api/v1/menus                    # Create menu
+GET    /api/v1/menus/:id                # Get menu details
+PATCH  /api/v1/menus/:id                # Update menu
+DELETE /api/v1/menus/:id                # Delete menu
+GET    /api/v1/menus/popular            # Get popular menus
+GET    /api/v1/menus/random             # Get random menu
+GET    /api/v1/menus/random/personalized # Get recommendation
+GET    /api/v1/menus/search             # Full-text search
+```
+
+### User Profiles
+```
+POST   /api/v1/user-profiles            # Create profile
+GET    /api/v1/user-profiles/me         # Get current user
+PATCH  /api/v1/user-profiles/me         # Update profile
+GET    /api/v1/user-profiles/me/stats   # User statistics
+```
+
+### Favorites
+```
+POST   /api/v1/favorites                # Add to favorites
+DELETE /api/v1/favorites/:id            # Remove favorite
+GET    /api/v1/favorites                # Get user favorites
+GET    /api/v1/favorites/check/:menuId  # Check if favorite
+```
+
+### Admin
+```
+GET    /api/v1/admin/dashboard/stats    # Dashboard stats
+GET    /api/v1/admin/users              # List users
+POST   /api/v1/admin/users              # Create user
+GET    /api/v1/admin/analytics/*        # Analytics endpoints
+```
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+npm run test              # Run all tests
+npm run test:watch       # Watch mode
+npm run test:cov         # Coverage report
+npm run test:debug       # Debug mode
+```
+
+### E2E Tests
+```bash
+npm run test:e2e         # Run end-to-end tests
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```env
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/kinrai_db
+
+# Supabase Authentication
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Server
+NODE_ENV=development|production
+PORT=3000
+LOG_LEVEL=debug|log|error
+
+# CORS
+CORS_ORIGINS=http://localhost:3000,https://example.com
+
+# Frontend
+FRONTEND_URL=http://localhost:3000
+```
+
+## 🚀 Production Deployment
+
+### Docker
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Build
+docker build -t kinrai-d-api:latest .
+
+# Run
+docker run -p 3000:3000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e NODE_ENV=production \
+  kinrai-d-api:latest
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Railway
 
-## Resources
+```bash
+# Deploy via Railway CLI
+railway up
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🔐 Security
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- ✅ Environment variables for all secrets
+- ✅ Supabase authentication
+- ✅ CORS protection
+- ✅ Input validation (class-validator)
+- ✅ SQL injection protection (Prisma)
+- ✅ Credentials removed from logs
+- ✅ Role-based access control (RBAC)
+- ✅ Global error handling
 
-## Support
+## 📖 Documentation
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- [Root README](../README.md)
+- [Frontend Documentation](../frontend/README.md)
+- [Database Schema](prisma/schema.prisma)
+- [Prisma Docs](https://www.prisma.io/docs/)
+- [NestJS Docs](https://docs.nestjs.com/)
 
-## Stay in touch
+## 📄 License
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+UNLICENSED - Private Project
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Version**: 1.0.0  
+**Last Updated**: March 6, 2026
