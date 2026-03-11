@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dio/dio.dart';
+import '../utils/constants.dart';
 import '../utils/logger.dart';
 import '../models/user_model.dart';
 
@@ -10,7 +11,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = true;
   String? _error;
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:8000/api/v1', // Backend URL with /api/v1 prefix
+    baseUrl: AppConstants.baseUrl + AppConstants.apiVersion,
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 3),
   ));
