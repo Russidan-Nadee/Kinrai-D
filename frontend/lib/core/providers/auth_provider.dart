@@ -9,6 +9,7 @@ class AuthProvider extends ChangeNotifier {
   User? _supabaseUser;
   UserModel? _userModel;
   bool _isLoading = true;
+  bool _isGuest = false;
   String? _error;
   final Dio _dio = Dio(BaseOptions(
     baseUrl: AppConstants.baseUrl + AppConstants.apiVersion,
@@ -20,6 +21,17 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isAuthenticated => _supabaseUser != null;
+  bool get isGuest => _isGuest;
+
+  void enterGuestMode() {
+    _isGuest = true;
+    notifyListeners();
+  }
+
+  void exitGuestMode() {
+    _isGuest = false;
+    notifyListeners();
+  }
 
   AuthProvider() {
     _init();
@@ -37,6 +49,7 @@ class AuthProvider extends ChangeNotifier {
     Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       _supabaseUser = data.session?.user;
       if (_supabaseUser != null) {
+        _isGuest = false;
         await _fetchUserModel(_supabaseUser!);
       } else {
         _userModel = null;

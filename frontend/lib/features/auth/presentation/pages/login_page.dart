@@ -247,6 +247,48 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+
+                    // Divider
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.grey[300])),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              AuthLocalizations.of(context).or,
+                              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: Colors.grey[300])),
+                        ],
+                      ),
+                    ),
+
+                    // Continue as Guest Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: authProvider.isLoading ? null : _handleGuestMode,
+                        icon: const Icon(Icons.person_outline, size: 20),
+                        label: Text(
+                          AuthLocalizations.of(context).continueAsGuest,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey[700],
+                          side: BorderSide(color: Colors.grey[400]!),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -271,5 +313,10 @@ class _LoginPageState extends State<LoginPage> {
       // AuthWrapper will automatically redirect to main app
       // No need to navigate manually
     }
+  }
+
+  void _handleGuestMode() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.enterGuestMode();
   }
 }

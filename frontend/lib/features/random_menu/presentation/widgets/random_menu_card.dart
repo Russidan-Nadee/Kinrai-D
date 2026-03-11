@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/language_provider.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/cache/cache_service.dart';
@@ -13,8 +15,14 @@ import '../../../dislikes/presentation/providers/dislike_provider.dart';
 class RandomMenuCard extends StatefulWidget {
   final MenuEntity menu;
   final VoidCallback? onDisliked;
+  final bool isGuest;
 
-  const RandomMenuCard({super.key, required this.menu, this.onDisliked});
+  const RandomMenuCard({
+    super.key,
+    required this.menu,
+    this.onDisliked,
+    this.isGuest = false,
+  });
 
   @override
   State<RandomMenuCard> createState() => _RandomMenuCardState();
@@ -31,19 +39,17 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
   @override
   void initState() {
     super.initState();
-    // Get use cases from dependency injection
     _addDislike = getIt.get<AddDislike>();
     _removeDislike = getIt.get<RemoveDislike>();
     _isMenuDisliked = getIt.get<IsMenuDisliked>();
 
-    _checkIfDisliked();
+    if (!widget.isGuest) _checkIfDisliked();
   }
 
   @override
   void didUpdateWidget(RandomMenuCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Check if menu changed, then refresh dislike status
-    if (oldWidget.menu.id != widget.menu.id) {
+    if (!widget.isGuest && oldWidget.menu.id != widget.menu.id) {
       _checkIfDisliked();
     }
   }
@@ -62,6 +68,11 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
   }
 
   Future<void> _toggleDislike() async {
+    if (widget.isGuest) {
+      _showAuthRequiredDialog();
+      return;
+    }
+
     if (_isLoading) return;
 
     setState(() {
@@ -71,6 +82,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
     // Get providers and context before async gap
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
 
     // Try to get DislikeProvider if it exists (it might not be provided in all contexts)
     DislikeProvider? dislikeProvider;
@@ -107,7 +119,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
 
           scaffoldMessenger.showSnackBar(
             SnackBar(
-              content: Text('ลบออกจากรายการไม่ชอบแล้ว'),
+              content: Text(l10n.dislikeRemoved),
               backgroundColor: Colors.green,
             ),
           );
@@ -138,7 +150,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
 
           scaffoldMessenger.showSnackBar(
             SnackBar(
-              content: Text('เพิ่มในรายการไม่ชอบแล้ว'),
+              content: Text(l10n.dislikeAdded),
               backgroundColor: Colors.orange,
             ),
           );
@@ -153,7 +165,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
         });
         scaffoldMessenger.showSnackBar(
           SnackBar(
-            content: Text('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'),
+            content: Text(l10n.errorOccurred),
             backgroundColor: Colors.red,
           ),
         );
@@ -161,9 +173,41 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
     }
   }
 
+  void _showAuthRequiredDialog() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.lock_outline, size: 22),
+            const SizedBox(width: 8),
+            Text(l10n.loginRequired, style: const TextStyle(fontSize: 18)),
+          ],
+        ),
+        content: Text(l10n.loginRequiredMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              authProvider.exitGuestMode();
+            },
+            child: Text(l10n.signInOrSignUp,
+                style: const TextStyle(color: Color(0xFFFF6B35))),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context);
     final menuName = widget.menu.name;
     final mealTime = widget.menu.mealTime;
     final contains = widget.menu.contains?.length ?? 0;
@@ -201,10 +245,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    _getMealTimeText(
-                      mealTime,
-                      languageProvider.currentLanguageCode,
-                    ),
+                    _getMealTimeL10n(mealTime, l10n),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -215,17 +256,17 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
                 const SizedBox(height: 8),
 
                 // Status - Always active for random menus
-                const Row(
+                Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.check_circle,
                       color: Colors.green,
                       size: 16,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
-                      'Active',
-                      style: TextStyle(
+                      l10n.active,
+                      style: const TextStyle(
                         color: Colors.green,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -239,7 +280,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
                 // Contains count
                 if (contains > 0)
                   Text(
-                    '$contains ingredients',
+                    l10n.ingredientsCount(contains),
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
 
@@ -266,13 +307,7 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
                             size: 18,
                           ),
                     label: Text(
-                      _isDisliked
-                          ? (languageProvider.currentLanguageCode == 'en'
-                                ? 'Disliked'
-                                : 'ไม่ชอบแล้ว')
-                          : (languageProvider.currentLanguageCode == 'en'
-                                ? 'Dislike'
-                                : 'ไม่ชอบ'),
+                      _isDisliked ? l10n.disliked : l10n.dislike,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -315,41 +350,16 @@ class _RandomMenuCardState extends State<RandomMenuCard> {
     }
   }
 
-  String _getMealTimeText(String mealTime, String languageCode) {
+  String _getMealTimeL10n(String mealTime, AppLocalizations l10n) {
     switch (mealTime.toUpperCase()) {
       case 'BREAKFAST':
-        switch (languageCode) {
-          case 'en':
-            return 'BREAKFAST';
-          case 'ja':
-            return '朝食';
-          case 'zh':
-            return '早餐';
-          default:
-            return 'BREAKFAST';
-        }
+        return l10n.mealTimeBreakfast;
       case 'LUNCH':
-        switch (languageCode) {
-          case 'en':
-            return 'LUNCH';
-          case 'ja':
-            return '昼食';
-          case 'zh':
-            return '午餐';
-          default:
-            return 'LUNCH';
-        }
+        return l10n.mealTimeLunch;
       case 'DINNER':
-        switch (languageCode) {
-          case 'en':
-            return 'DINNER';
-          case 'ja':
-            return '夕食';
-          case 'zh':
-            return '晚餐';
-          default:
-            return 'DINNER';
-        }
+        return l10n.mealTimeDinner;
+      case 'SNACK':
+        return l10n.mealTimeSnack;
       default:
         return mealTime;
     }

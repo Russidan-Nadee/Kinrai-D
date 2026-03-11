@@ -26,6 +26,7 @@ import {
   UserId,
 } from '../auth/decorators/auth.decorators';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('menus')
@@ -129,6 +130,7 @@ export class MenusController {
   }
 
   @Get('random')
+  @UseGuards(RateLimitGuard)
   @ApiOperation({ summary: 'Get a single random menu item' })
   @ApiResponse({
     status: 200,

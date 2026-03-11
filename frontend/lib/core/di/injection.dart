@@ -5,6 +5,7 @@ import '../api/api_client.dart';
 import '../../features/random_menu/data/datasources/menu_remote_data_source.dart';
 import '../../features/random_menu/data/repositories/menu_repository_impl.dart';
 import '../../features/random_menu/domain/repositories/menu_repository.dart';
+import '../../features/random_menu/domain/usecases/get_random_menu.dart';
 import '../../features/random_menu/domain/usecases/get_personalized_random_menu.dart';
 
 // Dislikes
@@ -50,6 +51,9 @@ Future<void> setupDependencies() async {
   );
 
   // Use Cases - Random Menu
+  getIt.registerLazySingleton<GetRandomMenu>(
+    () => GetRandomMenu(getIt<MenuRepository>()),
+  );
   getIt.registerLazySingleton<GetPersonalizedRandomMenu>(
     () => GetPersonalizedRandomMenu(getIt<MenuRepository>()),
   );

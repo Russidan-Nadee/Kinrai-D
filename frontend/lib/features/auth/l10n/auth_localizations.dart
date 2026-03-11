@@ -232,6 +232,32 @@ class AuthLocalizations {
         return 'สร้างบัญชีสำเร็จ!';
     }
   }
+
+  String get or {
+    switch (locale.languageCode) {
+      case 'en':
+        return 'or';
+      case 'ja':
+        return 'または';
+      case 'zh':
+        return '或';
+      default:
+        return 'หรือ';
+    }
+  }
+
+  String get continueAsGuest {
+    switch (locale.languageCode) {
+      case 'en':
+        return 'Continue as Guest';
+      case 'ja':
+        return 'ゲストとして続ける';
+      case 'zh':
+        return '以访客身份继续';
+      default:
+        return 'เข้าใช้งานเป็นผู้เยี่ยมชม';
+    }
+  }
 }
 
 class _AuthLocalizationsDelegate

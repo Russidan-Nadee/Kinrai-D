@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/menu_entity.dart';
+import '../../domain/usecases/get_random_menu.dart';
 import '../../domain/usecases/get_personalized_random_menu.dart';
 import 'random_menu_button.dart';
 import 'random_menu_card.dart';
@@ -19,6 +21,7 @@ class RandomMenuWidget extends StatefulWidget {
 
 class _RandomMenuWidgetState extends State<RandomMenuWidget>
     with SingleTickerProviderStateMixin {
+  late final GetRandomMenu _getRandomMenuUseCase;
   late final GetPersonalizedRandomMenu _getPersonalizedRandomMenu;
   MenuEntity? _randomMenu;
   bool _isLoading = false;
@@ -30,7 +33,7 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget>
   @override
   void initState() {
     super.initState();
-    // Get use case from dependency injection
+    _getRandomMenuUseCase = getIt.get<GetRandomMenu>();
     _getPersonalizedRandomMenu = getIt.get<GetPersonalizedRandomMenu>();
 
     // Initialize animation controller
@@ -60,6 +63,7 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget>
 
   Future<void> _getRandomMenu() async {
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final l10n = AppLocalizations.of(context);
 
     setState(() {
@@ -68,12 +72,15 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget>
     });
 
     try {
+      final Future<MenuEntity> Function({String? language}) fetchFn =
+          authProvider.isGuest
+              ? _getRandomMenuUseCase.call
+              : _getPersonalizedRandomMenu.call;
+
       // Run API call and minimum loading time in parallel
       final results = await Future.wait([
-        _getPersonalizedRandomMenu(
-          language: languageProvider.currentLanguageCode,
-        ),
-        Future.delayed(const Duration(milliseconds: 1000)), // Minimum 1 second to see dice
+        fetchFn(language: languageProvider.currentLanguageCode),
+        Future.delayed(const Duration(milliseconds: 1000)),
       ]);
 
       final randomMenu = results[0] as MenuEntity;
@@ -215,6 +222,7 @@ class _RandomMenuWidgetState extends State<RandomMenuWidget>
                                 ? RandomMenuCard(
                                     key: ValueKey('card_${_randomMenu!.id}'),
                                     menu: _randomMenu!,
+                                    isGuest: Provider.of<AuthProvider>(context, listen: false).isGuest,
                                     onDisliked: () {
                                       // Optional: Auto-generate new menu after dislike
                                       _getRandomMenu();

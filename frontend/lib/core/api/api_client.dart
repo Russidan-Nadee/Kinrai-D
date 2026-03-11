@@ -161,6 +161,8 @@ class ApiClient {
           return custom_exceptions.AuthException('Access denied. You don\'t have permission.');
         } else if (statusCode == 404) {
           return custom_exceptions.ServerException('Resource not found.', statusCode: statusCode);
+        } else if (statusCode == 429) {
+          return custom_exceptions.ServerException('กรุณารอสักครู่ก่อนลองใหม่', statusCode: statusCode);
         } else if (statusCode != null && statusCode >= 500) {
           return custom_exceptions.ServerException(
             'Server error. Please try again later.',
